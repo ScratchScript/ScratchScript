@@ -1,2 +1,7 @@
 ﻿var a = 1;
 var b = "abc";
+
+if a < 3
+{
+    say('a');
+}
