@@ -73,34 +73,4 @@ class BuildCommand : Command<BuildCommand.BuildCommandSettings>
 		return 0;
 	}
 }
-
-//using ScratchScript.Core;
-//using ScratchScript.Core.Model;
-
 //https://www.cs.uic.edu/~i109/Notes/COperatorPrecedenceTable.pdf
-/*var parser = new ScratchScriptParser();
-var buildResult = new ParserBuilder<ScratchScriptToken, AST>().BuildParser(parser, ParserType.EBNF_LL_RECURSIVE_DESCENT, "statement");
-//var parseResult = buildResult.Result.Parse("1 + ");
-//Console.WriteLine(parseResult.SyntaxTree);
-while (true)
-{
-	try
-	{
-		var code = Console.ReadLine();
-		var parseResult = buildResult.Result.Parse(code);
-		if (parseResult.IsOk)
-		{
-			Console.WriteLine("Ok");
-			Console.WriteLine(parseResult.Result);
-		}
-		else Console.WriteLine($"Error\n{string.Join('\n', parseResult.Errors.Select(x => x.ErrorMessage))}");
-	}
-	catch(Exception e) {Console.WriteLine($"Failed\n{e.Message}\n{e.StackTrace}");}
-}*/
-/*while (true)
-{
-	var line = Console.ReadLine();
-
-	
-	
-}*/
