@@ -1,4 +1,7 @@
-﻿using ScratchScript.Helpers;
+﻿using ScratchScript.Extensions;
+using ScratchScript.Blocks;
+using ScratchScript.Helpers;
+using ScratchScript.Types;
 using ScratchScript.Wrapper;
 using Serilog;
 
@@ -7,7 +10,7 @@ namespace ScratchScript.Compiler;
 public class TargetCompiler
 {
 	public Target WrappedTarget = new();
-	public Dictionary<string, string> Variables = new();
+	public Dictionary<string, ScratchVariable> Variables = new();
 
 	public string Name
 	{
@@ -21,16 +24,36 @@ public class TargetCompiler
 		set => WrappedTarget.layerOrder = value;
 	}
 
+	public void ReplaceBlock(Block newBlock) => WrappedTarget.blocks[newBlock.Id] = newBlock;
+
 	public void CreateVariable(string name, object value)
 	{
 		var id = "ScratchScript_Variable_" + Guid.NewGuid().ToString("N");
-		Variables[name] = id;
+		Variables[name] = new ScratchVariable
+		{
+			Id = id,
+			Name = name
+		};
 
 		WrappedTarget.variables[id] = new List<object>
 		{
 			name,
 			value
 		};
+	}
+	public Block CreateBlock(Block block, bool ignoreNext = false, bool ignoreParent = false)
+	{
+		if (string.IsNullOrEmpty(block.Id))
+			block = block.WithPurposeId("Unknown");
+
+		if(WrappedTarget.blocks.Count != 0 && !ignoreNext)
+			WrappedTarget.blocks.Last().Value.next = block.Id;
+		if(!ignoreParent)
+			block.parent = WrappedTarget.blocks.Count == 0 ? null: WrappedTarget.blocks.Last().Key;
+		if(WrappedTarget.blocks.Count != 0)
+			Log.Information($"{block.parent ?? "none"} {WrappedTarget.blocks.Last().Value.next ?? "none"}");
+		WrappedTarget.blocks[block.Id] = block;
+		return block;
 	}
 
 	public TargetCompiler()
@@ -52,5 +75,6 @@ public class TargetCompiler
 			rotationStyle = "all around"
 		};
 		LayerOrder = ProjectCompiler.Current.TargetCompilerCount;
+		CreateBlock(Event.WhenFlagClicked().WithPurposeId("EntryPoint"));
 	}
 }

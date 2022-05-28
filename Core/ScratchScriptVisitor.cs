@@ -1,6 +1,7 @@
-﻿using Antlr4.Runtime.Misc;
-using Antlr4.Runtime.Tree;
+using Antlr4.Runtime.Misc;
+using ScratchScript.Blocks;
 using ScratchScript.Compiler;
+using ScratchScript.Types;
 using ScratchScript.Wrapper;
 using Serilog;
 
@@ -8,9 +9,9 @@ namespace ScratchScript.Core;
 
 public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
 {
-    protected override object? DefaultResult => base.DefaultResult;
+	private Dictionary<string, object?> _compilerData = new();
 
-    public override object? VisitAttributeStatement(ScratchScriptParser.AttributeStatementContext context)
+	public override object? VisitAttributeStatement(ScratchScriptParser.AttributeStatementContext context)
 	{
 		return null;
 	}
@@ -37,8 +38,13 @@ public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
 	
 	public override object? VisitIdentifierExpression(ScratchScriptParser.IdentifierExpressionContext context)
 	{
-		Log.Debug("Found identifier ({Text})", context.GetText());
-		return context.GetText();
+		var identifier = context.GetText();
+		Log.Debug("Found identifier ({Text})", identifier);
+		var target = ProjectCompiler.Current.CurrentTarget;
+		if (target.Variables.ContainsKey(identifier))
+			return target.Variables[identifier];
+
+		return null;
 	}
 
 	public override object? VisitConstant(ScratchScriptParser.ConstantContext context)
@@ -87,17 +93,98 @@ public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
 
     public override object? VisitBinaryMultiplyExpression([NotNull] ScratchScriptParser.BinaryMultiplyExpressionContext context)
     {
-        return base.VisitBinaryMultiplyExpression(context);
+	    Log.Debug("Found */÷/^/% binary expression");
+	    var first = Visit(context.expression(0));
+	    var second = Visit(context.expression(1));
+        
+	    switch (context.multiplyOperators().GetText())
+	    {
+		    case "*":
+			    return HandleBinaryOperation(first, second, Operators.Multiply(first, second));
+		    case "/":
+			    return HandleBinaryOperation(first, second, Operators.Divide(first, second));
+		    case "**":
+			    throw new NotImplementedException("Currently not implemented.");
+		    case "%":
+			    return HandleBinaryOperation(first, second, Operators.Modulo(first, second));
+	    }
+
+	    throw new Exception("What?");
     }
+    
 
     public override object? VisitBinaryAddExpression([NotNull] ScratchScriptParser.BinaryAddExpressionContext context)
     {
-        return base.VisitBinaryAddExpression(context);
+	    Log.Debug("Found +/- binary expression");
+        var first = Visit(context.expression(0));
+        var second = Visit(context.expression(1));
+        
+        switch (context.addOperators().GetText())
+        {
+	        case "+":
+		        return HandleBinaryOperation(first, second, Operators.Add(first, second));
+	        case "-":
+		        return HandleBinaryOperation(first, second, Operators.Subtract(first, second));
+        }
+
+        throw new Exception("What?");
     }
 
+    private object HandleBinaryOperation(object? first, object? second, Block operatorBlock)
+    {
+	    var target = ProjectCompiler.Current.CurrentTarget;
+	    var block = target.CreateBlock(operatorBlock, true, true);
+	    block.next = null;
+	    if (first is Block firstBlock)
+	    {
+		    firstBlock.parent = block.Id;
+		    target.ReplaceBlock(block);
+		    target.ReplaceBlock(firstBlock);
+	    }
+	    else if(second is Block secondBlock)
+	    {
+		    secondBlock.parent = block.Id;
+		    target.ReplaceBlock(block);
+		    target.ReplaceBlock(secondBlock);
+	    }
+		        
+	    return block;
+    }
+    
     public override object? VisitAssignmentStatement([NotNull] ScratchScriptParser.AssignmentStatementContext context)
     {
-        return base.VisitAssignmentStatement(context);
+	    var name = context.Identifier().GetText();
+		Log.Debug("Found variable assignment ({Name}, ID {Value})", name, context.expression().RuleIndex);
+		var target = ProjectCompiler.Current.CurrentTarget;
+
+		if (!target.Variables.ContainsKey(name))
+			throw new Exception($"Variable {name} is not defined.");
+		
+		var variable = target.Variables[name];
+		var last = target.WrappedTarget.blocks.Last().Key;
+		var value = Visit(context.expression());
+
+		switch (value)
+		{
+			case null:
+				throw new Exception("Expression result is not assignable to a variable.");
+			case ScratchVariable toVariable:
+				target.CreateBlock(Data.SetVariableTo(variable, toVariable));
+				break;
+			case Block shadow:
+				var setBlock = target.CreateBlock(Data.SetVariableTo(variable, shadow), true, true);
+				shadow.parent = setBlock.Id;
+				setBlock.parent = last;
+				target.WrappedTarget.blocks[last].next = setBlock.Id;
+				target.ReplaceBlock(setBlock);
+				target.ReplaceBlock(shadow);
+				break;
+			default:
+				target.CreateBlock(Data.SetVariableTo(variable, value));
+				break;
+		}
+
+		return null;
     }
 
     public override object? VisitFunctionCallStatement([NotNull] ScratchScriptParser.FunctionCallStatementContext context)
@@ -137,7 +224,8 @@ public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
 
     public override object? VisitAddOperators([NotNull] ScratchScriptParser.AddOperatorsContext context)
     {
-        return base.VisitAddOperators(context);
+	    Log.Debug("Found +/- arithmetic operator");
+	    return context.GetText();
     }
 
     public override object? VisitCompareOperators([NotNull] ScratchScriptParser.CompareOperatorsContext context)

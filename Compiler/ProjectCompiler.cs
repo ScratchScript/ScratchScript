@@ -58,25 +58,8 @@ public class ProjectCompiler
 		};
 		
 		//Stage
-		_targetCompilers.Add(new TargetCompiler
-		{
-			WrappedTarget = new Target
-			{
-				isStage = true,
-				name = "Stage",
-				currentCostume = 0,
-				costumes = new List<Asset>
-				{
-					_emptyCostume
-				},
-				volume = 100,
-				layerOrder = 0,
-				tempo = 60,
-				videoTransparency = 50,
-				videoState = "on",
-				textToSpeechLanguage = null
-			}
-		});
+		_targetCompilers.Add(new TargetCompiler());
+		_targetCompilers[0].Name = "Stage";
 		CurrentTarget = _targetCompilers[0];
 	}
 

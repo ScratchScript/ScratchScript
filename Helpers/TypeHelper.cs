@@ -14,6 +14,10 @@ public class TypeHelper
 		{typeof(string), 10}
 	};
 	//broadcasts and others are not variable types.
-	
-	public static int ScratchIdFromValue(object obj) => _scratchIds[obj.GetType()];
+
+	public static int ScratchIdFromValue(object obj)
+	{
+		var type = obj.GetType();
+		return _scratchIds.ContainsKey(type) ? _scratchIds[type] : -1;
+	}
 }

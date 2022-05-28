@@ -44,13 +44,10 @@ class BuildCommand : Command<BuildCommand.BuildCommandSettings>
 
 		if (string.IsNullOrEmpty(settings.Output))
 			settings.Output = Path.GetFileNameWithoutExtension(settings.Path) + ".sb3";
-		if (!string.IsNullOrEmpty(settings.Output) && File.Exists(settings.Output))
-		{
-			if (AnsiConsole.Confirm("[yellow]Output file already exists. Delete it?[/]"))
-				File.Delete(settings.Output);
-			else return 0;
-		}
 		
+		if (File.Exists(settings.Output))
+			File.Delete(settings.Output);
+
 		Log.Logger = new LoggerConfiguration()
 			.WriteTo.File($"log_{DateTime.Now:ddMMyyyyHHmm}.txt")
 			.WriteTo.Console()

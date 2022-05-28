@@ -1,4 +1,6 @@
-﻿namespace ScratchScript.Wrapper;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ScratchScript.Wrapper;
 
 public class Target
 {
