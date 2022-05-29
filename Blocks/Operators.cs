@@ -6,7 +6,7 @@ namespace ScratchScript.Blocks;
 
 public class Operators
 {
-	private static Block Binary(object first, object second, string opcode, string id)
+	private static Block Binary(object first, object second, string opcode, string id, string firstParameter = "NUM1", string secondParameter = "NUM2")
 	{
 		var builder = new BlockBuilder()
 			.IsShadow()
@@ -16,17 +16,17 @@ public class Operators
 		{
 			case ScratchVariable firstVariable:
 				builder.WithInput(new InputBuilder()
-					.WithName("NUM1")
+					.WithName(firstParameter)
 					.WithVariable(firstVariable));
 				break;
 			case Block firstShadow:
 				builder.WithInput(new InputBuilder()
-					.WithName("NUM1")
+					.WithName(firstParameter)
 					.WithShadow(firstShadow));
 				break;
 			default:
 				builder.WithInput(new InputBuilder()
-					.WithName("NUM1")
+					.WithName(firstParameter)
 					.WithRawObject(first));
 				break;
 		}
@@ -35,17 +35,17 @@ public class Operators
 		{
 			case ScratchVariable secondVariable:
 				builder.WithInput(new InputBuilder()
-					.WithName("NUM2")
+					.WithName(secondParameter)
 					.WithVariable(secondVariable));
 				break;
 			case Block secondShadow:
 				builder.WithInput(new InputBuilder()
-					.WithName("NUM2")
+					.WithName(secondParameter)
 					.WithShadow(secondShadow));
 				break;
 			default:
 				builder.WithInput(new InputBuilder()
-					.WithName("NUM2")
+					.WithName(secondParameter)
 					.WithRawObject(second));
 				break;
 		}
@@ -65,7 +65,8 @@ public class Operators
 		Binary(first, second, "operator_divide", "OperatorDivide");
 
 	public static Block Modulo(object first, object second) => Binary(first, second, "operator_mod", "OperatorModulo");
-	
-	
+
+	public static Block Join(object first, object second) =>
+		Binary(first, second, "operator_join", "OperatorStringJoin", "STRING1", "STRING2");
 
 }

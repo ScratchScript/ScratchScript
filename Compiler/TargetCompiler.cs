@@ -65,9 +65,9 @@ public class TargetCompiler
 		}
 
 		if(WrappedTarget.blocks.Count != 0 && !ignoreNext)
-			WrappedTarget.blocks.Last().Value.next = block.Id;
+			WrappedTarget.blocks.Last(x => !x.Value.shadow).Value.next = block.Id;
 		if(!ignoreParent)
-			block.parent = WrappedTarget.blocks.Count == 0 ? null: WrappedTarget.blocks.Last().Key;
+			block.parent = WrappedTarget.blocks.Count == 0 ? null: WrappedTarget.blocks.Last(x => !x.Value.shadow).Key;
 		WrappedTarget.blocks[block.Id] = block;
 		return block;
 	}

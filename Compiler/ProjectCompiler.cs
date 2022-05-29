@@ -63,6 +63,8 @@ public class ProjectCompiler
 		CurrentTarget = _targetCompilers[0];
 	}
 
+	public void SetCurrentTarget(string name) => CurrentTarget = _targetCompilers.First(x => x.Name == name);
+
 	public void Compile()
 	{
 		Log.Information("Compiling {Path}..", Path.GetFileName(SourcePath));
