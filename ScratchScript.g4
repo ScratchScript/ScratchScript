@@ -4,7 +4,7 @@ Parser
 */
 
 program: line* EOF;
-line: statement | ifStatement | whileStatement | singleLineComment | multiLineComment;
+line: (statement | ifStatement | whileStatement | comment);
 statement: (assignmentStatement | functionCallStatement | variableDeclarationStatement | importStatement | attributeStatement) Semicolon;
 
 assignmentStatement: Identifier Assignment expression;
@@ -36,9 +36,7 @@ booleanOperators: And | Or | Xor;
 block: LeftBrace line* RightBrace;
 
 constant: Integer | Float | String | Boolean | Color | Angle;
-
-singleLineComment: SingleLineComment .*?;
-multiLineComment: MultiLineCommentStart (.*?) MultiLineCommentEnd;
+comment: Comment;
 
 /*
     Lexer fragments
@@ -46,7 +44,7 @@ multiLineComment: MultiLineCommentStart (.*?) MultiLineCommentEnd;
 
 fragment Digit: [0-9];
 fragment HexDigit: [0-9A-F];
-Whitespace: (' ' | '\t') -> skip;
+Whitespace: (' ' | '\t') -> channel(HIDDEN);
 NewLine: ('\r'? '\n' | '\r' | '\n') -> skip;
 Semicolon: ';';
 LeftParen: '(';
@@ -58,9 +56,20 @@ RightBrace: '}';
 Assignment: '=';
 Comma: ',';
 Not: '!';
-SingleLineComment: '//';
+
+SingleLineCommentStart: '//';
 MultiLineCommentStart: '/*';
 MultiLineCommentEnd: '*/';
+
+Comment
+    :   ( SingleLineCommentStart (~[\r\n]|Whitespace)* 
+        | MultiLineCommentStart .*? MultiLineCommentEnd
+        )
+    ;
+
+//singleLineComment: SingleLineComment Any*?;
+//multiLineComment: MultiLineCommentStart (.*?) MultiLineCommentEnd;
+
 At: '@';
 Hashtag: '#';
 

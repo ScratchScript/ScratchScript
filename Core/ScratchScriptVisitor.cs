@@ -1,6 +1,7 @@
 using Antlr4.Runtime.Misc;
 using ScratchScript.Blocks;
 using ScratchScript.Compiler;
+using ScratchScript.Extensions;
 using ScratchScript.Types;
 using ScratchScript.Wrapper;
 using Serilog;
@@ -9,7 +10,7 @@ namespace ScratchScript.Core;
 
 public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
 {
-	private Dictionary<string, object?> _compilerData = new();
+	private Dictionary<string, Type> _expectedType = new();
 
 	public override object? VisitAttributeStatement(ScratchScriptParser.AttributeStatementContext context)
 	{
@@ -25,7 +26,31 @@ public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
 
 		if (target.Variables.ContainsKey(name))
 			throw new Exception($"Variable {name} was already defined. Did you mean to assign a value?");
-		target.CreateVariable(name, Visit(expression));
+
+		var last = target.WrappedTarget.blocks.Last().Key;
+		var expressionResult = Visit(expression);
+		if (expressionResult == null) throw new Exception("That was not supposed to happen.");
+		if(expressionResult is not Block expressionBlock)
+			target.CreateVariable(name, expressionResult);
+		else
+		{
+			Log.Debug("Found shadow in variable declaration ({ShadowId}). Creating SetTo block", expressionBlock.Id);
+			if (!_expectedType.ContainsKey(expressionBlock.Id))
+			{
+				Log.Warning("Internal compiler warning: could not find suitable type for variable {Variable} and shadow {ShadowId} using _expectedType. Defaulting to string", name, expressionBlock.Id);
+				target.CreateVariable(name, "");
+			}
+
+			var type = _expectedType[expressionBlock.Id];
+			var defaultValue = Activator.CreateInstance(type);
+			if (defaultValue == null)
+				throw new Exception($"Cannot get default value for type {type.Name}.");
+			Log.Debug("Default value for type {Type} is {Value}", type.Name, defaultValue);
+			target.CreateVariable(name, defaultValue);
+			
+			var setBlock = target.CreateBlock(Data.SetVariableTo(target.Variables[name], expressionBlock), true, true);
+			AttachShadow(setBlock, expressionBlock, last);
+		}
 		return null;
 	}
 
@@ -100,13 +125,13 @@ public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
 	    switch (context.multiplyOperators().GetText())
 	    {
 		    case "*":
-			    return HandleBinaryOperation(first, second, Operators.Multiply(first, second));
+			    return HandleBinaryOperation(first, second, Operators.Multiply(first, second), typeof(int));
 		    case "/":
-			    return HandleBinaryOperation(first, second, Operators.Divide(first, second));
+			    return HandleBinaryOperation(first, second, Operators.Divide(first, second), typeof(int));
 		    case "**":
 			    throw new NotImplementedException("Currently not implemented.");
 		    case "%":
-			    return HandleBinaryOperation(first, second, Operators.Modulo(first, second));
+			    return HandleBinaryOperation(first, second, Operators.Modulo(first, second), typeof(int));
 	    }
 
 	    throw new Exception("What?");
@@ -122,19 +147,23 @@ public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
         switch (context.addOperators().GetText())
         {
 	        case "+":
-		        return HandleBinaryOperation(first, second, Operators.Add(first, second));
+		        //TODO: join strings (which is a separate block)
+		        return HandleBinaryOperation(first, second, Operators.Add(first, second), typeof(int));
 	        case "-":
-		        return HandleBinaryOperation(first, second, Operators.Subtract(first, second));
+		        return HandleBinaryOperation(first, second, Operators.Subtract(first, second), typeof(int));
         }
 
         throw new Exception("What?");
     }
 
-    private object HandleBinaryOperation(object? first, object? second, Block operatorBlock)
+    private object HandleBinaryOperation(object? first, object? second, Block operatorBlock, Type? expectedType = null)
     {
 	    var target = ProjectCompiler.Current.CurrentTarget;
 	    var block = target.CreateBlock(operatorBlock, true, true);
 	    block.next = null;
+	    if(expectedType == null)
+		    Log.Warning("Internal compiler warning: ExpectedType is not recommended to be null, since many type checks might fail");
+	    else _expectedType[block.Id] = expectedType;
 	    if (first is Block firstBlock)
 	    {
 		    firstBlock.parent = block.Id;
@@ -173,11 +202,7 @@ public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
 				break;
 			case Block shadow:
 				var setBlock = target.CreateBlock(Data.SetVariableTo(variable, shadow), true, true);
-				shadow.parent = setBlock.Id;
-				setBlock.parent = last;
-				target.WrappedTarget.blocks[last].next = setBlock.Id;
-				target.ReplaceBlock(setBlock);
-				target.ReplaceBlock(shadow);
+				AttachShadow(setBlock, shadow, last);
 				break;
 			default:
 				target.CreateBlock(Data.SetVariableTo(variable, value));
@@ -185,6 +210,16 @@ public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
 		}
 
 		return null;
+    }
+
+    private void AttachShadow(Block main, Block shadow, string blockBeforeMain)
+    {
+	    var target = ProjectCompiler.Current.CurrentTarget;
+	    shadow.parent = main.Id;
+	    main.parent = blockBeforeMain;
+	    target.WrappedTarget.blocks[blockBeforeMain].next = main.Id;
+	    target.ReplaceBlock(main);
+	    target.ReplaceBlock(shadow);
     }
 
     public override object? VisitFunctionCallStatement([NotNull] ScratchScriptParser.FunctionCallStatementContext context)
@@ -243,14 +278,25 @@ public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
         return base.VisitBlock(context);
     }
 
-    public override object? VisitSingleLineComment([NotNull] ScratchScriptParser.SingleLineCommentContext context)
-    {
-		
-        return base.VisitSingleLineComment(context);
-    }
 
-    public override object? VisitMultiLineComment([NotNull] ScratchScriptParser.MultiLineCommentContext context)
+    public override object? VisitComment(ScratchScriptParser.CommentContext context)
     {
-        return base.VisitMultiLineComment(context);
+	    var target = ProjectCompiler.Current.CurrentTarget;
+	    var last = target.WrappedTarget.blocks.Last().Value;
+	    Log.Debug("Found a comment. Attaching to next block after {LastBlockId}", last.Id);
+	    var text = context.GetText().EndsWith("*/") ? context.GetText()[2..^2]: context.GetText()[2..];
+	    var comment = new Comment
+	    {
+		    minimized = false,
+		    text = text,
+		    width = text.Length * 15,
+		    height = 75,
+		    x = -100,
+		    y = -100
+	    };
+	    var id = BlockExtensions.RandomId("Comment");
+	    target.PendingComment = id;
+	    target.WrappedTarget.comments[id] = comment;
+	    return null;
     }
 }

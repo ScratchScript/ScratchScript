@@ -1,3 +1,6 @@
-﻿var a = 1234;
+﻿//hey! :D
+var a = 1234;
+//this is also a comment...
 var b = 3457856;
+/*and this one as well!*/
 var c = (1 + 25 * b) + a % 2;

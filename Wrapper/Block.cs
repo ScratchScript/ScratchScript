@@ -11,6 +11,7 @@ public class Block
 	public bool topLevel => parent == null;
 	public int? x;
 	public int? y;
+	public string? comment;
 
 	[NonSerialized] public string Id;
 	[NonSerialized] public Dictionary<string, object> AdditionalData;
