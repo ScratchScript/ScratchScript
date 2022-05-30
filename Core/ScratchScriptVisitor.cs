@@ -3,7 +3,6 @@ using Antlr4.Runtime.Misc;
 using ScratchScript.Blocks;
 using ScratchScript.Compiler;
 using ScratchScript.Extensions;
-using ScratchScript.Helpers;
 using ScratchScript.Types;
 using ScratchScript.Wrapper;
 using Serilog;
@@ -138,7 +137,7 @@ public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
 
     public override object? VisitBinaryBooleanExpression([NotNull] ScratchScriptParser.BinaryBooleanExpressionContext context)
     {
-        return base.VisitBinaryBooleanExpression(context);
+	    return base.VisitBinaryBooleanExpression(context);
     }
 
     public override object? VisitFunctionCallExpression([NotNull] ScratchScriptParser.FunctionCallExpressionContext context)
@@ -163,7 +162,23 @@ public class ScratchScriptVisitor: ScratchScriptBaseVisitor<object?>
 
     public override object? VisitBinaryCompareExpression([NotNull] ScratchScriptParser.BinaryCompareExpressionContext context)
     {
-        return base.VisitBinaryCompareExpression(context);
+	    //a
+	    Log.Debug("Found a > / < / == / >= / <= expression");
+	    
+	    var first = Visit(context.expression(0));
+	    var second = Visit(context.expression(1));
+	    if (first is null || second is null)
+		    throw new Exception("Internal compiler error: VisitBinaryCompareExpression() failed to parse expressions.");
+
+	    return context.compareOperators().GetText() switch
+	    {
+		    "==" => HandleBinaryOperation(first, second, Operators.Equals(first, second), typeof(bool)),
+		    ">" => HandleBinaryOperation(first, second, Operators.GreaterThan(first, second), typeof(bool)),
+		    "<" => HandleBinaryOperation(first, second, Operators.LessThan(first, second), typeof(bool)),
+		    ">=" => throw new NotImplementedException("Currently not implemented."),
+		    "<=" => throw new NotImplementedException("Currently not implemented."),
+		    _ => null
+	    };
     }
     
     public override object? VisitFunctionCallStatement([NotNull] ScratchScriptParser.FunctionCallStatementContext context)

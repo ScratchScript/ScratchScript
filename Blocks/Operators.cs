@@ -69,4 +69,18 @@ public class Operators
 	public static Block Join(object first, object second) =>
 		Binary(first, second, "operator_join", "OperatorStringJoin", "STRING1", "STRING2");
 
+	public static Block Equals(object first, object second) =>
+		Binary(first, second, "operator_equals", "OperatorEquals", "OPERAND1", "OPERAND2");
+
+	public static Block LessThan(object first, object second) =>
+		Binary(first, second, "operator_lt", "OperatorLessThan", "OPERAND1", "OPERAND2");
+
+	public static Block GreaterThan(object first, object second) => Binary(first, second, "operator_gt",
+		"OperatorGreaterThan", "OPERAND1", "OPERAND2");
+
+	public static Block And(object first, object second) =>
+		Binary(first, second, "operator_and", "OperatorAnd", "OPERAND1", "OPERAND2");
+
+	public static Block Or(object first, object second) =>
+		Binary(first, second, "operator_or", "OperatorOr", "OPERAND1", "OPERAND2");
 }
