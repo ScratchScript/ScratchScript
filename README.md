@@ -55,8 +55,8 @@ The toolchain will be located in `bin/net7.0/Debug`.
 - - [ ] ** 
 - - [x] ==, >, <
 - - [ ] >=, <=
-- - [ ] &&, ||, ^ (Implementing)
-- [ ] If statements (Implementing)
+- - [x] &&, ||, <del>^</del>
+- [x] If statements
 - [ ] While statements
 - [ ] Function declarations
 - [ ] Function calls
