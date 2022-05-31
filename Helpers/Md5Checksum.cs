@@ -9,6 +9,9 @@ public static class Md5Checksum
 		using var stream = File.OpenRead(file);
 		return FromStream(stream);
 	}
-	
-	public static string FromStream(Stream stream) => BitConverter.ToString(MD5.Create().ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+
+	public static string FromStream(Stream stream)
+	{
+		return BitConverter.ToString(MD5.Create().ComputeHash(stream)).Replace("-", "").ToLowerInvariant();
+	}
 }

@@ -1,10 +1,7 @@
-﻿using System.Security.Cryptography;
-using Serilog;
-using Serilog.Core;
+﻿using Serilog;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
 
 namespace ScratchScript.Helpers;
 
@@ -14,7 +11,7 @@ public class EmptySpriteDrawer
 	{
 		Log.Debug("Creating empty sprite in {Directory}", directory);
 		var image = new Image<Rgba32>(1, 1);
-		
+
 		var stream = new MemoryStream();
 		image.Save(stream, new PngEncoder());
 

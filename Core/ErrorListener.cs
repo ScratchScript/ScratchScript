@@ -5,27 +5,31 @@ using Antlr4.Runtime.Sharpen;
 
 namespace ScratchScript.Core;
 
-public class ErrorListener: BaseErrorListener
+public class ErrorListener : BaseErrorListener
 {
-	public override void SyntaxError(IRecognizer recognizer, IToken offendingSymbol, int line, int charPositionInLine, string msg,
+	public override void SyntaxError(IRecognizer recognizer, IToken offendingSymbol, int line, int charPositionInLine,
+		string msg,
 		RecognitionException e)
 	{
-		Console.WriteLine("Syntax error");
+		DiagnosticReporter.ReportError(offendingSymbol, "E10", "", msg);
 	}
 
-	public override void ReportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, bool exact, BitSet ambigAlts,
+	public override void ReportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, bool exact,
+		BitSet ambigAlts,
 		ATNConfigSet configs)
 	{
 		Console.WriteLine("Ambiguity");
 	}
 
-	public override void ReportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex, BitSet conflictingAlts,
+	public override void ReportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex,
+		BitSet conflictingAlts,
 		SimulatorState conflictState)
 	{
 		Console.WriteLine("Attempting full context");
 	}
 
-	public override void ReportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction,
+	public override void ReportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex,
+		int prediction,
 		SimulatorState acceptState)
 	{
 		Console.WriteLine("Context sensivity");

@@ -15,9 +15,9 @@ public enum ShadowMode
 public class InputBuilder
 {
 	private string _name;
-	private int _shadowMode;
 	private List<object> _objects = new();
 	private string _shadowId;
+	private int _shadowMode;
 
 	public InputBuilder WithName(string name)
 	{
@@ -62,7 +62,7 @@ public class InputBuilder
 	public KeyValuePair<string, List<object>> Build()
 	{
 		var objects = new List<object> {_shadowMode};
-		if(!string.IsNullOrEmpty(_shadowId))
+		if (!string.IsNullOrEmpty(_shadowId))
 			objects.Add(_shadowId);
 		if (_objects.Count != 0)
 			objects.Add(_objects);

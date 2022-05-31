@@ -1,6 +1,5 @@
 ﻿using ScratchScript.Compiler;
 using Serilog;
-using Serilog.Core;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -17,17 +16,8 @@ app.Configure(x =>
 
 app.Run(args);
 
-class BuildCommand : Command<BuildCommand.BuildCommandSettings>
+internal class BuildCommand : Command<BuildCommand.BuildCommandSettings>
 {
-	public class BuildCommandSettings : CommandSettings
-	{
-		[CommandArgument(0, "[path]")]
-		public string? Path { get; set; }
-	
-		[CommandOption("-o|--output")]
-		public string? Output { get; set; }
-	}
-
 	public override int Execute(CommandContext context, BuildCommandSettings settings)
 	{
 		if (string.IsNullOrEmpty(settings.Path))
@@ -35,7 +25,7 @@ class BuildCommand : Command<BuildCommand.BuildCommandSettings>
 			AnsiConsole.MarkupLine("[bold red]Please specify the source file![/]");
 			return 1;
 		}
-		
+
 		if (!File.Exists(settings.Path))
 		{
 			AnsiConsole.MarkupLine($"[bold red]Input file \"{settings.Path}\" does not exist![/]");
@@ -44,13 +34,13 @@ class BuildCommand : Command<BuildCommand.BuildCommandSettings>
 
 		if (string.IsNullOrEmpty(settings.Output))
 			settings.Output = Path.GetFileNameWithoutExtension(settings.Path) + ".sb3";
-		
+
 		if (File.Exists(settings.Output))
 			File.Delete(settings.Output);
 
 		Log.Logger = new LoggerConfiguration()
 			.WriteTo.File($"log_{DateTime.Now:ddMMyyyyHHmm}.txt")
-			.WriteTo.Console()
+			.WriteTo.Conditional(_ => settings.LogToConsole, c => c.Console())
 			#if DEBUG
 			.MinimumLevel.Debug()
 			#else
@@ -59,15 +49,24 @@ class BuildCommand : Command<BuildCommand.BuildCommandSettings>
 			.CreateLogger();
 		Log.Information("Logger initialized");
 		Log.Information("Preparing to build \"{SourceFile}\"..", settings.Path);
-		
+
 		var compiler = new ProjectCompiler(settings.Path, settings.Output);
-		
+
 		compiler.Initialize();
 		compiler.Compile();
 		compiler.Finish();
-		
+
 		AnsiConsole.MarkupLine("[green]Done![/]");
 		return 0;
+	}
+
+	public class BuildCommandSettings : CommandSettings
+	{
+		[CommandArgument(0, "[path]")] public string? Path { get; set; }
+
+		[CommandOption("-o|--output")] public string? Output { get; set; }
+
+		[CommandOption("-c|--console")] public bool LogToConsole { get; set; } = false;
 	}
 }
 //https://www.cs.uic.edu/~i109/Notes/COperatorPrecedenceTable.pdf

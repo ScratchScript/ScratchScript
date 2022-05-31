@@ -34,7 +34,7 @@ public class Data
 					.WithRawObject(to));
 				break;
 		}
-		
+
 		return builder;
 	}
 }

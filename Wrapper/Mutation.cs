@@ -2,11 +2,11 @@
 
 public class Mutation
 {
-	public string tagName = "mutation";
-	public object[] children = Array.Empty<object>();
-	public string proccode;
+	public List<object> argumentdefaults = new();
 	public List<string> argumentids = new();
 	public List<string> argumentnames = new();
-	public List<object> argumentdefaults = new();
+	public object[] children = Array.Empty<object>();
+	public string proccode;
+	public string tagName = "mutation";
 	public bool warp;
 }

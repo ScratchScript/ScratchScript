@@ -4,7 +4,7 @@ namespace ScratchScript.Helpers;
 
 public class TypeHelper
 {
-	private static Dictionary<Type, int> _scratchIds = new()
+	private static readonly Dictionary<Type, int> _scratchIds = new()
 	{
 		{typeof(float), 4},
 		{typeof(uint), 6},

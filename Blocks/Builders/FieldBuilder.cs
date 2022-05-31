@@ -23,5 +23,8 @@ public class FieldBuilder
 		return this;
 	}
 
-	public KeyValuePair<string, List<object>> Build() => new(_name, _objects);
+	public KeyValuePair<string, List<object>> Build()
+	{
+		return new(_name, _objects);
+	}
 }

@@ -16,5 +16,8 @@ public static class BlockExtensions
 		return block;
 	}
 
-	public static string RandomId(string purpose) => $"ScratchScript_{purpose}_{Guid.NewGuid():N}";
+	public static string RandomId(string purpose)
+	{
+		return $"ScratchScript_{purpose}_{Guid.NewGuid():N}";
+	}
 }

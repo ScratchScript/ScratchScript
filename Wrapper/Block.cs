@@ -2,17 +2,17 @@
 
 public class Block
 {
-	public string opcode;
-	public string? next;
-	public string? parent;
-	public Dictionary<string, List<object>> inputs = new();
-	public Dictionary<string, List<object>> fields = new();
-	public bool shadow;
-	public bool topLevel => parent == null;
-	public int? x;
-	public int? y;
+	[NonSerialized] public Dictionary<string, object> AdditionalData;
 	public string? comment;
+	public Dictionary<string, List<object>> fields = new();
 
 	[NonSerialized] public string Id;
-	[NonSerialized] public Dictionary<string, object> AdditionalData;
+	public Dictionary<string, List<object>> inputs = new();
+	public string? next;
+	public string opcode;
+	public string? parent;
+	public bool shadow;
+	public int? x;
+	public int? y;
+	public bool topLevel => parent == null;
 }

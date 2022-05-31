@@ -5,8 +5,11 @@ namespace ScratchScript.Blocks;
 
 public class Event
 {
-	public static Block WhenFlagClicked() => new BlockBuilder()
-		.IsShadow(false)
-		.WithOpcode("event_whenflagclicked")
-		.WithId("FlagClicked");
+	public static Block WhenFlagClicked()
+	{
+		return new BlockBuilder()
+			.IsShadow(false)
+			.WithOpcode("event_whenflagclicked")
+			.WithId("FlagClicked");
+	}
 }
