@@ -22,7 +22,7 @@ catch (CommandParseException exception)
 {
 	AnsiConsole.MarkupLine($"[bold red]{exception.Message}[/]");
 	AnsiConsole.MarkupLine("Run ScratchScript --help for usage.");
-	System.Environment.Exit(1);
+	Environment.Exit(1);
 }
 
 internal class BuildCommand : Command<BuildCommand.BuildCommandSettings>
