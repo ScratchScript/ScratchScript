@@ -106,9 +106,9 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 			_ => null
 		};
 		if (type != null) return type;
-		if (int.TryParse(obj.ToString(), CultureInfo.InvariantCulture, out _))
+		if (int.TryParse(obj.ToString(), out _))
 			type = typeof(int);
-		else if (float.TryParse(obj.ToString(), CultureInfo.InvariantCulture, out _))
+		else if (float.TryParse(obj.ToString(), out _))
 			type = typeof(float);
 		else type = obj.GetType();
 
