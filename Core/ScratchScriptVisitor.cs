@@ -265,10 +265,11 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 		target.ReplaceBlock(expressionBlock);
 		target.ReplaceBlock(ifBlock);
 
-		var lines = context.block().line().ToList();
+		var lines = context.block().line().Select(Visit).Where(x => x != null).ToList();
+		var mainBlocks = new List<Block>();
 		for (var i = 0; i < lines.Count; i++)
 		{
-			var line = Visit(lines[i]);
+			var line = lines[i];
 			ifBlock.next = null;
 			if (line is null) continue;
 			if (line is not Block)
@@ -278,8 +279,9 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 					line.GetType().Name);
 				return null;
 			}
-
+			
 			var block = (line as Block)!;
+			mainBlocks.Add(block);
 			if (i == 0)
 			{
 				ifBlock = new BlockBuilder(ifBlock)
@@ -289,6 +291,13 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 				block.parent = ifBlock.Id;
 				target.ReplaceBlock(block);
 				target.ReplaceBlock(ifBlock);
+			}
+			else
+			{
+				block.parent = mainBlocks[i - 1].Id;
+				mainBlocks[i - 1].next = block.Id;
+				target.ReplaceBlock(block);
+				target.ReplaceBlock(mainBlocks[i - 1]);
 			}
 
 			if (i == lines.Count - 1)
@@ -320,6 +329,13 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 					block.parent = ifBlock.Id;
 					target.ReplaceBlock(block);
 					target.ReplaceBlock(ifBlock);
+				}
+				else
+				{
+					block.parent = blocks[i - 1].Id;
+					blocks[i - 1].next = block.Id;
+					target.ReplaceBlock(block);
+					target.ReplaceBlock(blocks[i - 1]);
 				}
 
 				if (i == lines.Count - 1)
@@ -587,7 +603,7 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 		var id = BlockExtensions.RandomId("Comment");
 		target.PendingComment = id;
 		target.WrappedTarget.comments[id] = comment;
-		return comment;
+		return null;
 	}
 
 	public override object? VisitLine(ScratchScriptParser.LineContext context)
@@ -606,6 +622,9 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 
 		if (context.attributeStatement() != null)
 			return Visit(context.attributeStatement());
+
+		if (context.comment() != null)
+			return Visit(context.comment());
 
 		return null;
 	}
