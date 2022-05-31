@@ -6,8 +6,8 @@ namespace ScratchScript.Blocks.Builders;
 
 public enum ShadowMode
 {
-	NoShadow = 2,
-	Shadow = 1,
+	NoShadow = 1,
+	Shadow = 2,
 	ObscuredShadow = 3,
 	Undefined = 0
 }
@@ -25,9 +25,9 @@ public class InputBuilder
 		return this;
 	}
 
-	public InputBuilder WithShadow(Block shadow)
+	public InputBuilder WithShadow(Block shadow, ShadowMode mode = ShadowMode.ObscuredShadow)
 	{
-		_shadowMode = (int) ShadowMode.ObscuredShadow;
+		_shadowMode = (int) mode;
 		_shadowId = shadow.Id;
 		return this;
 	}

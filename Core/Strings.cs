@@ -14,6 +14,13 @@ public class Strings
 		{"E7", "Variable \"{0}\" is not defined."},
 		{"E8", "Cannot assign a value of type \"{0}\" to a variable of type \"{1}\"."},
 		{"E9", "Unexpected identifier \"{0}\"."},
-		{"E10", "Syntax error: {0}"}
+		{"E10", "Syntax error: {0}"},
+		{"E11", "ICE: type mismatch, expected \"{0}\", received \"{1}\"."}
+	};
+
+	public static Dictionary<string, string> Notes = new()
+	{
+		{"E3", "Did you mean to assign a value?"},
+		{"W5", "Defaulting to string."}
 	};
 }

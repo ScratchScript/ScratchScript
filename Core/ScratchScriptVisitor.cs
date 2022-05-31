@@ -2,6 +2,7 @@ using System.Globalization;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using ScratchScript.Blocks;
+using ScratchScript.Blocks.Builders;
 using ScratchScript.Compiler;
 using ScratchScript.Extensions;
 using ScratchScript.Types;
@@ -14,6 +15,7 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 {
 	private readonly Dictionary<string, Type> _expectedType = new();
 	private bool _isStage;
+	private string _context;
 
 	public override object? VisitAttributeStatement(ScratchScriptParser.AttributeStatementContext context)
 	{
@@ -22,7 +24,7 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 		var target = ProjectCompiler.Current.CurrentTarget;
 		if (target.WrappedTarget.blocks.Count > 1 || target.Variables.Count != 0)
 		{
-			DiagnosticReporter.ReportError(context.Start, "E4");
+			DiagnosticReporter.ReportError(context.Start, "E4", -1, -1, context.GetText());
 			return null;
 		}
 
@@ -48,9 +50,9 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 			expression.RuleIndex);
 		var target = ProjectCompiler.Current.CurrentTarget;
 
-		if (target.Variables.ContainsKey(name))
+		if (target.Variables.ContainsKey(name) && _context != "Conditional")
 		{
-			DiagnosticReporter.ReportError(context.Identifier().Symbol, "E3", "Did you mean to assign a value?", name);
+			DiagnosticReporter.ReportError(context.Identifier().Symbol, "E3", -1, -1, "", name);
 			return null;
 		}
 
@@ -58,7 +60,7 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 		var expressionResult = Visit(expression);
 		if (expressionResult == null)
 		{
-			DiagnosticReporter.ReportError(context.FirstParentOfType<ScratchScriptParser.LineContext>().Start, "E2");
+			DiagnosticReporter.ReportError(context.Start, "E2", -1, -1, context.GetText());
 			return null;
 		}
 
@@ -68,29 +70,27 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 			var block = target.CreateBlock(Data.SetVariableTo(target.Variables[name], expressionResult));
 			block.parent = last;
 			target.ReplaceBlock(block);
+			return block;
 		}
-		else
+
+		Log.Debug("Found shadow in variable declaration ({ShadowId}). Creating SetTo block", expressionBlock.Id);
+		if (!_expectedType.ContainsKey(expressionBlock.Id))
 		{
-			Log.Debug("Found shadow in variable declaration ({ShadowId}). Creating SetTo block", expressionBlock.Id);
-			if (!_expectedType.ContainsKey(expressionBlock.Id))
-			{
-				DiagnosticReporter.ReportWarning(expression.Start, "W5", "Defaulting to string.", name);
-				target.CreateVariable(name, "");
-			}
-
-			var type = _expectedType[expressionBlock.Id];
-			target.CreateVariable(name, GetDefaultValue(type));
-
-			var setBlock = target.CreateBlock(Data.SetVariableTo(target.Variables[name], expressionBlock), true, true);
-			AttachShadow(setBlock, expressionBlock, last);
+			DiagnosticReporter.ReportWarning(expression.Start, "W5", -1, -1, "", name);
+			target.CreateVariable(name, "");
 		}
 
-		return null;
+		var type = _expectedType[expressionBlock.Id];
+		target.CreateVariable(name, GetDefaultValue(type));
+
+		var setBlock = target.CreateBlock(Data.SetVariableTo(target.Variables[name], expressionBlock), true, true);
+		AttachShadow(setBlock, expressionBlock, last);
+		return setBlock;
 	}
 
 	private object GetDefaultValue(Type type)
 	{
-		var defaultValue = Activator.CreateInstance(type);
+		var defaultValue = type == typeof(string) ? "": Activator.CreateInstance(type);
 		if (defaultValue == null)
 			throw new Exception($"Cannot get default value for type {type.Name}.");
 		Log.Debug("Default value for type {Type} is {Value}", type.Name, defaultValue);
@@ -131,7 +131,7 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 		if (target.Variables.ContainsKey(identifier))
 			return target.Variables[identifier];
 
-		DiagnosticReporter.ReportError(context.Start, "E9", "", identifier);
+		DiagnosticReporter.ReportError(context.Start, "E9", -1, -1, "", identifier);
 		return null;
 	}
 
@@ -162,7 +162,21 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 	public override object? VisitBinaryBooleanExpression(
 		[NotNull] ScratchScriptParser.BinaryBooleanExpressionContext context)
 	{
-		return base.VisitBinaryBooleanExpression(context);
+		Log.Debug("Found a &&/|| expression");
+
+		var first = Visit(context.expression(0));
+		var second = Visit(context.expression(1));
+
+		if (first is not null && second is not null)
+			return context.booleanOperators().GetText() switch
+			{
+				"&&" => HandleBinaryOperation(context.Start, first, second, Operators.And(first, second), typeof(bool)),
+				"||" => HandleBinaryOperation(context.Start, first, second, Operators.Or(first, second), typeof(bool)),
+				_ => null
+			};
+		DiagnosticReporter.ReportError(context.Start, "E2", -1, -1, context.GetText());
+		return null;
+
 	}
 
 	public override object? VisitFunctionCallExpression(
@@ -182,7 +196,7 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 		var expressionResult = Visit(context.expression());
 		if (expressionResult is null)
 		{
-			DiagnosticReporter.ReportError(context.FirstParentOfType<ScratchScriptParser.LineContext>().Start, "E2");
+			DiagnosticReporter.ReportError(context.Start, "E2", -1, -1, context.GetText());
 			return null;
 		}
 
@@ -195,14 +209,13 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 	public override object? VisitBinaryCompareExpression(
 		[NotNull] ScratchScriptParser.BinaryCompareExpressionContext context)
 	{
-		//a
 		Log.Debug("Found a > / < / == / >= / <= expression");
 
 		var first = Visit(context.expression(0));
 		var second = Visit(context.expression(1));
 		if (first is null || second is null)
 		{
-			DiagnosticReporter.ReportError(context.FirstParentOfType<ScratchScriptParser.LineContext>().Start, "E2");
+			DiagnosticReporter.ReportError(context.Start, "E2", -1, -1, context.GetText());
 			return null;
 		}
 
@@ -226,16 +239,163 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 
 	public override object? VisitIfStatement([NotNull] ScratchScriptParser.IfStatementContext context)
 	{
-		//b
 		Log.Debug("Found an if statement (Expression ID {Id})", context.expression().RuleIndex);
+		_context = "Conditional";
+		var target = ProjectCompiler.Current.CurrentTarget;
+		var last = target.WrappedTarget.blocks.Last().Key;
 		var expressionResult = Visit(context.expression());
 		if (expressionResult is null)
 		{
-			DiagnosticReporter.ReportError(context.FirstParentOfType<ScratchScriptParser.LineContext>().Start, "E2");
+			DiagnosticReporter.ReportError(context.Start, "E2", -1, -1, context.GetText());
 			return null;
 		}
 
-		return null;
+		if (expressionResult is not Block expressionBlock)
+		{
+			DiagnosticReporter.ReportError(context.Start, "E11", -1, -1, context.GetText(), "Block", expressionResult.GetType().Name);
+			return null;
+		}
+		
+		/*if (context.elseIfStatement() != null)
+		{
+			var elseIf = context.elseIfStatement();
+
+			var ifBlock = target.CreateBlock(Control.IfElse(expressionBlock));
+			ifBlock.parent = last;
+			expressionBlock.parent = ifBlock.Id;
+			target.ReplaceBlock(expressionBlock);
+			target.ReplaceBlock(ifBlock);
+
+			var lines = context.block().line().ToList();
+			for(var i = 0; i < lines.Count; i++)
+			{
+				var line = Visit(lines[i]);
+				ifBlock.next = null;
+				if (line is not Block or null)
+				{
+					DiagnosticReporter.ReportError(context.Start, "E11", context.block().line(i).Start.Line,
+						context.block().line(i).Start.Column, context.block().line(i).GetText(),
+						line == null ? "null" : line.GetType().Name);
+					return null;
+				}
+
+				var block = (line as Block)!;
+				if (i == 0)
+				{
+					ifBlock = new BlockBuilder(ifBlock)
+						.WithInput(new InputBuilder()
+							.WithName("SUBSTACK")
+							.WithShadow(block, ShadowMode.Shadow));
+					block.parent = ifBlock.Id;
+					target.ReplaceBlock(block);
+					target.ReplaceBlock(ifBlock);
+				}
+				if (i == lines.Count - 1)
+				{
+					block.next = null;
+					target.ReplaceBlock(block);
+				}
+			}
+
+			//var elseLines = elseIf.block() != null ? elseIf.block().line().ToList() : Visit(elseIf.ifStatement());
+			if (elseIf.ifStatement() != null)
+			{
+				var result = Visit(elseIf.ifStatement());
+				if (result is not Block or null)
+				{
+					DiagnosticReporter.ReportError(context.Start, "E11", -1, -1, context.GetText(), result.GetType().Name);
+					return null;
+				}
+
+				var block = (result as Block)!;
+				ifBlock = new BlockBuilder(ifBlock)
+					.WithInput(new InputBuilder()
+						.WithName("SUBSTACK2")
+						.WithShadow(block, ShadowMode.Shadow));
+				block.parent = ifBlock.Id;
+				
+				target.ReplaceBlock(block);
+				target.ReplaceBlock(ifBlock);
+			}
+			else if (elseIf.block() != null)
+			{
+				
+			}
+			return ifBlock;
+		}*/
+		   var ifBlock = target.CreateBlock(context.elseIfStatement() == null? Control.If(expressionBlock): Control.IfElse(expressionBlock));
+		
+			ifBlock.parent = last;
+			expressionBlock.parent = ifBlock.Id;
+			target.ReplaceBlock(expressionBlock);
+			target.ReplaceBlock(ifBlock);
+		
+			var lines = context.block().line().ToList();
+			for(var i = 0; i < lines.Count; i++)
+			{
+				var line = Visit(lines[i]);
+				ifBlock.next = null;
+				if (line is not Block or null)
+				{
+					DiagnosticReporter.ReportError(context.Start, "E11", context.block().line(i).Start.Line,
+						context.block().line(i).Start.Column, context.block().line(i).GetText(), "Block",
+						line == null ? "null" : line.GetType().Name);
+					return null;
+				}
+
+				var block = (line as Block)!;
+				if (i == 0)
+				{
+					ifBlock = new BlockBuilder(ifBlock)
+						.WithInput(new InputBuilder()
+							.WithName("SUBSTACK")
+							.WithShadow(block, ShadowMode.Shadow));
+					block.parent = ifBlock.Id;
+					target.ReplaceBlock(block);
+					target.ReplaceBlock(ifBlock);
+				}
+				if (i == lines.Count - 1)
+				{
+					block.next = null;
+					target.ReplaceBlock(block);
+				}
+			}
+
+			if (context.elseIfStatement() != null)
+			{
+				var blocksResult = Visit(context.elseIfStatement());
+				if (blocksResult is not List<Block> blocks)
+				{
+					DiagnosticReporter.ReportError(context.Start, "E11", -1, -1, context.GetText(), "List<Block>",
+						blocksResult == null ? "null": blocksResult.GetType().Name);
+					return null;
+				}
+
+				for (var i = 0; i < blocks.Count; i++)
+				{
+					var block = blocks[i];
+					if (i == 0)
+					{
+						ifBlock = new BlockBuilder(ifBlock)
+							.WithInput(new InputBuilder()
+								.WithName("SUBSTACK2")
+								.WithShadow(block, ShadowMode.Shadow));
+						block.parent = ifBlock.Id;
+						target.ReplaceBlock(block);
+						target.ReplaceBlock(ifBlock);
+					}
+
+					if (i == lines.Count - 1)
+					{
+						block.next = null;
+						target.ReplaceBlock(block);
+					}
+				}
+			}
+
+			_context = "";
+			return ifBlock;
+			
 	}
 
 	public override object? VisitWhileStatement([NotNull] ScratchScriptParser.WhileStatementContext context)
@@ -245,7 +405,38 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 
 	public override object? VisitElseIfStatement([NotNull] ScratchScriptParser.ElseIfStatementContext context)
 	{
-		return base.VisitElseIfStatement(context);
+		Log.Debug("Found an else/if statement");
+		if (context.block() != null)
+		{
+			var lines = context.block().line().Select(Visit).ToList();
+			for (var i = 0; i < lines.Count; i++)
+			{
+				var line = lines[i];
+				if (line is not (not Block or null)) continue;
+				DiagnosticReporter.ReportError(context.Start, "E11", context.block().line(i).Start.Line, 
+					context.block().line(i).Start.Column, context.block().line(i).GetText(), "Block",
+					line == null ? "null" : line.GetType().Name);
+				return null;
+			}
+
+			return lines.Select(x => (Block) x!).ToList();
+		}
+
+		if (context.ifStatement() != null)
+		{
+			var ifResult = Visit(context.ifStatement());
+			if (ifResult is not Block or null)
+			{
+				DiagnosticReporter.ReportError(context.Start, "E11", context.ifStatement().Start.Line,
+					context.ifStatement().Start.Column, context.ifStatement().GetText(), "Block",
+					ifResult == null ? "null" : ifResult.GetType().Name);
+				return null;
+			}
+
+			return new List<Block> {(ifResult as Block)!};
+		}
+		
+		return null;
 	}
 
 	public override object? VisitImportStatement([NotNull] ScratchScriptParser.ImportStatementContext context)
@@ -262,7 +453,7 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 
 		if (first is null || second is null)
 		{
-			DiagnosticReporter.ReportError(context.FirstParentOfType<ScratchScriptParser.LineContext>().Start, "E2");
+			DiagnosticReporter.ReportError(context.Start, "E2", -1, -1, context.GetText());
 			return null;
 		}
 
@@ -309,7 +500,7 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 
 		if (first is null || second is null)
 		{
-			DiagnosticReporter.ReportError(context.FirstParentOfType<ScratchScriptParser.LineContext>().Start, "E2");
+			DiagnosticReporter.ReportError(context.Start, "E2", -1, -1, context.GetText());
 			return null;
 		}
 
@@ -368,13 +559,13 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 		var last = target.WrappedTarget.blocks.Last(x => !x.Value.shadow).Key;
 		if (value == null)
 		{
-			DiagnosticReporter.ReportError(context.FirstParentOfType<ScratchScriptParser.LineContext>().Start, "E2");
+			DiagnosticReporter.ReportError(context.Start, "E2", -1, -1, context.GetText());
 			return null;
 		}
 
 		if (GetExpectedType(variable) != GetExpectedType(value))
 		{
-			DiagnosticReporter.ReportError(context.assignmentOperators().Start, "E8", "", GetExpectedType(value).Name,
+			DiagnosticReporter.ReportError(context.assignmentOperators().Start, "E8", -1, -1, "", GetExpectedType(value).Name,
 				GetExpectedType(variable).Name);
 			return null;
 		}
@@ -398,14 +589,13 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 		{
 			var setBlock = target.CreateBlock(Data.SetVariableTo(variable, shadow));
 			AttachShadow(setBlock, shadow, last);
+			return setBlock;
 		}
 		else
 		{
-			target.CreateBlock(Data.SetVariableTo(variable, value));
+			var setBlock = target.CreateBlock(Data.SetVariableTo(variable, value));
+			return setBlock;
 		}
-
-
-		return null;
 	}
 
 	private void AttachShadow(Block main, Block shadow, string blockBeforeMain)
@@ -461,5 +651,56 @@ public class ScratchScriptVisitor : ScratchScriptBaseVisitor<object?>
 		target.PendingComment = id;
 		target.WrappedTarget.comments[id] = comment;
 		return null;
+	}
+
+	public override object? VisitLine(ScratchScriptParser.LineContext context)
+	{
+		if (context.statement() != null)
+			return Visit(context.statement());
+
+		if (context.ifStatement() != null)
+			return Visit(context.ifStatement());
+
+		if (context.whileStatement() != null)
+			return Visit(context.whileStatement());
+
+		if (context.functionDeclarationStatement() != null)
+			return Visit(context.functionDeclarationStatement());
+
+		if (context.attributeStatement() != null)
+			return Visit(context.attributeStatement());
+
+		return null;
+	}
+
+	public override object? VisitStatement(ScratchScriptParser.StatementContext context)
+	{
+		if (context.assignmentStatement() != null)
+			return Visit(context.assignmentStatement());
+
+		if (context.importStatement() != null)
+			return Visit(context.importStatement());
+
+		if (context.returnStatement() != null)
+			return Visit(context.returnStatement());
+
+		if (context.functionCallStatement() != null)
+			return Visit(context.functionCallStatement());
+
+		if (context.variableDeclarationStatement() != null)
+			return Visit(context.variableDeclarationStatement());
+
+		return null;
+	}
+
+	public override object? VisitAssignmentOperators(ScratchScriptParser.AssignmentOperatorsContext context)
+	{
+		Log.Debug("Found an = += -= *= /= operator");
+		return context.GetText();
+	}
+
+	public override object? VisitBlock(ScratchScriptParser.BlockContext context)
+	{
+		return context.children.Select(Visit).ToList();
 	}
 }

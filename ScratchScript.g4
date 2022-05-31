@@ -103,7 +103,23 @@ ModulusAssignment: '%=';
     Keywords
 */
 If: 'if' Whitespace+;
-Else: 'else' Whitespace+;
+
+/*Very important for newlines:
+
+else
+{
+}
+and
+else if ...
+{
+}
+and
+else {
+}
+
+*/
+Else: 'else';
+
 While: 'while' Whitespace+;
 True: 'true' Whitespace+;
 False: 'false' Whitespace+;

@@ -80,6 +80,7 @@ public class TargetCompiler
 
 	public void CreateVariable(string name, object value)
 	{
+		if (Variables.ContainsKey(name)) return;
 		var id = "ScratchScript_Variable_" + Guid.NewGuid().ToString("N");
 		Variables[name] = new ScratchVariable
 		{
