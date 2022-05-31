@@ -45,6 +45,7 @@ I am planning to add precompiled executables with Github Actions, but for now yo
 The C# compiler for ScratchScript does not depend on your operating system, but you will need `git` and the `dotnet` toolchain.
 - `git clone https://github.com/NedoProgrammer/ScratchScript`
 - `cd ScratchScript && dotnet build --configuration Release`
+- 
 The toolchain will be located in `bin/net7.0/Debug`.
 
 ## current progress
