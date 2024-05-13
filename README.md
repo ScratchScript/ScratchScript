@@ -1,10 +1,41 @@
 ﻿# ScratchScript
 
-ScratchScript is a javascript-like programming language that compiles to Scratch projects (.sb3).
+ScratchScript is a typescript-like programming language that compiles to Scratch projects (.sb3).
 
 It uses ANTLR4 for tokenizing/parsing and has an IR language that converts assembly-like commands to Scratch blocks.
 
 [Wiki/Documentation](https://scratchscript.github.io) (outdated)
+
+# Code sample
+
+```ts
+import 'scratch/looks';
+
+function add(x: number, y: number) {
+    // return values in functions:
+    return x + y;
+}
+
+on start {
+    sayTimed('hello world!', 1);
+    sayTimed('ScratchScript has all kinds of features that native Scratch lacks, like:', 5);
+    sayTimed(`string interpolation: ${2 + 2} <- should be 4`, 3);
+    sayTimed(`nested function calls: ${add(3, add(5, 2))} <- should be 10`, 3);
+    
+    // for loops:
+    for(let i = 0; i < 10; i++) {
+        // ...
+    }
+    
+    // ternary operator:
+    let theory = 2 + 2 == 4 ? "correct": "incorrect";
+    
+    // exponents and bitwise operations:
+    let num = (2 ** 3) >> 3;
+    
+    // ...and much more!
+}   
+```
 
 # State
 
