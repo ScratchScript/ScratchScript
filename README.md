@@ -12,12 +12,12 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
 
 - [ ] Frontend
   - [ ] Enums
-    - [ ] Declaration
+    - [x] Declaration
     - [ ] Usage
     - [ ] `enum.value` and `enum.name`
-    - [ ] Export
+    - [x] Export
   - [ ] Variables
-    - [ ] Declaration
+    - [x] Declaration
     - [ ] Assignment
     - [ ] Function arguments
     - [ ] `const` & exporting `const`s
@@ -29,7 +29,7 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
     - [ ] Passing a list as a function argument
     - [ ] Initializing variables with lists (list expressions)
   - [ ] Expressions
-    - [ ] Constant expressions
+    - [x] Constant expressions
     - [ ] Identifier expressions
     - [ ] Interpolated string expressions
     - [ ] Binary expressions
@@ -47,7 +47,6 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
     - [ ] `@noexport`/`@private`
     - [ ] `@import` (asset importing)
     - [ ] `@unicode`
-      - [ ] `std/string/unicode` functions (extended string handling)
   - [ ] Functions
     - [ ] Declaration
     - [ ] Call
@@ -65,13 +64,25 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
     - [ ] Importing specific items instead of all
     - [ ] Namespaces & namespace aliases (`import * as math from 'std/math'`)
   - [ ] Events
-    - [ ] `start`
+    - [x] `start`
     - [ ] `stop`
     - [ ] Built-in Scratch events
     - [ ] Custom events (broadcasts)
   - [ ] Other
     - [ ] `throw`
     - [ ] `debugger`
+  - [ ] `std` library
+    - [ ] `std/native` (a.k.a the `scratch` namespace)
+      - [x] `scratch/control`
+      - [ ] `scratch/data`
+      - [ ] `scratch/looks`
+      - [ ] `scratch/motion`
+      - [ ] `scratch/operators`
+      - [ ] `scratch/sensing`
+      - [ ] `scratch/sound`
+    - [ ] `std/string`
+      - [ ] `std/string/unicode`
+    - [ ] `std/math`
     
 
 - [ ] Backend
