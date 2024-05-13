@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1"/>
+        <PackageReference Include="DotNetZip" Version="1.16.0"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+        <PackageReference Include="Serilog" Version="4.0.0-dev-02163"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="5.1.0-dev-00943"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.1-dev-00972"/>
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.4"/>
+
+        <None Update="std\**\*.*">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+
+        <None Remove="Resources\Syntax\gen\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Update="Resources\Messages\CompilerErrors.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>CompilerErrors.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Messages\CompilerWarnings.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>CompilerWarnings.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Messages\CompilerNotes.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>CompilerNotes.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\Messages\CompilerMessages.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>CompilerMessages.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+        <EmbeddedResource Remove="Resources\Syntax\gen\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="Resources\Messages\CompilerErrors.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>CompilerErrors.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Messages\CompilerWarnings.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>CompilerWarnings.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Messages\CompilerNotes.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>CompilerNotes.resx</DependentUpon>
+        </Compile>
+        <Compile Update="Resources\Messages\CompilerMessages.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>CompilerMessages.resx</DependentUpon>
+        </Compile>
+        <Compile Remove="Resources\Syntax\gen\**" />
+    </ItemGroup>
+
+</Project>

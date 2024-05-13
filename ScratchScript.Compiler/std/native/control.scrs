@@ -1,0 +1,25 @@
+namespace "scratch/control";
+
+enum StopTarget {
+    All = "all",
+    ThisScript = "this script",
+    OtherScripts = "other scripts"
+}
+
+@inline function wait(seconds: number) {
+    ir {
+        `raw control_wait i:DURATION:${seconds}`;
+    }
+}
+
+@inline function waitUntil(condition: boolean) {
+    ir {
+        `raw control_wait_until i:CONDITION:${condition}`;
+    }
+}
+
+@inline function stop(target: StopTarget) {
+    ir {
+        `raw control_stop f:STOP_OPTION:${target.value}`;
+    }
+}
