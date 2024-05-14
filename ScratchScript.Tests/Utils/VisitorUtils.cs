@@ -14,7 +14,7 @@ public class VisitorUtils
         var parser = new ScratchScriptParser(tokenStream);
         var messages = new List<DiagnosticMessage>();
 
-        var visitor = new ScratchScriptVisitor();
+        var visitor = new ScratchScriptVisitor(source);
         visitor.DiagnosticReporter.Reported += message => messages.Add(message);
         visitor.VisitProgram(parser.program());
 

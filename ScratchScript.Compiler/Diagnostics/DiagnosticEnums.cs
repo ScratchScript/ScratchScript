@@ -7,7 +7,9 @@ public enum ScratchScriptError
     EnumEntryAlreadyDeclared,
     NonNumericEntryMustSpecifyAllValues,
     EventAlreadyDeclared,
-    IdentifierAlreadyClaimed
+    IdentifierAlreadyClaimed,
+    UnknownIdentifier,
+    VariableNotDefined
 }
 
 public enum ScratchScriptWarning
@@ -19,5 +21,6 @@ public enum ScratchScriptNote
     EnumTypeSetAt = 1,
     EnumEntryDeclaredAt,
     EventDeclaredAt,
-    IdentifierClaimedAt
+    IdentifierClaimedAt,
+    VariableTypeSetAt
 }

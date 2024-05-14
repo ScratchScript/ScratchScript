@@ -6,4 +6,6 @@ public static class StringExtensions
     {
         return str.Replace("[", "[[").Replace("]", "]]");
     }
+    
+    public static string Surround(this string str, char with) => with + str + with;
 }

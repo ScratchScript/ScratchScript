@@ -44,4 +44,10 @@
     <data name="E6" xml:space="preserve">
         <value>identifier "{0}" has already been claimed earlier</value>
     </data>
+    <data name="E7" xml:space="preserve">
+        <value>unknown identifier "{0}"</value>
+    </data>
+    <data name="E8" xml:space="preserve">
+        <value>variable "{0}" is not defined</value>
+    </data>
 </root>

@@ -61,7 +61,7 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
     - [ ] Initializing variables with lists (list expressions)
   - [ ] Expressions
     - [x] Constant expressions
-    - [ ] Identifier expressions
+    - [x] Identifier expressions
     - [ ] Interpolated string expressions
     - [ ] Binary expressions
         - [ ] Binary add expressions (`+`, `-`, `*`, `**`, `%`, `/`)
@@ -117,4 +117,4 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
     
 
 - [ ] Backend
-  - Everything. I haven't started implementing it yet.
+  - Nothing. I haven't started implementing it yet.

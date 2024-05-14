@@ -38,4 +38,7 @@
     <data name="N4" xml:space="preserve">
         <value>the identifier was claimed here</value>
     </data>
+    <data name="N5" xml:space="preserve">
+        <value>variable type was set here</value>
+    </data>
 </root>

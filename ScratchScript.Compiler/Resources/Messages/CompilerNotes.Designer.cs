@@ -103,5 +103,14 @@ namespace ScratchScript.Compiler.Resources.Messages {
                 return ResourceManager.GetString("N4", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to variable type was set here.
+        /// </summary>
+        internal static string N5 {
+            get {
+                return ResourceManager.GetString("N5", resourceCulture);
+            }
+        }
     }
 }

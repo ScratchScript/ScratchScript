@@ -121,5 +121,23 @@ namespace ScratchScript.Compiler.Resources.Messages {
                 return ResourceManager.GetString("E6", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to unknown identifier &quot;{0}&quot;.
+        /// </summary>
+        internal static string E7 {
+            get {
+                return ResourceManager.GetString("E7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to variable &quot;{0}&quot; is not defined.
+        /// </summary>
+        internal static string E8 {
+            get {
+                return ResourceManager.GetString("E8", resourceCulture);
+            }
+        }
     }
 }

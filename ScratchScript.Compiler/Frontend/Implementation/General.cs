@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Security.Cryptography;
 using System.Text;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
@@ -8,27 +9,37 @@ using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 
+public record ScratchScriptVisitorSettings(char CommandSeparator = ' ');
+
 public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<TypedValue?>
 {
-    public ScratchScriptVisitor()
+    public ScratchScriptVisitor(string source)
     {
+        Id = new Guid(MD5.HashData(Encoding.UTF8.GetBytes(source))).ToString("N");
         DiagnosticReporter.Reported += message =>
         {
             if (message.Kind == DiagnosticMessageKind.Error) Success = false;
         };
     }
 
+    public string Id { get; }
     public bool Success { get; private set; } = true;
+    public ScratchScriptVisitorSettings Settings { get; set; } = new();
     public DiagnosticReporter DiagnosticReporter { get; } = new();
     public DiagnosticLocationStorage LocationInformation { get; } = new();
     public ExportsStorage Exports { get; } = new();
     public Scope? Scope { get; private set; } = null;
+
 
     public string Output
     {
         get
         {
             var sb = new StringBuilder();
+
+            foreach (var eventScope in Exports.Events.Values)
+                sb.AppendLine(eventScope.ToString(Settings.CommandSeparator));
+
             return sb.ToString();
         }
     }
@@ -53,7 +64,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
             DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.constant());
             return null;
         }
-        
+
         return new ExpressionValue(value.Value, value.Type);
     }
 

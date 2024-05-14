@@ -45,7 +45,7 @@ public record SourceCodeDiagnosticMessage(
     {
         var sourceStream = start.Start.InputStream;
         var line = start.GetParent<ScratchScriptParser.TopLevelStatementContext>();
-        if (line == null) throw new Exception("Failed to get the statement's parent TopLevelStatementContext");
+        if (line == null) throw new Exception("Failed to get the statement's parent TopLevelStatementContext.");
 
         var sourceText = sourceStream.GetText(new Interval(line.Start.StartIndex, line.Stop.StopIndex));
         var conflictingText =
@@ -69,7 +69,7 @@ public record SourceCodeDiagnosticMessage(
     {
         var sourceStream = start.Start.InputStream;
         var line = start.GetParent<ScratchScriptParser.TopLevelStatementContext>();
-        if (line == null) throw new Exception("Failed to get the statement's parent TopLevelStatementContext");
+        if (line == null) throw new Exception("Failed to get the statement's parent TopLevelStatementContext.");
 
         var sourceText = sourceStream.GetText(new Interval(line.Start.StartIndex, line.Stop.StopIndex));
         var conflictingText =
@@ -108,7 +108,7 @@ public record DiagnosticMessage(
             DiagnosticMessageKind.Note => CompilerNotes.ResourceManager.GetString($"N{code}"),
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null)
         };
-        if (unformatted == null) throw new Exception($"unknown code {code} for diagnostic type {kind}");
+        if (unformatted == null) throw new Exception($"Unknown code {code} for diagnostic type {kind}.");
         return string.Format(unformatted, data);
     }
 }
