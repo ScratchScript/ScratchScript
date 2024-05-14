@@ -2,20 +2,11 @@
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Types;
 
-namespace ScratchScript.Compiler.Frontend.Information;
+namespace ScratchScript.Compiler.Frontend.Targets.Scratch3;
 
-public record ScratchScriptVariable(string Name, string Id, ScratchType Type);
-
-public class Scope
+public class Scratch3Scope: Scope
 {
-    public Dictionary<string, ScratchScriptVariable> Variables { get; } = [];
-    public int Depth;
-    public Scope? ParentScope;
-
-    public readonly List<string> Content = [];
-    public string Header = "";
-
-    public string ToString(char separator)
+    public override string ToString(char separator)
     {
         var sb = new StringBuilder();
 
@@ -61,29 +52,5 @@ public class Scope
         if (!string.IsNullOrEmpty(value.Dependencies)) Content.Add(value.Dependencies);
         Content.Add(BackendHelper.SetVariableValue(variable.Id.Surround('"'), value.Value));
         if (!string.IsNullOrEmpty(value.Cleanup)) Content.Add(value.Cleanup);
-    }
-
-    public ScratchScriptVariable? GetVariable(string name)
-    {
-        var scope = this;
-        do
-        {
-            if (Variables.TryGetValue(name, out var variable)) return variable;
-            scope = scope.ParentScope;
-        } while (scope?.ParentScope != null);
-
-        return null;
-    }
-
-    public int? GetVariableDepth(string name)
-    {
-        var scope = this;
-        do
-        {
-            if (Variables.ContainsKey(name)) return scope.Depth;
-            scope = scope.ParentScope;
-        } while (scope?.ParentScope != null);
-
-        return null;
     }
 }

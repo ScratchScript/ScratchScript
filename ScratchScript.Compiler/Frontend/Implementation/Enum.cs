@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Antlr4.Runtime;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.Information;
 using ScratchScript.Compiler.Types;

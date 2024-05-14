@@ -25,5 +25,5 @@ public static class BackendHelper
         ItemOf(VariableValuesList, IndexOf(VariableNamesList, id.Surround('"')));
 
     public static string SetVariableValue(string id, object value) =>
-        Replace(VariableValuesList, IndexOf(VariableNamesList, id), value);
+        Replace(VariableValuesList, IndexOf(VariableNamesList, id.Surround('"')), value);
 }

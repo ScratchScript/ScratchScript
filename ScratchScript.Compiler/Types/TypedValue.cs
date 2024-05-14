@@ -1,4 +1,4 @@
-﻿using ScratchScript.Compiler.Frontend.Information;
+﻿using ScratchScript.Compiler.Frontend.Targets;
 
 namespace ScratchScript.Compiler.Types;
 
@@ -11,6 +11,3 @@ public record EnumEntryValue(string Name, object? Value, ScratchType Type) : Typ
 public record ExpressionValue(object? Value, ScratchType Type, string Dependencies = "", string Cleanup = ""): TypedValue(Value, Type);
 
 public record ScopeValue(Scope Scope) : TypedValue(null, ScratchType.Unknown);
-
-// identifier value, list expression value, function argument value, ...
-//public record IdentifierValue(): TypedValue();

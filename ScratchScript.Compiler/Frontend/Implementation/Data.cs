@@ -6,6 +6,7 @@ namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
+    
     public override TypedValue? VisitVariableDeclarationStatement(
         ScratchScriptParser.VariableDeclarationStatementContext context)
     {
@@ -22,12 +23,12 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
-        if (Scope == null) throw new Exception("Cannot declare variables without a scope.");
-        Scope.AddVariable(name, GenerateVariableId(name), expression);
+        if (_scope == null) throw new Exception("Cannot declare variables without a scope.");
+        _dataHandler.AddVariable(ref _scope, name, _dataHandler.GenerateVariableId(_scope.Depth, Id, name), expression);
 
-        if (!LocationInformation.Variables.ContainsKey(Scope.Depth)) // since it's a nested dictionary
-            LocationInformation.Variables[Scope.Depth] = new Dictionary<string, VariableLocationInformation>();
-        LocationInformation.Variables[Scope.Depth][name] = new VariableLocationInformation
+        if (!LocationInformation.Variables.ContainsKey(_scope.Depth)) // since it's a nested dictionary
+            LocationInformation.Variables[_scope.Depth] = new Dictionary<string, VariableLocationInformation>();
+        LocationInformation.Variables[_scope.Depth][name] = new VariableLocationInformation
         {
             Context = context,
             Identifier = context.Identifier(),
@@ -40,7 +41,7 @@ public partial class ScratchScriptVisitor
     {
         var name = context.Identifier().GetText();
 
-        if (Scope?.GetVariable(name) is not { } variable)
+        if (_scope?.GetVariable(name) is not { } variable)
         {
             DiagnosticReporter.Error((int)ScratchScriptError.VariableNotDefined, context, context.Identifier(), name);
             return null;
@@ -55,7 +56,7 @@ public partial class ScratchScriptVisitor
 
         if (variable.Type != expression.Type)
         {
-            var locationInformation = LocationInformation.Variables[Scope.Depth][name];
+            var locationInformation = LocationInformation.Variables[_scope.Depth][name];
 
             DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(), variable.Type,
                 expression.Type);
@@ -64,10 +65,7 @@ public partial class ScratchScriptVisitor
             return null;
         }
         
-        Scope.SetVariable(variable, expression);
+        _dataHandler.SetVariable(ref _scope, variable, expression);
         return null;
     }
-
-    // TODO: think if this can be improved (and also not just random characters)
-    private string GenerateVariableId(string name) => $"_{Id[..5]}_{Scope?.Depth}_{name}";
 }

@@ -1,25 +1,32 @@
 ﻿using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
-using Antlr4.Runtime;
-using Antlr4.Runtime.Tree;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.Information;
+using ScratchScript.Compiler.Frontend.Targets;
+using ScratchScript.Compiler.Frontend.Targets.Scratch3;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
+
+public enum CompilerTarget
+{
+    Scratch3,
+    TurboWarp    
+}
 
 public record ScratchScriptVisitorSettings(char CommandSeparator = ' ');
 
 public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<TypedValue?>
 {
-    public ScratchScriptVisitor(string source)
+    public ScratchScriptVisitor(string source, CompilerTarget target = CompilerTarget.Scratch3)
     {
         Id = new Guid(MD5.HashData(Encoding.UTF8.GetBytes(source))).ToString("N");
         DiagnosticReporter.Reported += message =>
         {
             if (message.Kind == DiagnosticMessageKind.Error) Success = false;
         };
+        Target = target;
     }
 
     public string Id { get; }
@@ -28,9 +35,27 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
     public DiagnosticReporter DiagnosticReporter { get; } = new();
     public DiagnosticLocationStorage LocationInformation { get; } = new();
     public ExportsStorage Exports { get; } = new();
-    public Scope? Scope { get; private set; } = null;
+    
+    private Scope? _scope;
 
+    private CompilerTarget _target = CompilerTarget.Scratch3;
 
+    public CompilerTarget Target
+    {
+        get => _target;
+        set
+        {
+            _target = value;
+            _dataHandler = value switch
+            {
+                CompilerTarget.Scratch3 => new Scratch3DataHandler(),
+                _ => throw new NotImplementedException()
+            };
+        }
+    }
+
+    private IDataHandler _dataHandler = null!;
+    
     public string Output
     {
         get
@@ -100,14 +125,19 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
 
     public override TypedValue VisitBlock(ScratchScriptParser.BlockContext context)
     {
-        var scope = new Scope();
-        if (Scope != null)
+        var scope = Target switch
         {
-            scope.ParentScope = Scope;
-            scope.Depth = Scope.Depth + 1;
+            CompilerTarget.Scratch3 => new Scratch3Scope(),
+            _ => throw new NotImplementedException()
+        };
+        
+        if (_scope != null)
+        {
+            scope.ParentScope = _scope;
+            scope.Depth = _scope.Depth + 1;
         }
 
-        Scope = scope;
+        _scope = scope;
 
         foreach (var lineContext in context.line())
         {
@@ -115,7 +145,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
             scope.Content.Add(value.ToString());
         }
 
-        Scope = scope.ParentScope;
+        _scope = scope.ParentScope as Scratch3Scope;
         return new ScopeValue(scope);
     }
 }

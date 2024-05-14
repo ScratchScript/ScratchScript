@@ -66,4 +66,8 @@
         <Compile Remove="Resources\Syntax\gen\**" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Frontend\Targets\TurboWarp\" />
+    </ItemGroup>
+
 </Project>

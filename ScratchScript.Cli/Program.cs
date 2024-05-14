@@ -2,12 +2,13 @@
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.Implementation;
 using Spectre.Console;
+using ScratchScriptVisitor = ScratchScript.Compiler.Frontend.Implementation.ScratchScriptVisitor;
 
 
 var source = """
              on start {
                 let a = 1;
-                a = "hey";
+                a = 2;
              }
              """;
 var inputStream = new AntlrInputStream(source);
