@@ -30,7 +30,15 @@ public class ScratchType(ScratchTypeKind kind, ScratchType? childType = null, Sc
     public ScratchTypeKind Kind { get; set; } = kind;
     public ScratchType? ParentType { get; set; } = parentType;
     public ScratchType? ChildType { get; set; } = childType;
-    
+
+    public bool Equals(ScratchType? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        if (Kind == ScratchTypeKind.Any || other.Kind == ScratchTypeKind.Any) return true;
+        return Kind == other.Kind && ChildType == other.ChildType && ParentType == other.ParentType;
+    }
+
     public static ScratchType List(ScratchType innerType)
     {
         var type = new ScratchType(ScratchTypeKind.List);
@@ -42,14 +50,6 @@ public class ScratchType(ScratchTypeKind kind, ScratchType? childType = null, Sc
     public override string ToString()
     {
         return $"{Kind.ToString().ToLowerInvariant()}{(ChildType is not null ? $"<{ChildType}>" : "")}";
-    }
-    
-    public bool Equals(ScratchType? other)
-    {
-        if (other is null) return false;
-        if (ReferenceEquals(this, other)) return true;
-        if (Kind == ScratchTypeKind.Any || other.Kind == ScratchTypeKind.Any) return true;
-        return Kind == other.Kind && ChildType == other.ChildType && ParentType == other.ParentType;
     }
 
     public override bool Equals(object? obj)

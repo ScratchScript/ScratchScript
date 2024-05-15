@@ -3,17 +3,17 @@
 namespace ScratchScript.Compiler.Frontend.Targets;
 
 public record ScratchScriptVariable(string Name, string Id, ScratchType Type);
+
 public abstract class Scope
 {
-    public Dictionary<string, ScratchScriptVariable> Variables { get; } = [];
-    public int Depth;
-    public Scope? ParentScope;
-
     public readonly List<string> Content = [];
+    public int Depth;
     public string Header = "";
+    public Scope? ParentScope;
+    public Dictionary<string, ScratchScriptVariable> Variables { get; } = [];
 
     public abstract string ToString(char separator);
-    
+
     public ScratchScriptVariable? GetVariable(string name)
     {
         var scope = this;

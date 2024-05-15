@@ -19,7 +19,9 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
 
-        <None Remove="Resources\Syntax\gen\**" />
+        <None Remove="Resources\Syntax\gen\**"/>
+
+        <None Remove="Resources\Grammar\gen\**"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -39,7 +41,8 @@
             <Generator>ResXFileCodeGenerator</Generator>
             <LastGenOutput>CompilerMessages.Designer.cs</LastGenOutput>
         </EmbeddedResource>
-        <EmbeddedResource Remove="Resources\Syntax\gen\**" />
+        <EmbeddedResource Remove="Resources\Syntax\gen\**"/>
+        <EmbeddedResource Remove="Resources\Grammar\gen\**"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -63,11 +66,12 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>CompilerMessages.resx</DependentUpon>
         </Compile>
-        <Compile Remove="Resources\Syntax\gen\**" />
+        <Compile Remove="Resources\Syntax\gen\**"/>
+        <Compile Remove="Resources\Grammar\gen\**"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Frontend\Targets\TurboWarp\" />
+        <Folder Include="Frontend\Targets\TurboWarp\"/>
     </ItemGroup>
 
 </Project>

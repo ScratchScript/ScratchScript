@@ -6,14 +6,13 @@ namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
-    
     public override TypedValue? VisitVariableDeclarationStatement(
         ScratchScriptParser.VariableDeclarationStatementContext context)
     {
         var name = context.Identifier().GetText();
 
         // check if the name is available
-        if (RequireIdentifierUnclaimedOrFail(name, ownContext: context, ownIdentifier: context.Identifier()))
+        if (RequireIdentifierUnclaimedOrFail(name, context, context.Identifier()))
             return null;
 
         // in case of an ICE
@@ -64,7 +63,7 @@ public partial class ScratchScriptVisitor
                 locationInformation.TypeSetterExpression);
             return null;
         }
-        
+
         _dataHandler.SetVariable(ref _scope, variable, expression);
         return null;
     }

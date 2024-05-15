@@ -26,6 +26,11 @@ public class Scratch3DataHandler : IDataHandler
         if (!string.IsNullOrEmpty(value.Cleanup)) scope.Content.Add(value.Cleanup);
     }
 
+    public TypedValue GetVariable(ref Scope scope, ScratchScriptVariable variable)
+    {
+        return new TypedValue(BackendHelper.GetVariableValue(variable.Id), variable.Type);
+    }
+
     public string GenerateVariableId(int scopeDepth, string visitorId, string variableName)
     {
         return $"_{visitorId[..5]}_{scopeDepth}_{variableName}";

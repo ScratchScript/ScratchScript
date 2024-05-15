@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from ../Resources/Syntax/ScratchScriptParser.g4 by ANTLR 4.13.1
+// Generated from ../Resources/Grammar/ScratchScriptParser.g4 by ANTLR 4.13.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -192,6 +192,18 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitEnumEntry([NotNull] ScratchScriptParser.EnumEntryContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="ScratchScriptParser.irBlockStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterIrBlockStatement([NotNull] ScratchScriptParser.IrBlockStatementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="ScratchScriptParser.irBlockStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitIrBlockStatement([NotNull] ScratchScriptParser.IrBlockStatementContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="ScratchScriptParser.irStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -203,18 +215,6 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitIrStatement([NotNull] ScratchScriptParser.IrStatementContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="ScratchScriptParser.irString"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterIrString([NotNull] ScratchScriptParser.IrStringContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="ScratchScriptParser.irString"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitIrString([NotNull] ScratchScriptParser.IrStringContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="ScratchScriptParser.ifStatement"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -408,34 +408,6 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitDebuggerStatement([NotNull] ScratchScriptParser.DebuggerStatementContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by the <c>binaryBitwiseAndExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterBinaryBitwiseAndExpression([NotNull] ScratchScriptParser.BinaryBitwiseAndExpressionContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by the <c>binaryBitwiseAndExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitBinaryBitwiseAndExpression([NotNull] ScratchScriptParser.BinaryBitwiseAndExpressionContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by the <c>binaryBitwiseOrExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterBinaryBitwiseOrExpression([NotNull] ScratchScriptParser.BinaryBitwiseOrExpressionContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by the <c>binaryBitwiseOrExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitBinaryBitwiseOrExpression([NotNull] ScratchScriptParser.BinaryBitwiseOrExpressionContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by the <c>interpolatedStringExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -463,6 +435,20 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitConstantExpression([NotNull] ScratchScriptParser.ConstantExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>binaryBitwiseExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterBinaryBitwiseExpression([NotNull] ScratchScriptParser.BinaryBitwiseExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>binaryBitwiseExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitBinaryBitwiseExpression([NotNull] ScratchScriptParser.BinaryBitwiseExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by the <c>identifierExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
@@ -604,20 +590,6 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitBinaryBooleanExpression([NotNull] ScratchScriptParser.BinaryBooleanExpressionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by the <c>binaryBitwiseXorExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterBinaryBitwiseXorExpression([NotNull] ScratchScriptParser.BinaryBitwiseXorExpressionContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by the <c>binaryBitwiseXorExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitBinaryBitwiseXorExpression([NotNull] ScratchScriptParser.BinaryBitwiseXorExpressionContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by the <c>binaryCompareExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -757,6 +729,18 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitBooleanOperators([NotNull] ScratchScriptParser.BooleanOperatorsContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="ScratchScriptParser.bitwiseOperators"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterBitwiseOperators([NotNull] ScratchScriptParser.BitwiseOperatorsContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="ScratchScriptParser.bitwiseOperators"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitBitwiseOperators([NotNull] ScratchScriptParser.BitwiseOperatorsContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="ScratchScriptParser.assignmentOperators"/>.
 	/// <para>The default implementation does nothing.</para>

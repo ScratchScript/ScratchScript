@@ -19,15 +19,15 @@ public record struct VariableLocationInformation
 
 public record struct EventLocationInformation
 {
-    public ITerminalNode Identifier;
     public ParserRuleContext Context;
+    public ITerminalNode Identifier;
 }
 
 public record struct EnumLocationInformation
 {
+    public ParserRuleContext Context;
     public Dictionary<string, (ParserRuleContext Statement, ParserRuleContext? Assignment)> EntryDeclarations;
+    public ITerminalNode Identifier;
     public ParserRuleContext TypeSetterAssignment;
     public ParserRuleContext TypeSetterStatement;
-    public ParserRuleContext Context;
-    public ITerminalNode Identifier;
 }

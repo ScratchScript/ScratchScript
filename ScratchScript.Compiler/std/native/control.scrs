@@ -7,19 +7,22 @@ enum StopTarget {
 }
 
 @inline function wait(seconds: number) {
-    ir {
+    ir
+    {
         `raw control_wait i:DURATION:${seconds}`;
     }
 }
 
 @inline function waitUntil(condition: boolean) {
-    ir {
+    ir
+    {
         `raw control_wait_until i:CONDITION:${condition}`;
     }
 }
 
 @inline function stop(target: StopTarget) {
-    ir {
+    ir
+    {
         `raw control_stop f:STOP_OPTION:${target.value}`;
     }
 }

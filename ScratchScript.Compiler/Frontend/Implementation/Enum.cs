@@ -14,7 +14,7 @@ public partial class ScratchScriptVisitor
         var values = new Dictionary<string, EnumEntryValue>();
 
         // check if the name can be used
-        if (RequireIdentifierUnclaimedOrFail(name, ownContext: context, ownIdentifier: context.Identifier()))
+        if (RequireIdentifierUnclaimedOrFail(name, context, context.Identifier()))
             return null;
 
         var locationInformation = new EnumLocationInformation
@@ -95,7 +95,6 @@ public partial class ScratchScriptVisitor
             var currentValue = (decimal)0;
 
             foreach (var (key, entry) in values)
-            {
                 if (entry.Value == null)
                 {
                     values[key] = entry with { Value = currentValue, Type = ScratchType.Number };
@@ -105,7 +104,6 @@ public partial class ScratchScriptVisitor
                 {
                     currentValue = (decimal)entry.Value;
                 }
-            }
         }
 
         // check that all values have a value (i.e. if the enum type was assigned by the last element)

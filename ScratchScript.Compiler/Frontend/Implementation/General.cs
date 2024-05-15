@@ -12,13 +12,22 @@ namespace ScratchScript.Compiler.Frontend.Implementation;
 public enum CompilerTarget
 {
     Scratch3,
-    TurboWarp    
+    TurboWarp
 }
 
 public record ScratchScriptVisitorSettings(char CommandSeparator = ' ');
 
 public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<TypedValue?>
 {
+    private IBinaryHandler _binaryHandler = null!;
+
+    private IDataHandler _dataHandler = null!;
+
+    private Scope? _scope;
+
+    private CompilerTarget _target = CompilerTarget.Scratch3;
+    private IUnaryHandler _unaryHandler = null!;
+
     public ScratchScriptVisitor(string source, CompilerTarget target = CompilerTarget.Scratch3)
     {
         Id = new Guid(MD5.HashData(Encoding.UTF8.GetBytes(source))).ToString("N");
@@ -35,10 +44,6 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
     public DiagnosticReporter DiagnosticReporter { get; } = new();
     public DiagnosticLocationStorage LocationInformation { get; } = new();
     public ExportsStorage Exports { get; } = new();
-    
-    private Scope? _scope;
-
-    private CompilerTarget _target = CompilerTarget.Scratch3;
 
     public CompilerTarget Target
     {
@@ -51,11 +56,19 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
                 CompilerTarget.Scratch3 => new Scratch3DataHandler(),
                 _ => throw new NotImplementedException()
             };
+            _binaryHandler = value switch
+            {
+                CompilerTarget.Scratch3 => new Scratch3BinaryHandler(Settings.CommandSeparator),
+                _ => throw new NotImplementedException()
+            };
+            _unaryHandler = value switch
+            {
+                CompilerTarget.Scratch3 => new Scratch3UnaryHandler(),
+                _ => throw new NotImplementedException()
+            };
         }
     }
 
-    private IDataHandler _dataHandler = null!;
-    
     public string Output
     {
         get
@@ -130,7 +143,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
             CompilerTarget.Scratch3 => new Scratch3Scope(),
             _ => throw new NotImplementedException()
         };
-        
+
         if (_scope != null)
         {
             scope.ParentScope = _scope;

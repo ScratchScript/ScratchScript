@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from ../Resources/Syntax/ScratchIR.g4 by ANTLR 4.13.1
+// Generated from ../Resources/Grammar/ScratchIR.g4 by ANTLR 4.13.1
 
 // Unreachable code detected
 #pragma warning disable 0162

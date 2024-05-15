@@ -50,9 +50,7 @@ expression
     | Not expression #notExpression
     | expression LeftBracket expression RightBracket #arrayAccessExpression
     | addOperators expression #unaryAddExpression
-    | expression BitwiseOr expression #binaryBitwiseOrExpression
-    | expression BitwiseXor expression #binaryBitwiseXorExpression
-    | expression BitwiseAnd expression #binaryBitwiseAndExpression
+    | expression bitwiseOperators expression #binaryBitwiseExpression
     | expression shiftOperators expression #binaryBitwiseShiftExpression
     | expression multiplyOperators expression #binaryMultiplyExpression
     | expression addOperators expression #binaryAddExpression
@@ -71,6 +69,7 @@ rightShift: first=Greater second=Greater {$first.index + 1 == $second.index}?;
 addOperators: Plus | Minus;
 compareOperators: Equal | NotEqual | Greater | GreaterOrEqual | Lesser | LesserOrEqual;
 booleanOperators: And | Or;
+bitwiseOperators: BitwiseOr | BitwiseXor | BitwiseAnd;
 assignmentOperators: Assignment | AdditionAsignment | SubtractionAssignment | MultiplicationAssignment | DivisionAssignment | ModulusAssignment | PowerAssignment;
 postIncrementOperators: PostIncrement | PostDecrement;
 

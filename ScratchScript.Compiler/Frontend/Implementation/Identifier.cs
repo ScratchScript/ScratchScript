@@ -13,7 +13,7 @@ public partial class ScratchScriptVisitor
             return (LocationInformation.Enums[identifier].Context, LocationInformation.Enums[identifier].Identifier);
         if (Exports.Events.ContainsKey(identifier))
             return (LocationInformation.Events[identifier].Context, LocationInformation.Events[identifier].Identifier);
-        if (_scope?.GetVariableDepth(identifier) is {} variableDepth)
+        if (_scope?.GetVariableDepth(identifier) is { } variableDepth)
             return (LocationInformation.Variables[variableDepth][identifier].Context,
                 LocationInformation.Variables[variableDepth][identifier].Identifier);
 
@@ -37,7 +37,8 @@ public partial class ScratchScriptVisitor
     {
         if (VisitIdentifier(context.Identifier().GetText()) is not { } result)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.UnknownIdentifier, context, context.Identifier(), context.Identifier().GetText());
+            DiagnosticReporter.Error((int)ScratchScriptError.UnknownIdentifier, context, context.Identifier(),
+                context.Identifier().GetText());
             return null;
         }
 
@@ -47,8 +48,8 @@ public partial class ScratchScriptVisitor
     private TypedValue? VisitIdentifier(string identifier)
     {
         if (_scope?.GetVariable(identifier) is { } variable)
-            return new TypedValue(BackendHelper.GetVariableValue(variable.Id), variable.Type);
-        
+            return _dataHandler.GetVariable(ref _scope, variable);
+
         return null;
     }
 }

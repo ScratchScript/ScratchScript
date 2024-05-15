@@ -4,7 +4,7 @@ using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Targets.Scratch3;
 
-public class Scratch3Scope: Scope
+public class Scratch3Scope : Scope
 {
     public override string ToString(char separator)
     {
@@ -48,7 +48,7 @@ public class Scratch3Scope: Scope
     public void SetVariable(ScratchScriptVariable variable, ExpressionValue value)
     {
         if (value.Value == null) throw new Exception("Cannot set variable to null.");
-        
+
         if (!string.IsNullOrEmpty(value.Dependencies)) Content.Add(value.Dependencies);
         Content.Add(BackendHelper.SetVariableValue(variable.Id.Surround('"'), value.Value));
         if (!string.IsNullOrEmpty(value.Cleanup)) Content.Add(value.Cleanup);
