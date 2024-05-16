@@ -31,4 +31,25 @@ public partial class ScratchScriptVisitor
 
         return _unaryHandler.GetUnaryExpression(op.Value, operand);
     }
+
+    public override TypedValue? VisitNotExpression(ScratchScriptParser.NotExpressionContext context)
+    {
+        // get the operand
+        if (Visit(context.expression()) is not ExpressionValue operand)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
+            return null;
+        }
+        
+        // operand must be a boolean
+        if (operand.Type != ScratchType.Boolean)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(),
+                ScratchType.Boolean, operand.Type);
+            return null;
+        }
+
+        // the not operator (!) is universal for all targets
+        return new ExpressionValue($"! {operand.Value}", ScratchType.Boolean, operand.Dependencies, operand.Cleanup);
+    }
 }

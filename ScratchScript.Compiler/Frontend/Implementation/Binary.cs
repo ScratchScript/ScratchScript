@@ -12,6 +12,59 @@ public partial class ScratchScriptVisitor
         return base.VisitBinaryBitwiseExpression(context);
     }
 
+    public override TypedValue? VisitBinaryBitwiseShiftExpression(
+        ScratchScriptParser.BinaryBitwiseShiftExpressionContext context)
+    {
+        return base.VisitBinaryBitwiseShiftExpression(context);
+    }
+
+    public override TypedValue? VisitBinaryCompareExpression(ScratchScriptParser.BinaryCompareExpressionContext context)
+    {
+        // get the operator
+        if (Visit(context.compareOperators()) is not GenericValue<CompareOperators> op)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.compareOperators());
+            return null;
+        }
+
+        // get the left operand
+        if (Visit(context.expression(0)) is not ExpressionValue left)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(0));
+            return null;
+        }
+
+        // get the right operand
+        if (Visit(context.expression(1)) is not ExpressionValue right)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(1));
+            return null;
+        }
+
+        // types of operands must match
+        if (left.Type != right.Type)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(1), left.Type,
+                right.Type);
+            return null;
+        }
+
+        Debug.Assert(_scope != null, nameof(_scope) + " != null");
+
+        if (op.Value is not (CompareOperators.Equal or CompareOperators.NotEqual))
+            return _binaryHandler.GetBinaryNumberComparisonExpression(ref _scope, op.Value, left, right);
+        
+        //TODO: this logic should be updated to handle enums and custom types in the future
+            
+        var equalExpression = left.Type == ScratchType.Number
+            ? _binaryHandler.GetBinaryNumberEquationExpression(ref _scope, left, right)
+            : _binaryHandler.GetBinaryStringEquationExpression(ref _scope, left, right);
+            
+        if (op.Value == CompareOperators.Equal) return equalExpression;
+        return new ExpressionValue($"! {equalExpression.Value}", equalExpression.Type, equalExpression.Dependencies,
+            equalExpression.Cleanup);
+    }
+
     public override TypedValue? VisitBinaryMultiplyExpression(
         ScratchScriptParser.BinaryMultiplyExpressionContext context)
     {
@@ -56,17 +109,6 @@ public partial class ScratchScriptVisitor
         return _binaryHandler.GetBinaryMultiplyExpression(ref _scope, op.Value, left, right);
     }
 
-    public override TypedValue? VisitBinaryBitwiseShiftExpression(
-        ScratchScriptParser.BinaryBitwiseShiftExpressionContext context)
-    {
-        return base.VisitBinaryBitwiseShiftExpression(context);
-    }
-
-    public override TypedValue? VisitBinaryCompareExpression(ScratchScriptParser.BinaryCompareExpressionContext context)
-    {
-        return base.VisitBinaryCompareExpression(context);
-    }
-
     public override TypedValue? VisitBinaryBooleanExpression(ScratchScriptParser.BinaryBooleanExpressionContext context)
     {
         // get the operator
@@ -106,7 +148,7 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
-        // the operator in the IR and ScratchScript *should* match (except for the string join operator, "~")
+        // the operator in the IR and ScratchScript *should* match
         var irOperator = context.booleanOperators().GetText()!;
         return new ExpressionValue($"{irOperator} {left.Value} {right.Value}", ScratchType.Boolean,
             left.Dependencies.Combine(Settings.CommandSeparator, right.Dependencies),

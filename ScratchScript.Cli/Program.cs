@@ -8,7 +8,7 @@ using ScratchScriptVisitor = ScratchScript.Compiler.Frontend.Implementation.Scra
 const string source = """
                       on start {
                          let a = 3;
-                         let b = a * 3 + 2 * a * a;
+                         let b = a >= 3;
                       }
                       """;
 var inputStream = new AntlrInputStream(source);
