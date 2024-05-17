@@ -1,21 +1,56 @@
 ﻿using System.Diagnostics;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
+using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
+    private IBinaryHandler _binaryHandler = null!;
+    
     public override TypedValue? VisitBinaryBitwiseExpression(ScratchScriptParser.BinaryBitwiseExpressionContext context)
     {
-        return base.VisitBinaryBitwiseExpression(context);
-    }
+        // get the operator
+        if (Visit(context.bitwiseOperators()) is not GenericValue<BitwiseOperators> op)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.bitwiseOperators());
+            return null;
+        }
 
-    public override TypedValue? VisitBinaryBitwiseShiftExpression(
-        ScratchScriptParser.BinaryBitwiseShiftExpressionContext context)
-    {
-        return base.VisitBinaryBitwiseShiftExpression(context);
+        // get the left operand
+        if (Visit(context.expression(0)) is not ExpressionValue left)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(0));
+            return null;
+        }
+
+        // get the right operand
+        if (Visit(context.expression(1)) is not ExpressionValue right)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(1));
+            return null;
+        }
+
+        // left operand must be a number
+        if (left.Type != ScratchType.Number)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(0),
+                ScratchType.Number, left.Type);
+            return null;
+        }
+
+        // right operand must also be a number
+        if (right.Type != ScratchType.Number)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(1),
+                ScratchType.Number, right.Type);
+            return null;
+        }
+
+        Debug.Assert(_scope != null, nameof(_scope) + " != null");
+        return _binaryHandler.GetBinaryBitwiseExpression(ref _scope, op.Value, left, right);
     }
 
     public override TypedValue? VisitBinaryCompareExpression(ScratchScriptParser.BinaryCompareExpressionContext context)

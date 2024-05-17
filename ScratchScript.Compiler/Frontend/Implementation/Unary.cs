@@ -1,10 +1,13 @@
 ﻿using ScratchScript.Compiler.Diagnostics;
+using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
+    private IUnaryHandler _unaryHandler = null!;
+    
     public override TypedValue? VisitUnaryAddExpression(ScratchScriptParser.UnaryAddExpressionContext context)
     {
         // get the operator

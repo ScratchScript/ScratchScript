@@ -19,14 +19,9 @@ public record ScratchScriptVisitorSettings(char CommandSeparator = ' ');
 
 public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<TypedValue?>
 {
-    private IBinaryHandler _binaryHandler = null!;
-
-    private IDataHandler _dataHandler = null!;
-
     private Scope? _scope;
 
     private CompilerTarget _target = CompilerTarget.Scratch3;
-    private IUnaryHandler _unaryHandler = null!;
 
     public ScratchScriptVisitor(string source, CompilerTarget target = CompilerTarget.Scratch3)
     {

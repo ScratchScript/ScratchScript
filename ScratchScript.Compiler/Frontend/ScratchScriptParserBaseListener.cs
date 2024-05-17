@@ -520,20 +520,6 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitArrayInitializeExpression([NotNull] ScratchScriptParser.ArrayInitializeExpressionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by the <c>binaryBitwiseShiftExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterBinaryBitwiseShiftExpression([NotNull] ScratchScriptParser.BinaryBitwiseShiftExpressionContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by the <c>binaryBitwiseShiftExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitBinaryBitwiseShiftExpression([NotNull] ScratchScriptParser.BinaryBitwiseShiftExpressionContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by the <c>arrayAccessExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -657,18 +643,6 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitMultiplyOperators([NotNull] ScratchScriptParser.MultiplyOperatorsContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="ScratchScriptParser.shiftOperators"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterShiftOperators([NotNull] ScratchScriptParser.ShiftOperatorsContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="ScratchScriptParser.shiftOperators"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitShiftOperators([NotNull] ScratchScriptParser.ShiftOperatorsContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="ScratchScriptParser.leftShift"/>.
 	/// <para>The default implementation does nothing.</para>

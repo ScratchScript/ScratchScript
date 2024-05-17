@@ -21,11 +21,11 @@ public class Scratch3Scope : Scope
 
         foreach (var variable in Variables.Values)
         {
-            var index = BackendHelper.IndexOf(BackendHelper.VariableNamesList, variable.Id.Surround('"'));
+            var index = Scratch3Helper.IndexOf(Scratch3Helper.VariableNamesList, variable.Id.Surround('"'));
 
-            sb.Append(BackendHelper.PopAt(BackendHelper.VariableNamesList, index));
+            sb.Append(Scratch3Helper.PopAt(Scratch3Helper.VariableNamesList, index));
             sb.Append(separator);
-            sb.Append(BackendHelper.PopAt(BackendHelper.VariableValuesList, index));
+            sb.Append(Scratch3Helper.PopAt(Scratch3Helper.VariableValuesList, index));
             sb.Append(separator);
         }
 
@@ -38,8 +38,8 @@ public class Scratch3Scope : Scope
         if (value.Value == null) throw new Exception("Cannot set variable to null.");
 
         if (!string.IsNullOrEmpty(value.Dependencies)) Content.Add(value.Dependencies);
-        Content.Add(BackendHelper.Push(BackendHelper.VariableNamesList, id.Surround('"')));
-        Content.Add(BackendHelper.Push(BackendHelper.VariableValuesList, value.Value));
+        Content.Add(Scratch3Helper.Push(Scratch3Helper.VariableNamesList, id.Surround('"')));
+        Content.Add(Scratch3Helper.Push(Scratch3Helper.VariableValuesList, value.Value));
         if (!string.IsNullOrEmpty(value.Cleanup)) Content.Add(value.Cleanup);
 
         Variables[name] = new ScratchScriptVariable(name, id, value.Type);
@@ -50,7 +50,7 @@ public class Scratch3Scope : Scope
         if (value.Value == null) throw new Exception("Cannot set variable to null.");
 
         if (!string.IsNullOrEmpty(value.Dependencies)) Content.Add(value.Dependencies);
-        Content.Add(BackendHelper.SetVariableValue(variable.Id.Surround('"'), value.Value));
+        Content.Add(Scratch3Helper.SetVariableValue(variable.Id.Surround('"'), value.Value));
         if (!string.IsNullOrEmpty(value.Cleanup)) Content.Add(value.Cleanup);
     }
 }

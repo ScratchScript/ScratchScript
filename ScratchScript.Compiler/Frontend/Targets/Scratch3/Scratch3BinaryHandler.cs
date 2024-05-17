@@ -39,6 +39,12 @@ public class Scratch3BinaryHandler(char commandSeparator) : IBinaryHandler
             left.Dependencies.Combine(commandSeparator, right.Dependencies),
             left.Cleanup.Combine(commandSeparator, right.Cleanup));
     }
+    
+    public ExpressionValue GetBinaryBitwiseExpression(ref Scope scope, BitwiseOperators op, ExpressionValue left,
+        ExpressionValue right)
+    {
+        throw new NotImplementedException();
+    }
 
     public ExpressionValue GetBinaryNumberComparisonExpression(ref Scope scope, CompareOperators op,
         ExpressionValue left,

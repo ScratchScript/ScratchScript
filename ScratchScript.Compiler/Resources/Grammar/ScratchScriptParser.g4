@@ -51,7 +51,6 @@ expression
     | expression LeftBracket expression RightBracket #arrayAccessExpression
     | addOperators expression #unaryAddExpression
     | expression bitwiseOperators expression #binaryBitwiseExpression
-    | expression shiftOperators expression #binaryBitwiseShiftExpression
     | expression multiplyOperators expression #binaryMultiplyExpression
     | expression addOperators expression #binaryAddExpression
     | expression compareOperators expression #binaryCompareExpression
@@ -62,14 +61,13 @@ expression
 
 multiplyOperators: Multiply | Divide | Modulus | Power;
 
-shiftOperators: leftShift | rightShift;
 leftShift: first=Lesser second=Lesser {$first.index + 1 == $second.index}?;
 rightShift: first=Greater second=Greater {$first.index + 1 == $second.index}?;
 
 addOperators: Plus | Minus;
 compareOperators: Equal | NotEqual | Greater | GreaterOrEqual | Lesser | LesserOrEqual;
 booleanOperators: And | Or;
-bitwiseOperators: BitwiseOr | BitwiseXor | BitwiseAnd;
+bitwiseOperators: BitwiseOr | BitwiseXor | BitwiseAnd | leftShift | rightShift;
 assignmentOperators: Assignment | AdditionAsignment | SubtractionAssignment | MultiplicationAssignment | DivisionAssignment | ModulusAssignment | PowerAssignment;
 postIncrementOperators: PostIncrement | PostDecrement;
 

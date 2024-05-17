@@ -1,8 +1,8 @@
 ﻿using ScratchScript.Compiler.Extensions;
 
-namespace ScratchScript.Compiler.Frontend;
+namespace ScratchScript.Compiler.Frontend.Targets.Scratch3;
 
-public static class BackendHelper
+public static class Scratch3Helper
 {
     public const string StackList = "__Stack";
     public const string VariableNamesList = "__VN";

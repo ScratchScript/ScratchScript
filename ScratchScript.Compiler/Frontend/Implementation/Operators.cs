@@ -32,6 +32,15 @@ public enum CompareOperators
     GreaterThanOrEqual
 }
 
+public enum BitwiseOperators
+{
+    Or,
+    And,
+    Xor,
+    LeftShift,
+    RightShift
+}
+
 public partial class ScratchScriptVisitor
 {
     public override TypedValue? VisitAddOperators(ScratchScriptParser.AddOperatorsContext context)
@@ -65,6 +74,16 @@ public partial class ScratchScriptVisitor
         if (context.GreaterOrEqual() != null) return new GenericValue<CompareOperators>(CompareOperators.GreaterThanOrEqual);
         if (context.Equal() != null) return new GenericValue<CompareOperators>(CompareOperators.Equal);
         if (context.NotEqual() != null) return new GenericValue<CompareOperators>(CompareOperators.NotEqual);
-        return base.VisitCompareOperators(context);
+        return null;
+    }
+
+    public override TypedValue? VisitBitwiseOperators(ScratchScriptParser.BitwiseOperatorsContext context)
+    {
+        if (context.BitwiseAnd() != null) return new GenericValue<BitwiseOperators>(BitwiseOperators.And);
+        if (context.BitwiseOr() != null) return new GenericValue<BitwiseOperators>(BitwiseOperators.Or);
+        if (context.BitwiseXor() != null) return new GenericValue<BitwiseOperators>(BitwiseOperators.Xor);
+        if (context.leftShift() != null) return new GenericValue<BitwiseOperators>(BitwiseOperators.LeftShift);
+        if (context.rightShift() != null) return new GenericValue<BitwiseOperators>(BitwiseOperators.RightShift);
+        return null;
     }
 }

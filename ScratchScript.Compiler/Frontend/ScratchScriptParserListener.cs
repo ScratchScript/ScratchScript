@@ -437,18 +437,6 @@ public interface IScratchScriptParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitArrayInitializeExpression([NotNull] ScratchScriptParser.ArrayInitializeExpressionContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>binaryBitwiseShiftExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterBinaryBitwiseShiftExpression([NotNull] ScratchScriptParser.BinaryBitwiseShiftExpressionContext context);
-	/// <summary>
-	/// Exit a parse tree produced by the <c>binaryBitwiseShiftExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitBinaryBitwiseShiftExpression([NotNull] ScratchScriptParser.BinaryBitwiseShiftExpressionContext context);
-	/// <summary>
 	/// Enter a parse tree produced by the <c>arrayAccessExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
 	/// </summary>
@@ -554,16 +542,6 @@ public interface IScratchScriptParserListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitMultiplyOperators([NotNull] ScratchScriptParser.MultiplyOperatorsContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="ScratchScriptParser.shiftOperators"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterShiftOperators([NotNull] ScratchScriptParser.ShiftOperatorsContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="ScratchScriptParser.shiftOperators"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitShiftOperators([NotNull] ScratchScriptParser.ShiftOperatorsContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="ScratchScriptParser.leftShift"/>.
 	/// </summary>

@@ -274,13 +274,6 @@ public interface IScratchScriptParserVisitor<Result> : IParseTreeVisitor<Result>
 	/// <return>The visitor result.</return>
 	Result VisitArrayInitializeExpression([NotNull] ScratchScriptParser.ArrayInitializeExpressionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>binaryBitwiseShiftExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitBinaryBitwiseShiftExpression([NotNull] ScratchScriptParser.BinaryBitwiseShiftExpressionContext context);
-	/// <summary>
 	/// Visit a parse tree produced by the <c>arrayAccessExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
 	/// </summary>
@@ -342,12 +335,6 @@ public interface IScratchScriptParserVisitor<Result> : IParseTreeVisitor<Result>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitMultiplyOperators([NotNull] ScratchScriptParser.MultiplyOperatorsContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="ScratchScriptParser.shiftOperators"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitShiftOperators([NotNull] ScratchScriptParser.ShiftOperatorsContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="ScratchScriptParser.leftShift"/>.
 	/// </summary>
