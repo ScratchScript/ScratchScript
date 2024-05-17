@@ -132,41 +132,41 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitVariableDeclarationStatement([NotNull] ScratchScriptParser.VariableDeclarationStatementContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="ScratchScriptParser.memberProcedureCallStatement"/>.
+	/// Enter a parse tree produced by <see cref="ScratchScriptParser.memberFunctionCallStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterMemberProcedureCallStatement([NotNull] ScratchScriptParser.MemberProcedureCallStatementContext context) { }
+	public virtual void EnterMemberFunctionCallStatement([NotNull] ScratchScriptParser.MemberFunctionCallStatementContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="ScratchScriptParser.memberProcedureCallStatement"/>.
+	/// Exit a parse tree produced by <see cref="ScratchScriptParser.memberFunctionCallStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitMemberProcedureCallStatement([NotNull] ScratchScriptParser.MemberProcedureCallStatementContext context) { }
+	public virtual void ExitMemberFunctionCallStatement([NotNull] ScratchScriptParser.MemberFunctionCallStatementContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="ScratchScriptParser.procedureCallStatement"/>.
+	/// Enter a parse tree produced by <see cref="ScratchScriptParser.functionCallStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterProcedureCallStatement([NotNull] ScratchScriptParser.ProcedureCallStatementContext context) { }
+	public virtual void EnterFunctionCallStatement([NotNull] ScratchScriptParser.FunctionCallStatementContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="ScratchScriptParser.procedureCallStatement"/>.
+	/// Exit a parse tree produced by <see cref="ScratchScriptParser.functionCallStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitProcedureCallStatement([NotNull] ScratchScriptParser.ProcedureCallStatementContext context) { }
+	public virtual void ExitFunctionCallStatement([NotNull] ScratchScriptParser.FunctionCallStatementContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="ScratchScriptParser.procedureDeclarationStatement"/>.
+	/// Enter a parse tree produced by <see cref="ScratchScriptParser.functionDeclarationStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterProcedureDeclarationStatement([NotNull] ScratchScriptParser.ProcedureDeclarationStatementContext context) { }
+	public virtual void EnterFunctionDeclarationStatement([NotNull] ScratchScriptParser.FunctionDeclarationStatementContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="ScratchScriptParser.procedureDeclarationStatement"/>.
+	/// Exit a parse tree produced by <see cref="ScratchScriptParser.functionDeclarationStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitProcedureDeclarationStatement([NotNull] ScratchScriptParser.ProcedureDeclarationStatementContext context) { }
+	public virtual void ExitFunctionDeclarationStatement([NotNull] ScratchScriptParser.FunctionDeclarationStatementContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="ScratchScriptParser.enumDeclarationStatement"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -384,17 +384,17 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitTypedIdentifier([NotNull] ScratchScriptParser.TypedIdentifierContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="ScratchScriptParser.procedureArgument"/>.
+	/// Enter a parse tree produced by <see cref="ScratchScriptParser.functionArgument"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterProcedureArgument([NotNull] ScratchScriptParser.ProcedureArgumentContext context) { }
+	public virtual void EnterFunctionArgument([NotNull] ScratchScriptParser.FunctionArgumentContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="ScratchScriptParser.procedureArgument"/>.
+	/// Exit a parse tree produced by <see cref="ScratchScriptParser.functionArgument"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitProcedureArgument([NotNull] ScratchScriptParser.ProcedureArgumentContext context) { }
+	public virtual void ExitFunctionArgument([NotNull] ScratchScriptParser.FunctionArgumentContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="ScratchScriptParser.debuggerStatement"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -548,20 +548,6 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitParenthesizedExpression([NotNull] ScratchScriptParser.ParenthesizedExpressionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by the <c>procedureCallExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterProcedureCallExpression([NotNull] ScratchScriptParser.ProcedureCallExpressionContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by the <c>procedureCallExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitProcedureCallExpression([NotNull] ScratchScriptParser.ProcedureCallExpressionContext context) { }
-	/// <summary>
 	/// Enter a parse tree produced by the <c>binaryBooleanExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -575,6 +561,20 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitBinaryBooleanExpression([NotNull] ScratchScriptParser.BinaryBooleanExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>functionCallExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterFunctionCallExpression([NotNull] ScratchScriptParser.FunctionCallExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>functionCallExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitFunctionCallExpression([NotNull] ScratchScriptParser.FunctionCallExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by the <c>binaryCompareExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
@@ -604,6 +604,20 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitTernaryExpression([NotNull] ScratchScriptParser.TernaryExpressionContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>memberFunctionCallExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterMemberFunctionCallExpression([NotNull] ScratchScriptParser.MemberFunctionCallExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>memberFunctionCallExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitMemberFunctionCallExpression([NotNull] ScratchScriptParser.MemberFunctionCallExpressionContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>binaryAddExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -617,20 +631,6 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitBinaryAddExpression([NotNull] ScratchScriptParser.BinaryAddExpressionContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by the <c>memberProcedureCallExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterMemberProcedureCallExpression([NotNull] ScratchScriptParser.MemberProcedureCallExpressionContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by the <c>memberProcedureCallExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitMemberProcedureCallExpression([NotNull] ScratchScriptParser.MemberProcedureCallExpressionContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="ScratchScriptParser.multiplyOperators"/>.
 	/// <para>The default implementation does nothing.</para>

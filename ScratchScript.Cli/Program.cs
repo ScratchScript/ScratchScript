@@ -6,9 +6,7 @@ using ScratchScriptVisitor = ScratchScript.Compiler.Frontend.Implementation.Scra
 
 
 const string source = """
-                      on start {
-                         let a = 3;
-                         let b = a >= 3;
+                      function test(x: number, y) {
                       }
                       """;
 var inputStream = new AntlrInputStream(source);

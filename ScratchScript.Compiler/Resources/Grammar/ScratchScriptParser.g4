@@ -5,17 +5,17 @@ options {
 }
 
 program: topLevelStatement* EOF;
-topLevelStatement: procedureDeclarationStatement | enumDeclarationStatement | attributeStatement | eventStatement | importStatement | namespaceStatement;
+topLevelStatement: functionDeclarationStatement | enumDeclarationStatement | attributeStatement | eventStatement | importStatement | namespaceStatement;
 line: ((statement Semicolon) | ifStatement | whileStatement | repeatStatement | forStatement | switchStatement | irBlockStatement | returnStatement | breakStatement | debuggerStatement | throwStatement | comment);
-statement: assignmentStatement | listAssignmentStatement | procedureCallStatement | memberProcedureCallStatement | variableDeclarationStatement | postIncrementStatement;
+statement: assignmentStatement | listAssignmentStatement | functionCallStatement | memberFunctionCallStatement | variableDeclarationStatement | postIncrementStatement;
 
 eventStatement: Event Identifier (LeftParen (expression (Comma expression)*?) RightParen)? block;
 assignmentStatement: Identifier assignmentOperators expression;
 listAssignmentStatement: Identifier LeftBracket expression RightBracket;
 variableDeclarationStatement: VariableDeclare Identifier Assignment expression;
-memberProcedureCallStatement: expression Dot procedureCallStatement;
-procedureCallStatement: Identifier LeftParen (procedureArgument (Comma procedureArgument)*?)? RightParen; 
-procedureDeclarationStatement: attributeStatement*? ProcedureDeclare Identifier LeftParen (typedIdentifier (Comma typedIdentifier)*?)? RightParen block;
+memberFunctionCallStatement: expression Dot functionCallStatement;
+functionCallStatement: Identifier LeftParen (functionArgument (Comma functionArgument)*?)? RightParen; 
+functionDeclarationStatement: attributeStatement*? FunctionDeclare Identifier LeftParen (typedIdentifier (Comma typedIdentifier)*?)? RightParen block;
 
 enumDeclarationStatement: EnumDeclare Identifier LeftBrace (enumEntry (Comma enumEntry)*?)? RightBrace;
 enumEntry: Identifier (Assignment constant)?;
@@ -36,15 +36,15 @@ throwStatement: Throw String Semicolon;
 breakStatement: Break Semicolon;
 namespaceStatement: Namespace String Semicolon;
 switchStatement: Switch LeftParen expression RightParen switchBlock;
-typedIdentifier: Identifier Colon type;
-procedureArgument: (Identifier Colon)? expression;
+typedIdentifier: Identifier (Colon type)?;
+functionArgument: (Identifier Colon)? expression;
 debuggerStatement: Debugger Semicolon;
 
 expression
     : constant #constantExpression
     | Identifier #identifierExpression
-    | procedureCallStatement #procedureCallExpression
-    | expression Dot procedureCallStatement #memberProcedureCallExpression
+    | functionCallStatement #functionCallExpression
+    | expression Dot functionCallStatement #memberFunctionCallExpression
     | LeftBracket (expression (Comma expression)*?)? RightBracket #arrayInitializeExpression
     | LeftParen expression RightParen #parenthesizedExpression
     | Not expression #notExpression

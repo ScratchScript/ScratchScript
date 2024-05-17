@@ -150,7 +150,7 @@ While
 VariableDeclare
 Import
 EnumDeclare
-ProcedureDeclare
+FunctionDeclare
 Return
 Throw
 Repeat
@@ -236,7 +236,7 @@ While
 VariableDeclare
 Import
 EnumDeclare
-ProcedureDeclare
+FunctionDeclare
 Return
 Throw
 Repeat

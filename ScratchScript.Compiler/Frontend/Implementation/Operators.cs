@@ -69,9 +69,11 @@ public partial class ScratchScriptVisitor
     public override TypedValue? VisitCompareOperators(ScratchScriptParser.CompareOperatorsContext context)
     {
         if (context.Lesser() != null) return new GenericValue<CompareOperators>(CompareOperators.LessThan);
-        if (context.LesserOrEqual() != null) return new GenericValue<CompareOperators>(CompareOperators.LessThanOrEqual);
+        if (context.LesserOrEqual() != null)
+            return new GenericValue<CompareOperators>(CompareOperators.LessThanOrEqual);
         if (context.Greater() != null) return new GenericValue<CompareOperators>(CompareOperators.GreaterThan);
-        if (context.GreaterOrEqual() != null) return new GenericValue<CompareOperators>(CompareOperators.GreaterThanOrEqual);
+        if (context.GreaterOrEqual() != null)
+            return new GenericValue<CompareOperators>(CompareOperators.GreaterThanOrEqual);
         if (context.Equal() != null) return new GenericValue<CompareOperators>(CompareOperators.Equal);
         if (context.NotEqual() != null) return new GenericValue<CompareOperators>(CompareOperators.NotEqual);
         return null;

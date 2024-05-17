@@ -103,7 +103,7 @@ While: 'while';
 VariableDeclare: 'let' Whitespace+;
 Import: 'import' Whitespace+;
 EnumDeclare: 'enum' Whitespace+;
-ProcedureDeclare: 'function' Whitespace+;
+FunctionDeclare: 'function' Whitespace+;
 Return: 'return' Whitespace+;
 Throw: 'throw' Whitespace+;
 Repeat: 'repeat';

@@ -7,7 +7,7 @@ namespace ScratchScript.Compiler.Frontend.Implementation;
 public partial class ScratchScriptVisitor
 {
     private IUnaryHandler _unaryHandler = null!;
-    
+
     public override TypedValue? VisitUnaryAddExpression(ScratchScriptParser.UnaryAddExpressionContext context)
     {
         // get the operator
@@ -43,7 +43,7 @@ public partial class ScratchScriptVisitor
             DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
             return null;
         }
-        
+
         // operand must be a boolean
         if (operand.Type != ScratchType.Boolean)
         {

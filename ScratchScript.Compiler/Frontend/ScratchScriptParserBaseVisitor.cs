@@ -115,7 +115,7 @@ public partial class ScratchScriptParserBaseVisitor<Result> : AbstractParseTreeV
 	/// <return>The visitor result.</return>
 	public virtual Result VisitVariableDeclarationStatement([NotNull] ScratchScriptParser.VariableDeclarationStatementContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="ScratchScriptParser.memberProcedureCallStatement"/>.
+	/// Visit a parse tree produced by <see cref="ScratchScriptParser.memberFunctionCallStatement"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -123,9 +123,9 @@ public partial class ScratchScriptParserBaseVisitor<Result> : AbstractParseTreeV
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitMemberProcedureCallStatement([NotNull] ScratchScriptParser.MemberProcedureCallStatementContext context) { return VisitChildren(context); }
+	public virtual Result VisitMemberFunctionCallStatement([NotNull] ScratchScriptParser.MemberFunctionCallStatementContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="ScratchScriptParser.procedureCallStatement"/>.
+	/// Visit a parse tree produced by <see cref="ScratchScriptParser.functionCallStatement"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -133,9 +133,9 @@ public partial class ScratchScriptParserBaseVisitor<Result> : AbstractParseTreeV
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitProcedureCallStatement([NotNull] ScratchScriptParser.ProcedureCallStatementContext context) { return VisitChildren(context); }
+	public virtual Result VisitFunctionCallStatement([NotNull] ScratchScriptParser.FunctionCallStatementContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="ScratchScriptParser.procedureDeclarationStatement"/>.
+	/// Visit a parse tree produced by <see cref="ScratchScriptParser.functionDeclarationStatement"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -143,7 +143,7 @@ public partial class ScratchScriptParserBaseVisitor<Result> : AbstractParseTreeV
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitProcedureDeclarationStatement([NotNull] ScratchScriptParser.ProcedureDeclarationStatementContext context) { return VisitChildren(context); }
+	public virtual Result VisitFunctionDeclarationStatement([NotNull] ScratchScriptParser.FunctionDeclarationStatementContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="ScratchScriptParser.enumDeclarationStatement"/>.
 	/// <para>
@@ -325,7 +325,7 @@ public partial class ScratchScriptParserBaseVisitor<Result> : AbstractParseTreeV
 	/// <return>The visitor result.</return>
 	public virtual Result VisitTypedIdentifier([NotNull] ScratchScriptParser.TypedIdentifierContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="ScratchScriptParser.procedureArgument"/>.
+	/// Visit a parse tree produced by <see cref="ScratchScriptParser.functionArgument"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -333,7 +333,7 @@ public partial class ScratchScriptParserBaseVisitor<Result> : AbstractParseTreeV
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitProcedureArgument([NotNull] ScratchScriptParser.ProcedureArgumentContext context) { return VisitChildren(context); }
+	public virtual Result VisitFunctionArgument([NotNull] ScratchScriptParser.FunctionArgumentContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="ScratchScriptParser.debuggerStatement"/>.
 	/// <para>
@@ -455,17 +455,6 @@ public partial class ScratchScriptParserBaseVisitor<Result> : AbstractParseTreeV
 	/// <return>The visitor result.</return>
 	public virtual Result VisitParenthesizedExpression([NotNull] ScratchScriptParser.ParenthesizedExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by the <c>procedureCallExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>
-	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
-	/// on <paramref name="context"/>.
-	/// </para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	public virtual Result VisitProcedureCallExpression([NotNull] ScratchScriptParser.ProcedureCallExpressionContext context) { return VisitChildren(context); }
-	/// <summary>
 	/// Visit a parse tree produced by the <c>binaryBooleanExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
 	/// <para>
@@ -476,6 +465,17 @@ public partial class ScratchScriptParserBaseVisitor<Result> : AbstractParseTreeV
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitBinaryBooleanExpression([NotNull] ScratchScriptParser.BinaryBooleanExpressionContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by the <c>functionCallExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitFunctionCallExpression([NotNull] ScratchScriptParser.FunctionCallExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by the <c>binaryCompareExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
@@ -499,6 +499,17 @@ public partial class ScratchScriptParserBaseVisitor<Result> : AbstractParseTreeV
 	/// <return>The visitor result.</return>
 	public virtual Result VisitTernaryExpression([NotNull] ScratchScriptParser.TernaryExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
+	/// Visit a parse tree produced by the <c>memberFunctionCallExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitMemberFunctionCallExpression([NotNull] ScratchScriptParser.MemberFunctionCallExpressionContext context) { return VisitChildren(context); }
+	/// <summary>
 	/// Visit a parse tree produced by the <c>binaryAddExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
 	/// <para>
@@ -509,17 +520,6 @@ public partial class ScratchScriptParserBaseVisitor<Result> : AbstractParseTreeV
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitBinaryAddExpression([NotNull] ScratchScriptParser.BinaryAddExpressionContext context) { return VisitChildren(context); }
-	/// <summary>
-	/// Visit a parse tree produced by the <c>memberProcedureCallExpression</c>
-	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
-	/// <para>
-	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
-	/// on <paramref name="context"/>.
-	/// </para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	public virtual Result VisitMemberProcedureCallExpression([NotNull] ScratchScriptParser.MemberProcedureCallExpressionContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="ScratchScriptParser.multiplyOperators"/>.
 	/// <para>

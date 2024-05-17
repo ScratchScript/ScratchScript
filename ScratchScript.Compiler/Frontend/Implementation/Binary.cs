@@ -9,7 +9,7 @@ namespace ScratchScript.Compiler.Frontend.Implementation;
 public partial class ScratchScriptVisitor
 {
     private IBinaryHandler _binaryHandler = null!;
-    
+
     public override TypedValue? VisitBinaryBitwiseExpression(ScratchScriptParser.BinaryBitwiseExpressionContext context)
     {
         // get the operator
@@ -88,13 +88,13 @@ public partial class ScratchScriptVisitor
 
         if (op.Value is not (CompareOperators.Equal or CompareOperators.NotEqual))
             return _binaryHandler.GetBinaryNumberComparisonExpression(ref _scope, op.Value, left, right);
-        
+
         //TODO: this logic should be updated to handle enums and custom types in the future
-            
+
         var equalExpression = left.Type == ScratchType.Number
             ? _binaryHandler.GetBinaryNumberEquationExpression(ref _scope, left, right)
             : _binaryHandler.GetBinaryStringEquationExpression(ref _scope, left, right);
-            
+
         if (op.Value == CompareOperators.Equal) return equalExpression;
         return new ExpressionValue($"! {equalExpression.Value}", equalExpression.Type, equalExpression.Dependencies,
             equalExpression.Cleanup);

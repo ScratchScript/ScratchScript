@@ -16,4 +16,9 @@ public static class StringExtensions
     {
         return string.Join(separator, new List<string>([str, ..with]).Where(s => !string.IsNullOrEmpty(s)));
     }
+
+    public static string Capitalize(this string str)
+    {
+        return string.Concat(str[0].ToString().ToUpper(), str.AsSpan(1));
+    }
 }

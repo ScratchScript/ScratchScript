@@ -38,3 +38,9 @@ public abstract class Scope
         return null;
     }
 }
+
+public abstract class FunctionScope : Scope
+{
+    public Dictionary<string, ScratchScriptVariable> Arguments { get; } = [];
+    public string FunctionName { get; set; }
+}

@@ -2,6 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using ScratchScript.Compiler.Diagnostics;
+using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.Information;
 using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Frontend.Targets.Scratch3;
@@ -105,7 +106,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
     {
         if (context.Type() != null)
         {
-            var kind = Enum.Parse<ScratchTypeKind>(context.Type().GetText());
+            var kind = Enum.Parse<ScratchTypeKind>(context.Type().GetText().Capitalize());
             var type = new ScratchType(kind);
             return new TypeDeclarationValue(type);
         }
@@ -133,12 +134,12 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
 
     public override TypedValue VisitBlock(ScratchScriptParser.BlockContext context)
     {
-        var scope = Target switch
-        {
-            CompilerTarget.Scratch3 => new Scratch3Scope(),
-            _ => throw new NotImplementedException()
-        };
+        var scope = CreateDefaultScope();
+        return VisitBlock(scope, context);
+    }
 
+    private ScopeValue VisitBlock(Scope scope, ScratchScriptParser.BlockContext context)
+    {
         if (_scope != null)
         {
             scope.ParentScope = _scope;
@@ -155,5 +156,23 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
 
         _scope = scope.ParentScope as Scratch3Scope;
         return new ScopeValue(scope);
+    }
+
+    private Scope CreateDefaultScope()
+    {
+        return Target switch
+        {
+            CompilerTarget.Scratch3 => new Scratch3Scope(),
+            _ => throw new NotImplementedException()
+        };
+    }
+
+    private FunctionScope CreateFunctionScope()
+    {
+        return Target switch
+        {
+            CompilerTarget.Scratch3 => new Scratch3FunctionScope(),
+            _ => throw new NotImplementedException()
+        };
     }
 }

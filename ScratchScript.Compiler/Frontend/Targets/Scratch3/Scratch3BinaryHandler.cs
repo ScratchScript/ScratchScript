@@ -1,6 +1,7 @@
 ﻿using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.Implementation;
 using ScratchScript.Compiler.Types;
+
 // ReSharper disable SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
 
 namespace ScratchScript.Compiler.Frontend.Targets.Scratch3;
@@ -39,7 +40,7 @@ public class Scratch3BinaryHandler(char commandSeparator) : IBinaryHandler
             left.Dependencies.Combine(commandSeparator, right.Dependencies),
             left.Cleanup.Combine(commandSeparator, right.Cleanup));
     }
-    
+
     public ExpressionValue GetBinaryBitwiseExpression(ref Scope scope, BitwiseOperators op, ExpressionValue left,
         ExpressionValue right)
     {

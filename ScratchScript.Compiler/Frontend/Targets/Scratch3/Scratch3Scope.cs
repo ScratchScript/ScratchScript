@@ -1,6 +1,5 @@
 ﻿using System.Text;
 using ScratchScript.Compiler.Extensions;
-using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Targets.Scratch3;
 
@@ -32,25 +31,12 @@ public class Scratch3Scope : Scope
         sb.AppendLine("end");
         return sb.ToString();
     }
+}
 
-    public void AddVariable(string name, string id, ExpressionValue value)
+public class Scratch3FunctionScope : FunctionScope
+{
+    public override string ToString(char separator)
     {
-        if (value.Value == null) throw new Exception("Cannot set variable to null.");
-
-        if (!string.IsNullOrEmpty(value.Dependencies)) Content.Add(value.Dependencies);
-        Content.Add(Scratch3Helper.Push(Scratch3Helper.VariableNamesList, id.Surround('"')));
-        Content.Add(Scratch3Helper.Push(Scratch3Helper.VariableValuesList, value.Value));
-        if (!string.IsNullOrEmpty(value.Cleanup)) Content.Add(value.Cleanup);
-
-        Variables[name] = new ScratchScriptVariable(name, id, value.Type);
-    }
-
-    public void SetVariable(ScratchScriptVariable variable, ExpressionValue value)
-    {
-        if (value.Value == null) throw new Exception("Cannot set variable to null.");
-
-        if (!string.IsNullOrEmpty(value.Dependencies)) Content.Add(value.Dependencies);
-        Content.Add(Scratch3Helper.SetVariableValue(variable.Id.Surround('"'), value.Value));
-        if (!string.IsNullOrEmpty(value.Cleanup)) Content.Add(value.Cleanup);
+        return "";
     }
 }

@@ -1,4 +1,4 @@
-// Generated from D:/Projects/RiderProjects/ScratchScript/ScratchScript.Compiler/Resources/Syntax/ScratchScriptLexer.g4 by ANTLR 4.13.1
+// Generated from D:/Projects/RiderProjects/ScratchScript/ScratchScript.Compiler/Resources/Grammar/ScratchScriptLexer.g4 by ANTLR 4.13.1
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -27,7 +27,7 @@ public class ScratchScriptLexer extends Lexer {
 		SubtractionAssignment=45, MultiplicationAssignment=46, DivisionAssignment=47, 
 		ModulusAssignment=48, PowerAssignment=49, If=50, Else=51, True=52, False=53, 
 		Break=54, Default=55, Debugger=56, As=57, For=58, Ir=59, Case=60, Switch=61, 
-		While=62, VariableDeclare=63, Import=64, EnumDeclare=65, ProcedureDeclare=66, 
+		While=62, VariableDeclare=63, Import=64, EnumDeclare=65, FunctionDeclare=66, 
 		Return=67, Throw=68, Repeat=69, Event=70, From=71, Namespace=72, Type=73, 
 		List=74, Number=75, Identifier=76, String=77, Color=78, EnterInterpolatedExpression=79, 
 		Text=80, EscapeSequence=81, CloseInterpolatedString=82;
@@ -54,7 +54,7 @@ public class ScratchScriptLexer extends Lexer {
 			"SubtractionAssignment", "MultiplicationAssignment", "DivisionAssignment", 
 			"ModulusAssignment", "PowerAssignment", "If", "Else", "True", "False", 
 			"Break", "Default", "Debugger", "As", "For", "Ir", "Case", "Switch", 
-			"While", "VariableDeclare", "Import", "EnumDeclare", "ProcedureDeclare", 
+			"While", "VariableDeclare", "Import", "EnumDeclare", "FunctionDeclare", 
 			"Return", "Throw", "Repeat", "Event", "From", "Namespace", "Type", "List", 
 			"Number", "Identifier", "String", "Color", "EnterInterpolatedExpression", 
 			"Text", "EscapeSequence", "CloseInterpolatedString"
@@ -88,7 +88,7 @@ public class ScratchScriptLexer extends Lexer {
 			"Equal", "NotEqual", "AdditionAsignment", "SubtractionAssignment", "MultiplicationAssignment", 
 			"DivisionAssignment", "ModulusAssignment", "PowerAssignment", "If", "Else", 
 			"True", "False", "Break", "Default", "Debugger", "As", "For", "Ir", "Case", 
-			"Switch", "While", "VariableDeclare", "Import", "EnumDeclare", "ProcedureDeclare", 
+			"Switch", "While", "VariableDeclare", "Import", "EnumDeclare", "FunctionDeclare", 
 			"Return", "Throw", "Repeat", "Event", "From", "Namespace", "Type", "List", 
 			"Number", "Identifier", "String", "Color", "EnterInterpolatedExpression", 
 			"Text", "EscapeSequence", "CloseInterpolatedString"

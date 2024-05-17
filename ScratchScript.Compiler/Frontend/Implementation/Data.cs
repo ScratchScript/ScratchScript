@@ -8,7 +8,7 @@ namespace ScratchScript.Compiler.Frontend.Implementation;
 public partial class ScratchScriptVisitor
 {
     private IDataHandler _dataHandler = null!;
-    
+
     public override TypedValue? VisitVariableDeclarationStatement(
         ScratchScriptParser.VariableDeclarationStatementContext context)
     {
