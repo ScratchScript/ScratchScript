@@ -62,6 +62,11 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
                 CompilerTarget.Scratch3 => new Scratch3UnaryHandler(),
                 _ => throw new NotImplementedException()
             };
+            _functionHandler = value switch
+            {
+                CompilerTarget.Scratch3 => new Scratch3FunctionHandler(),
+                _ => throw new NotImplementedException()
+            };
         }
     }
 

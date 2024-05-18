@@ -1,10 +1,13 @@
-﻿using ScratchScript.Compiler.Frontend.Targets;
+﻿using ScratchScript.Compiler.Frontend.Information;
+using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
+    private IFunctionHandler _functionHandler = null!;
+    
     public override TypedValue? VisitMemberFunctionCallStatement(
         ScratchScriptParser.MemberFunctionCallStatementContext context)
     {
@@ -33,10 +36,19 @@ public partial class ScratchScriptVisitor
         var name = context.Identifier().GetText();
 
         // verify that the name can be used
+        // TODO: this technically should be implemented by doing function overloading
+        // but for now, basic functions will do. implement it when functions are stable though!
         if (RequireIdentifierUnclaimedOrFail(name, context, context.Identifier())) return null;
 
         var scope = CreateFunctionScope();
         scope.FunctionName = name;
+        
+        var locationInformation = new FunctionLocationInformation
+        {
+            DefinitionContext = context,
+            FunctionNameIdentifier = context.Identifier(),
+            ArgumentInformation = []
+        };
 
         // register the arguments before parsing the block
         foreach (var identifier in context.typedIdentifier())
@@ -53,8 +65,14 @@ public partial class ScratchScriptVisitor
             // all functions are top-level (for now) so the scope depth will always be 0
             scope.Arguments[argumentName] = new ScratchScriptVariable(argumentName,
                 _dataHandler.GenerateVariableId(0, Id, argumentName), argumentType);
+            locationInformation.ArgumentInformation[argumentName] = (identifier.Identifier(), identifier.type());
         }
-
+        
+        // set the LocationInformation before visiting the scope as any identifier checks
+        // will fail to point the location of the acquirer otherwise.
+        LocationInformation.Functions[name] = locationInformation;
+        
+        scope = VisitBlock(scope, context.block()).Scope as FunctionScope;
         return null;
     }
 }

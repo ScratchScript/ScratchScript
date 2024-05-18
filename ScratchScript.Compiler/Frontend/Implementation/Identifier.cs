@@ -1,6 +1,7 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using ScratchScript.Compiler.Diagnostics;
+using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
@@ -16,6 +17,17 @@ public partial class ScratchScriptVisitor
         if (_scope?.GetVariableDepth(identifier) is { } variableDepth)
             return (LocationInformation.Variables[variableDepth][identifier].Context,
                 LocationInformation.Variables[variableDepth][identifier].Identifier);
+        
+        if (_scope is FunctionScope functionScope && functionScope.Arguments.ContainsKey(identifier))
+        {
+            if (functionScope.Arguments.ContainsKey(identifier))
+                return (LocationInformation.Functions[functionScope.FunctionName].DefinitionContext,
+                    LocationInformation.Functions[functionScope.FunctionName].ArgumentInformation[identifier]
+                        .Identifier);
+            if (functionScope.FunctionName == identifier)
+                return (LocationInformation.Functions[functionScope.FunctionName].DefinitionContext,
+                    LocationInformation.Functions[functionScope.FunctionName].FunctionNameIdentifier);
+        }
 
         return null;
     }
@@ -49,7 +61,8 @@ public partial class ScratchScriptVisitor
     {
         if (_scope?.GetVariable(identifier) is { } variable)
             return _dataHandler.GetVariable(ref _scope, variable);
-
+        if (_scope is FunctionScope functionScope && functionScope.Arguments.ContainsKey(identifier))
+            return _functionHandler.GetArgument(ref _scope, identifier);
         return null;
     }
 }
