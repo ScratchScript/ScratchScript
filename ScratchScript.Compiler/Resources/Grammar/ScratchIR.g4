@@ -12,9 +12,9 @@ command
     | 'repeat' expression command*? End #repeatCommand
     | ifStatement #ifCommand
     
-    // Procedures
+    // Functions
     | 'call' Identifier #callCommand
-    | 'raw' Identifier callProcedureArgument*? #rawCommand
+    | 'raw' Identifier callFunctionArgument*? #rawCommand
     
     // Lists
     | 'push' Identifier expression #pushCommand
@@ -24,7 +24,7 @@ command
     | 'popall' Identifier #popAllCommand;     
  
 block
-    : 'proc' WarpIdentifier? Identifier procedureArgument* command*? End #procedureBlock
+    : 'block' WarpIdentifier? Identifier functionArgument* command*? End #functionBlock
     | 'on' Event command*? End #eventBlock
     | 'flag' Identifier #flagTopLevelStatement;
 
@@ -38,7 +38,7 @@ expression
     | multiplyOperators expression expression #binaryMultiplyExpression
     | booleanOperators expression expression #binaryBooleanExpression
     | compareOperators expression expression #binaryCompareExpression
-    | 'rawshadow' Identifier callProcedureArgument*? 'endshadow' #rawShadowExpression
+    | 'rawshadow' Identifier callFunctionArgument*? 'endshadow' #rawShadowExpression
     | '!' expression #notExpression
     | Identifier '#' expression #listAccessExpression;
 
@@ -48,15 +48,15 @@ Event: 'start'; //todo: add other events
 elseIfStatement: command*? End | ifStatement;
 ifStatement: 'if' expression command*? End ('else' elseIfStatement)?;
 
-procedureArgument: Identifier procedureArgumentTypeDeclaration;
-callProcedureArgument: procedureArgumentType Identifier ':' expression;
+functionArgument: Identifier functionArgumentTypeDeclaration;
+callFunctionArgument: functionArgumentType Identifier ':' expression;
 
-procedureArgumentType: 'i:' | 'f:';
+functionArgumentType: 'i:' | 'f:';
 
 variableIdentifier: 'var:' Identifier;
 arrayIdentifier: 'arr:' Identifier;
 constant: Number | String | Color;
-procedureArgumentTypeDeclaration: ProcedureType;
+functionArgumentTypeDeclaration: FunctionType;
 
 addOperators: '+' | '-' | '~';
 multiplyOperators: '*' | '/' | '%';
@@ -65,7 +65,7 @@ booleanOperators: '&&' | '||' | '^';
 compareOperators: '==' | '!=' | '>' | '>=' | '<' | '<=';
 
 Type: NumberType | StringType | ListType;
-ProcedureType: StringNumberType | BooleanType;
+FunctionType: StringNumberType | BooleanType;
 NumberType: ':number';
 StringType: ':string';
 ListType: ':list';

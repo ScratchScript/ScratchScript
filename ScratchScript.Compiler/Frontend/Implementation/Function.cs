@@ -42,6 +42,7 @@ public partial class ScratchScriptVisitor
 
         var scope = CreateFunctionScope();
         scope.FunctionName = name;
+        scope.Header = $"block {name}";
         
         var locationInformation = new FunctionLocationInformation
         {
@@ -73,6 +74,7 @@ public partial class ScratchScriptVisitor
         LocationInformation.Functions[name] = locationInformation;
         
         scope = VisitBlock(scope, context.block()).Scope as FunctionScope;
+        Exports.Functions[name] = scope ?? throw new Exception("The scope returned from VisitBlock() was null.");
         return null;
     }
 }

@@ -78,6 +78,8 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
 
             foreach (var eventScope in Exports.Events.Values)
                 sb.AppendLine(eventScope.ToString(Settings.CommandSeparator));
+            foreach (var functionScope in Exports.Functions.Values)
+                sb.AppendLine(functionScope.ToString(Settings.CommandSeparator));
 
             return sb.ToString();
         }

@@ -1,4 +1,5 @@
-﻿using Antlr4.Runtime;
+﻿using System.Diagnostics;
+using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.Targets;
@@ -47,19 +48,23 @@ public partial class ScratchScriptVisitor
 
     public override TypedValue? VisitIdentifierExpression(ScratchScriptParser.IdentifierExpressionContext context)
     {
-        if (VisitIdentifier(context.Identifier().GetText()) is not { } result)
+        var name = context.Identifier().GetText();
+        
+        if (VisitIdentifier(name) is not { } result)
         {
             DiagnosticReporter.Error((int)ScratchScriptError.UnknownIdentifier, context, context.Identifier(),
-                context.Identifier().GetText());
+                name);
             return null;
         }
 
-        return new ExpressionValue(result.Value, result.Type);
+        return new ExpressionValue(result.Value, result.Type, ArgumentName: _scope is FunctionScope ? name: "");
     }
 
     private TypedValue? VisitIdentifier(string identifier)
     {
-        if (_scope?.GetVariable(identifier) is { } variable)
+        Debug.Assert(_scope != null, nameof(_scope) + " != null");
+        
+        if (_scope.GetVariable(identifier) is { } variable)
             return _dataHandler.GetVariable(ref _scope, variable);
         if (_scope is FunctionScope functionScope && functionScope.Arguments.ContainsKey(identifier))
             return _functionHandler.GetArgument(ref _scope, identifier);

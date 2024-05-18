@@ -8,7 +8,7 @@ public record TypeDeclarationValue(ScratchType Type) : TypedValue(null, Type);
 
 public record EnumEntryValue(string Name, object? Value, ScratchType Type) : TypedValue(Value, Type);
 
-public record ExpressionValue(object? Value, ScratchType Type, string Dependencies = "", string Cleanup = "")
+public record ExpressionValue(object? Value, ScratchType Type, string Dependencies = "", string Cleanup = "", string ArgumentName = "")
     : TypedValue(Value, Type);
 
 public record ScopeValue(Scope Scope) : TypedValue(null, ScratchType.Unknown);
