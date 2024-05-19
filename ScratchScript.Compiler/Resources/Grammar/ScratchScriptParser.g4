@@ -15,7 +15,7 @@ listAssignmentStatement: Identifier LeftBracket expression RightBracket;
 variableDeclarationStatement: VariableDeclare Identifier Assignment expression;
 memberFunctionCallStatement: expression Dot functionCallStatement;
 functionCallStatement: Identifier LeftParen (functionArgument (Comma functionArgument)*?)? RightParen; 
-functionDeclarationStatement: attributeStatement*? FunctionDeclare Identifier LeftParen (typedIdentifier (Comma typedIdentifier)*?)? RightParen block;
+functionDeclarationStatement: attributeStatement*? FunctionDeclare Identifier LeftParen (typedIdentifier (Comma typedIdentifier)*?)? RightParen (Colon type)? block;
 
 enumDeclarationStatement: EnumDeclare Identifier LeftBrace (enumEntry (Comma enumEntry)*?)? RightBrace;
 enumEntry: Identifier (Assignment constant)?;
@@ -30,7 +30,7 @@ elseIfStatement: block | ifStatement;
 postIncrementStatement: Identifier postIncrementOperators;
 importStatement: Import ((LeftBrace Identifier (Comma Identifier)*? RightBrace) | importAll) From String Semicolon;
 attributeStatement: At Identifier (LeftParen (constant (Comma constant)*?)? RightParen)?;
-returnStatement: Return expression Semicolon;
+returnStatement: Return expression? Semicolon;
 repeatStatement: Repeat LeftParen expression RightParen block;
 throwStatement: Throw String Semicolon;
 breakStatement: Break Semicolon;

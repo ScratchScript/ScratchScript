@@ -177,7 +177,7 @@ public partial class ScratchIRBaseVisitor<Result> : AbstractParseTreeVisitor<Res
 	/// <return>The visitor result.</return>
 	public virtual Result VisitPopAllCommand([NotNull] ScratchIRParser.PopAllCommandContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by the <c>procedureBlock</c>
+	/// Visit a parse tree produced by the <c>functionBlock</c>
 	/// labeled alternative in <see cref="ScratchIRParser.block"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
@@ -186,7 +186,7 @@ public partial class ScratchIRBaseVisitor<Result> : AbstractParseTreeVisitor<Res
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitProcedureBlock([NotNull] ScratchIRParser.ProcedureBlockContext context) { return VisitChildren(context); }
+	public virtual Result VisitFunctionBlock([NotNull] ScratchIRParser.FunctionBlockContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by the <c>eventBlock</c>
 	/// labeled alternative in <see cref="ScratchIRParser.block"/>.
@@ -362,7 +362,7 @@ public partial class ScratchIRBaseVisitor<Result> : AbstractParseTreeVisitor<Res
 	/// <return>The visitor result.</return>
 	public virtual Result VisitIfStatement([NotNull] ScratchIRParser.IfStatementContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="ScratchIRParser.procedureArgument"/>.
+	/// Visit a parse tree produced by <see cref="ScratchIRParser.functionArgument"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -370,9 +370,9 @@ public partial class ScratchIRBaseVisitor<Result> : AbstractParseTreeVisitor<Res
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitProcedureArgument([NotNull] ScratchIRParser.ProcedureArgumentContext context) { return VisitChildren(context); }
+	public virtual Result VisitFunctionArgument([NotNull] ScratchIRParser.FunctionArgumentContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="ScratchIRParser.callProcedureArgument"/>.
+	/// Visit a parse tree produced by <see cref="ScratchIRParser.callFunctionArgument"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -380,9 +380,9 @@ public partial class ScratchIRBaseVisitor<Result> : AbstractParseTreeVisitor<Res
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitCallProcedureArgument([NotNull] ScratchIRParser.CallProcedureArgumentContext context) { return VisitChildren(context); }
+	public virtual Result VisitCallFunctionArgument([NotNull] ScratchIRParser.CallFunctionArgumentContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="ScratchIRParser.procedureArgumentType"/>.
+	/// Visit a parse tree produced by <see cref="ScratchIRParser.functionArgumentType"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -390,7 +390,7 @@ public partial class ScratchIRBaseVisitor<Result> : AbstractParseTreeVisitor<Res
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitProcedureArgumentType([NotNull] ScratchIRParser.ProcedureArgumentTypeContext context) { return VisitChildren(context); }
+	public virtual Result VisitFunctionArgumentType([NotNull] ScratchIRParser.FunctionArgumentTypeContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="ScratchIRParser.variableIdentifier"/>.
 	/// <para>
@@ -422,7 +422,7 @@ public partial class ScratchIRBaseVisitor<Result> : AbstractParseTreeVisitor<Res
 	/// <return>The visitor result.</return>
 	public virtual Result VisitConstant([NotNull] ScratchIRParser.ConstantContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="ScratchIRParser.procedureArgumentTypeDeclaration"/>.
+	/// Visit a parse tree produced by <see cref="ScratchIRParser.functionArgumentTypeDeclaration"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -430,7 +430,7 @@ public partial class ScratchIRBaseVisitor<Result> : AbstractParseTreeVisitor<Res
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitProcedureArgumentTypeDeclaration([NotNull] ScratchIRParser.ProcedureArgumentTypeDeclarationContext context) { return VisitChildren(context); }
+	public virtual Result VisitFunctionArgumentTypeDeclaration([NotNull] ScratchIRParser.FunctionArgumentTypeDeclarationContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="ScratchIRParser.addOperators"/>.
 	/// <para>

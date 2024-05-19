@@ -78,6 +78,24 @@ namespace ScratchScript.Compiler.Resources.Messages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to return cannot be used in non-function contexts.
+        /// </summary>
+        internal static string E10 {
+            get {
+                return ResourceManager.GetString("E10", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to cannot return a value of unknown type.
+        /// </summary>
+        internal static string E11 {
+            get {
+                return ResourceManager.GetString("E11", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to expected {0}, got {1}.
         /// </summary>
         internal static string E2 {

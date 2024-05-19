@@ -54,4 +54,10 @@
     <data name="E9" xml:space="preserve">
         <value>the type of function's argument "{0}" must be defined manually as it couldn't be understood from the implementation</value>
     </data>
+    <data name="E10" xml:space="preserve">
+        <value>return cannot be used in non-function contexts</value>
+    </data>
+    <data name="E11" xml:space="preserve">
+        <value>cannot return a value of unknown type</value>
+    </data>
 </root>

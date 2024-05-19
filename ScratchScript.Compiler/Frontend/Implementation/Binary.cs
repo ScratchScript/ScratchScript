@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Net.Mime;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.Targets;
@@ -81,7 +80,7 @@ public partial class ScratchScriptVisitor
             : _binaryHandler.GetBinaryStringEquationExpression(ref _scope, left, right);
 
         if (op.Value == CompareOperators.Equal) return equalExpression;
-        
+
         return new ExpressionValue($"! {equalExpression.Value}", equalExpression.Type, equalExpression.Dependencies,
             equalExpression.Cleanup);
     }
@@ -113,9 +112,9 @@ public partial class ScratchScriptVisitor
         // left and right operands must be a number
         if (MustMatchTypeOrFail(left, ScratchType.Number, context, context.expression(0))) return null;
         if (MustMatchTypeOrFail(right, ScratchType.Number, context, context.expression(1))) return null;
-        
+
         // division by zero check
-        if(right.Value is (decimal)0 && op.Value == MultiplyOperators.Divide)
+        if (right.Value is (decimal)0 && op.Value == MultiplyOperators.Divide)
             DiagnosticReporter.Warning((int)ScratchScriptWarning.DivisionByZero, context, context);
 
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
@@ -148,7 +147,7 @@ public partial class ScratchScriptVisitor
         // left and right operands must be a boolean
         if (MustMatchTypeOrFail(left, ScratchType.Boolean, context, context.expression(0))) return null;
         if (MustMatchTypeOrFail(right, ScratchType.Boolean, context, context.expression(1))) return null;
-        
+
         // the operator in the IR and ScratchScript *should* match
         var irOperator = context.booleanOperators().GetText()!;
         return new ExpressionValue($"{irOperator} {left.Value} {right.Value}", ScratchType.Boolean,

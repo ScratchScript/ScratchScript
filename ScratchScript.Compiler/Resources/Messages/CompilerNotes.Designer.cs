@@ -112,5 +112,14 @@ namespace ScratchScript.Compiler.Resources.Messages {
                 return ResourceManager.GetString("N5", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to function return type was determined from here.
+        /// </summary>
+        internal static string N6 {
+            get {
+                return ResourceManager.GetString("N6", resourceCulture);
+            }
+        }
     }
 }

@@ -13,6 +13,11 @@ public static class Scratch3Helper
         return $"push {list} {value}";
     }
 
+    public static string PushAt(string list, string index, object value)
+    {
+        return $"pushat {list} {index} {value}";
+    }
+
     public static string Pop(string list)
     {
         return $"pop {list}";
@@ -21,6 +26,11 @@ public static class Scratch3Helper
     public static string PopAt(string list, string index)
     {
         return $"popat {list} {index}";
+    }
+
+    public static string Repeat(string times, string action)
+    {
+        return $"repeat {times} {action} end";
     }
 
     public static string IndexOf(string list, object value)
@@ -46,5 +56,10 @@ public static class Scratch3Helper
     public static string SetVariableValue(string id, object value)
     {
         return Replace(VariableValuesList, IndexOf(VariableNamesList, id.Surround('"')), value);
+    }
+
+    public static string StopThisScript()
+    {
+        return "raw control_stop f:STOP_OPTION:\"this script\"";
     }
 }

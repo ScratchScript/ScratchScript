@@ -41,27 +41,27 @@ public partial class ScratchIRParser : Parser {
 		T__17=18, T__18=19, T__19=20, T__20=21, T__21=22, T__22=23, T__23=24, 
 		T__24=25, T__25=26, T__26=27, T__27=28, T__28=29, T__29=30, T__30=31, 
 		T__31=32, T__32=33, T__33=34, T__34=35, T__35=36, T__36=37, T__37=38, 
-		T__38=39, Event=40, Type=41, ProcedureType=42, NumberType=43, StringType=44, 
+		T__38=39, Event=40, Type=41, FunctionType=42, NumberType=43, StringType=44, 
 		ListType=45, StringNumberType=46, BooleanType=47, WarpIdentifier=48, StackIndexIdentifier=49, 
 		Hashtag=50, Minus=51, Colon=52, End=53, Whitespace=54, NewLine=55, Number=56, 
 		Identifier=57, String=58, Color=59;
 	public const int
 		RULE_program = 0, RULE_command = 1, RULE_block = 2, RULE_expression = 3, 
-		RULE_elseIfStatement = 4, RULE_ifStatement = 5, RULE_procedureArgument = 6, 
-		RULE_callProcedureArgument = 7, RULE_procedureArgumentType = 8, RULE_variableIdentifier = 9, 
-		RULE_arrayIdentifier = 10, RULE_constant = 11, RULE_procedureArgumentTypeDeclaration = 12, 
+		RULE_elseIfStatement = 4, RULE_ifStatement = 5, RULE_functionArgument = 6, 
+		RULE_callFunctionArgument = 7, RULE_functionArgumentType = 8, RULE_variableIdentifier = 9, 
+		RULE_arrayIdentifier = 10, RULE_constant = 11, RULE_functionArgumentTypeDeclaration = 12, 
 		RULE_addOperators = 13, RULE_multiplyOperators = 14, RULE_booleanOperators = 15, 
 		RULE_compareOperators = 16;
 	public static readonly string[] ruleNames = {
 		"program", "command", "block", "expression", "elseIfStatement", "ifStatement", 
-		"procedureArgument", "callProcedureArgument", "procedureArgumentType", 
-		"variableIdentifier", "arrayIdentifier", "constant", "procedureArgumentTypeDeclaration", 
-		"addOperators", "multiplyOperators", "booleanOperators", "compareOperators"
+		"functionArgument", "callFunctionArgument", "functionArgumentType", "variableIdentifier", 
+		"arrayIdentifier", "constant", "functionArgumentTypeDeclaration", "addOperators", 
+		"multiplyOperators", "booleanOperators", "compareOperators"
 	};
 
 	private static readonly string[] _LiteralNames = {
 		null, "'set'", "'load'", "'while'", "'repeat'", "'call'", "'raw'", "'push'", 
-		"'pushat'", "'pop'", "'popat'", "'popall'", "'proc'", "'on'", "'flag'", 
+		"'pushat'", "'pop'", "'popat'", "'popall'", "'block'", "'on'", "'flag'", 
 		"'('", "')'", "'rawshadow'", "'endshadow'", "'!'", "'if'", "'else'", "'i:'", 
 		"'f:'", "'var:'", "'arr:'", "'+'", "'~'", "'*'", "'/'", "'%'", "'&&'", 
 		"'||'", "'^'", "'=='", "'!='", "'>'", "'>='", "'<'", "'<='", "'start'", 
@@ -72,7 +72,7 @@ public partial class ScratchIRParser : Parser {
 		null, null, null, null, null, null, null, null, null, null, null, null, 
 		null, null, null, null, null, null, null, null, null, null, null, null, 
 		null, null, null, null, null, null, null, null, null, null, null, null, 
-		null, null, null, null, "Event", "Type", "ProcedureType", "NumberType", 
+		null, null, null, null, "Event", "Type", "FunctionType", "NumberType", 
 		"StringType", "ListType", "StringNumberType", "BooleanType", "WarpIdentifier", 
 		"StackIndexIdentifier", "Hashtag", "Minus", "Colon", "End", "Whitespace", 
 		"NewLine", "Number", "Identifier", "String", "Color"
@@ -449,11 +449,11 @@ public partial class ScratchIRParser : Parser {
 	}
 	public partial class RawCommandContext : CommandContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode Identifier() { return GetToken(ScratchIRParser.Identifier, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public CallProcedureArgumentContext[] callProcedureArgument() {
-			return GetRuleContexts<CallProcedureArgumentContext>();
+		[System.Diagnostics.DebuggerNonUserCode] public CallFunctionArgumentContext[] callFunctionArgument() {
+			return GetRuleContexts<CallFunctionArgumentContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public CallProcedureArgumentContext callProcedureArgument(int i) {
-			return GetRuleContext<CallProcedureArgumentContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public CallFunctionArgumentContext callFunctionArgument(int i) {
+			return GetRuleContext<CallFunctionArgumentContext>(i);
 		}
 		public RawCommandContext(CommandContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
@@ -597,7 +597,7 @@ public partial class ScratchIRParser : Parser {
 						{
 						{
 						State = 74;
-						callProcedureArgument();
+						callFunctionArgument();
 						}
 						} 
 					}
@@ -692,15 +692,15 @@ public partial class ScratchIRParser : Parser {
 			base.CopyFrom(context);
 		}
 	}
-	public partial class ProcedureBlockContext : BlockContext {
+	public partial class FunctionBlockContext : BlockContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode Identifier() { return GetToken(ScratchIRParser.Identifier, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode End() { return GetToken(ScratchIRParser.End, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode WarpIdentifier() { return GetToken(ScratchIRParser.WarpIdentifier, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ProcedureArgumentContext[] procedureArgument() {
-			return GetRuleContexts<ProcedureArgumentContext>();
+		[System.Diagnostics.DebuggerNonUserCode] public FunctionArgumentContext[] functionArgument() {
+			return GetRuleContexts<FunctionArgumentContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ProcedureArgumentContext procedureArgument(int i) {
-			return GetRuleContext<ProcedureArgumentContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public FunctionArgumentContext functionArgument(int i) {
+			return GetRuleContext<FunctionArgumentContext>(i);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public CommandContext[] command() {
 			return GetRuleContexts<CommandContext>();
@@ -708,21 +708,21 @@ public partial class ScratchIRParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public CommandContext command(int i) {
 			return GetRuleContext<CommandContext>(i);
 		}
-		public ProcedureBlockContext(BlockContext context) { CopyFrom(context); }
+		public FunctionBlockContext(BlockContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
 			IScratchIRListener typedListener = listener as IScratchIRListener;
-			if (typedListener != null) typedListener.EnterProcedureBlock(this);
+			if (typedListener != null) typedListener.EnterFunctionBlock(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
 			IScratchIRListener typedListener = listener as IScratchIRListener;
-			if (typedListener != null) typedListener.ExitProcedureBlock(this);
+			if (typedListener != null) typedListener.ExitFunctionBlock(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
 			IScratchIRVisitor<TResult> typedVisitor = visitor as IScratchIRVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitProcedureBlock(this);
+			if (typedVisitor != null) return typedVisitor.VisitFunctionBlock(this);
 			else return visitor.VisitChildren(this);
 		}
 	}
@@ -785,7 +785,7 @@ public partial class ScratchIRParser : Parser {
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case T__11:
-				_localctx = new ProcedureBlockContext(_localctx);
+				_localctx = new FunctionBlockContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
 				State = 97;
@@ -809,7 +809,7 @@ public partial class ScratchIRParser : Parser {
 					{
 					{
 					State = 102;
-					procedureArgument();
+					functionArgument();
 					}
 					}
 					State = 107;
@@ -993,11 +993,11 @@ public partial class ScratchIRParser : Parser {
 	}
 	public partial class RawShadowExpressionContext : ExpressionContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode Identifier() { return GetToken(ScratchIRParser.Identifier, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public CallProcedureArgumentContext[] callProcedureArgument() {
-			return GetRuleContexts<CallProcedureArgumentContext>();
+		[System.Diagnostics.DebuggerNonUserCode] public CallFunctionArgumentContext[] callFunctionArgument() {
+			return GetRuleContexts<CallFunctionArgumentContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public CallProcedureArgumentContext callProcedureArgument(int i) {
-			return GetRuleContext<CallProcedureArgumentContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public CallFunctionArgumentContext callFunctionArgument(int i) {
+			return GetRuleContext<CallFunctionArgumentContext>(i);
 		}
 		public RawShadowExpressionContext(ExpressionContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
@@ -1324,7 +1324,7 @@ public partial class ScratchIRParser : Parser {
 						{
 						{
 						State = 154;
-						callProcedureArgument();
+						callFunctionArgument();
 						}
 						} 
 					}
@@ -1552,45 +1552,45 @@ public partial class ScratchIRParser : Parser {
 		return _localctx;
 	}
 
-	public partial class ProcedureArgumentContext : ParserRuleContext {
+	public partial class FunctionArgumentContext : ParserRuleContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode Identifier() { return GetToken(ScratchIRParser.Identifier, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ProcedureArgumentTypeDeclarationContext procedureArgumentTypeDeclaration() {
-			return GetRuleContext<ProcedureArgumentTypeDeclarationContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public FunctionArgumentTypeDeclarationContext functionArgumentTypeDeclaration() {
+			return GetRuleContext<FunctionArgumentTypeDeclarationContext>(0);
 		}
-		public ProcedureArgumentContext(ParserRuleContext parent, int invokingState)
+		public FunctionArgumentContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
 		}
-		public override int RuleIndex { get { return RULE_procedureArgument; } }
+		public override int RuleIndex { get { return RULE_functionArgument; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
 			IScratchIRListener typedListener = listener as IScratchIRListener;
-			if (typedListener != null) typedListener.EnterProcedureArgument(this);
+			if (typedListener != null) typedListener.EnterFunctionArgument(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
 			IScratchIRListener typedListener = listener as IScratchIRListener;
-			if (typedListener != null) typedListener.ExitProcedureArgument(this);
+			if (typedListener != null) typedListener.ExitFunctionArgument(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
 			IScratchIRVisitor<TResult> typedVisitor = visitor as IScratchIRVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitProcedureArgument(this);
+			if (typedVisitor != null) return typedVisitor.VisitFunctionArgument(this);
 			else return visitor.VisitChildren(this);
 		}
 	}
 
 	[RuleVersion(0)]
-	public ProcedureArgumentContext procedureArgument() {
-		ProcedureArgumentContext _localctx = new ProcedureArgumentContext(Context, State);
-		EnterRule(_localctx, 12, RULE_procedureArgument);
+	public FunctionArgumentContext functionArgument() {
+		FunctionArgumentContext _localctx = new FunctionArgumentContext(Context, State);
+		EnterRule(_localctx, 12, RULE_functionArgument);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
 			State = 191;
 			Match(Identifier);
 			State = 192;
-			procedureArgumentTypeDeclaration();
+			functionArgumentTypeDeclaration();
 			}
 		}
 		catch (RecognitionException re) {
@@ -1604,47 +1604,47 @@ public partial class ScratchIRParser : Parser {
 		return _localctx;
 	}
 
-	public partial class CallProcedureArgumentContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ProcedureArgumentTypeContext procedureArgumentType() {
-			return GetRuleContext<ProcedureArgumentTypeContext>(0);
+	public partial class CallFunctionArgumentContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public FunctionArgumentTypeContext functionArgumentType() {
+			return GetRuleContext<FunctionArgumentTypeContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode Identifier() { return GetToken(ScratchIRParser.Identifier, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode Colon() { return GetToken(ScratchIRParser.Colon, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression() {
 			return GetRuleContext<ExpressionContext>(0);
 		}
-		public CallProcedureArgumentContext(ParserRuleContext parent, int invokingState)
+		public CallFunctionArgumentContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
 		}
-		public override int RuleIndex { get { return RULE_callProcedureArgument; } }
+		public override int RuleIndex { get { return RULE_callFunctionArgument; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
 			IScratchIRListener typedListener = listener as IScratchIRListener;
-			if (typedListener != null) typedListener.EnterCallProcedureArgument(this);
+			if (typedListener != null) typedListener.EnterCallFunctionArgument(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
 			IScratchIRListener typedListener = listener as IScratchIRListener;
-			if (typedListener != null) typedListener.ExitCallProcedureArgument(this);
+			if (typedListener != null) typedListener.ExitCallFunctionArgument(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
 			IScratchIRVisitor<TResult> typedVisitor = visitor as IScratchIRVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitCallProcedureArgument(this);
+			if (typedVisitor != null) return typedVisitor.VisitCallFunctionArgument(this);
 			else return visitor.VisitChildren(this);
 		}
 	}
 
 	[RuleVersion(0)]
-	public CallProcedureArgumentContext callProcedureArgument() {
-		CallProcedureArgumentContext _localctx = new CallProcedureArgumentContext(Context, State);
-		EnterRule(_localctx, 14, RULE_callProcedureArgument);
+	public CallFunctionArgumentContext callFunctionArgument() {
+		CallFunctionArgumentContext _localctx = new CallFunctionArgumentContext(Context, State);
+		EnterRule(_localctx, 14, RULE_callFunctionArgument);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
 			State = 194;
-			procedureArgumentType();
+			functionArgumentType();
 			State = 195;
 			Match(Identifier);
 			State = 196;
@@ -1664,34 +1664,34 @@ public partial class ScratchIRParser : Parser {
 		return _localctx;
 	}
 
-	public partial class ProcedureArgumentTypeContext : ParserRuleContext {
-		public ProcedureArgumentTypeContext(ParserRuleContext parent, int invokingState)
+	public partial class FunctionArgumentTypeContext : ParserRuleContext {
+		public FunctionArgumentTypeContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
 		}
-		public override int RuleIndex { get { return RULE_procedureArgumentType; } }
+		public override int RuleIndex { get { return RULE_functionArgumentType; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
 			IScratchIRListener typedListener = listener as IScratchIRListener;
-			if (typedListener != null) typedListener.EnterProcedureArgumentType(this);
+			if (typedListener != null) typedListener.EnterFunctionArgumentType(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
 			IScratchIRListener typedListener = listener as IScratchIRListener;
-			if (typedListener != null) typedListener.ExitProcedureArgumentType(this);
+			if (typedListener != null) typedListener.ExitFunctionArgumentType(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
 			IScratchIRVisitor<TResult> typedVisitor = visitor as IScratchIRVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitProcedureArgumentType(this);
+			if (typedVisitor != null) return typedVisitor.VisitFunctionArgumentType(this);
 			else return visitor.VisitChildren(this);
 		}
 	}
 
 	[RuleVersion(0)]
-	public ProcedureArgumentTypeContext procedureArgumentType() {
-		ProcedureArgumentTypeContext _localctx = new ProcedureArgumentTypeContext(Context, State);
-		EnterRule(_localctx, 16, RULE_procedureArgumentType);
+	public FunctionArgumentTypeContext functionArgumentType() {
+		FunctionArgumentTypeContext _localctx = new FunctionArgumentTypeContext(Context, State);
+		EnterRule(_localctx, 16, RULE_functionArgumentType);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
@@ -1873,40 +1873,40 @@ public partial class ScratchIRParser : Parser {
 		return _localctx;
 	}
 
-	public partial class ProcedureArgumentTypeDeclarationContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ProcedureType() { return GetToken(ScratchIRParser.ProcedureType, 0); }
-		public ProcedureArgumentTypeDeclarationContext(ParserRuleContext parent, int invokingState)
+	public partial class FunctionArgumentTypeDeclarationContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FunctionType() { return GetToken(ScratchIRParser.FunctionType, 0); }
+		public FunctionArgumentTypeDeclarationContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
 		}
-		public override int RuleIndex { get { return RULE_procedureArgumentTypeDeclaration; } }
+		public override int RuleIndex { get { return RULE_functionArgumentTypeDeclaration; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
 			IScratchIRListener typedListener = listener as IScratchIRListener;
-			if (typedListener != null) typedListener.EnterProcedureArgumentTypeDeclaration(this);
+			if (typedListener != null) typedListener.EnterFunctionArgumentTypeDeclaration(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
 			IScratchIRListener typedListener = listener as IScratchIRListener;
-			if (typedListener != null) typedListener.ExitProcedureArgumentTypeDeclaration(this);
+			if (typedListener != null) typedListener.ExitFunctionArgumentTypeDeclaration(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
 			IScratchIRVisitor<TResult> typedVisitor = visitor as IScratchIRVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitProcedureArgumentTypeDeclaration(this);
+			if (typedVisitor != null) return typedVisitor.VisitFunctionArgumentTypeDeclaration(this);
 			else return visitor.VisitChildren(this);
 		}
 	}
 
 	[RuleVersion(0)]
-	public ProcedureArgumentTypeDeclarationContext procedureArgumentTypeDeclaration() {
-		ProcedureArgumentTypeDeclarationContext _localctx = new ProcedureArgumentTypeDeclarationContext(Context, State);
-		EnterRule(_localctx, 24, RULE_procedureArgumentTypeDeclaration);
+	public FunctionArgumentTypeDeclarationContext functionArgumentTypeDeclaration() {
+		FunctionArgumentTypeDeclarationContext _localctx = new FunctionArgumentTypeDeclarationContext(Context, State);
+		EnterRule(_localctx, 24, RULE_functionArgumentTypeDeclaration);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
 			State = 209;
-			Match(ProcedureType);
+			Match(FunctionType);
 			}
 		}
 		catch (RecognitionException re) {

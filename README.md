@@ -52,8 +52,8 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
       - [x] Export
     - [ ] Variables
       - [x] Declaration
-      - [ ] Assignment
-      - [ ] Function arguments
+      - [x] Assignment
+      - [x] Function arguments
       - [ ] `const` & exporting `const`s
     - [ ] Lists
       - [ ] Declaration of 1D lists
@@ -66,12 +66,12 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
       - [x] Constant expressions
       - [x] Identifier expressions
       - [ ] Interpolated string expressions
-      - [ ] Binary expressions
-          - [ ] Binary add expressions (`+`, `-`, `*`, `**`, `%`, `/`)
-          - [ ] Binary compare expressions (`>`, `>=`, `<`, `<=`, `==`, `!=`)
+      - [x] Binary expressions
+          - [x] Binary add expressions (`+`, `-`, `*`, `**`, `%`, `/`)
+          - [x] Binary compare expressions (`>`, `>=`, `<`, `<=`, `==`, `!=`)
           - [ ] Binary shift expressions (`>>`, `<<`)
           - [ ] Binary bitwise expressions (`&`, `|`, `^`)
-      - [ ] Unary expressions (`+`, `-`, `!`)
+      - [x] Unary expressions (`+`, `-`, `!`)
       - [ ] Function call expressions (`a()`)
       - [ ] Member function call expressions (`a.b()`)
       - [ ] Member property access expressions (`a.b`)
@@ -81,7 +81,7 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
       - [ ] `@import` (asset importing)
       - [ ] `@unicode`
     - [ ] Functions
-      - [ ] Declaration
+      - [x] Declaration
       - [ ] Call
       - [ ] Export (a.k.a. dependencies handling)
     - [ ] Control flow

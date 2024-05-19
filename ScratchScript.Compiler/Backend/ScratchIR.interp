@@ -11,7 +11,7 @@ null
 'pop'
 'popat'
 'popall'
-'proc'
+'block'
 'on'
 'flag'
 '('
@@ -103,7 +103,7 @@ null
 null
 Event
 Type
-ProcedureType
+FunctionType
 NumberType
 StringType
 ListType
@@ -129,13 +129,13 @@ block
 expression
 elseIfStatement
 ifStatement
-procedureArgument
-callProcedureArgument
-procedureArgumentType
+functionArgument
+callFunctionArgument
+functionArgumentType
 variableIdentifier
 arrayIdentifier
 constant
-procedureArgumentTypeDeclaration
+functionArgumentTypeDeclaration
 addOperators
 multiplyOperators
 booleanOperators

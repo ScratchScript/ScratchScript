@@ -42,4 +42,7 @@
     <data name="N5" xml:space="preserve">
         <value>variable type was set here</value>
     </data>
+    <data name="N6" xml:space="preserve">
+        <value>function return type was determined from here</value>
+    </data>
 </root>

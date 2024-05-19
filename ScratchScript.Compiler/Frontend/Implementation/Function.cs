@@ -43,6 +43,7 @@ public partial class ScratchScriptVisitor
 
         var scope = CreateFunctionScope();
         scope.FunctionName = name;
+        scope.ReturnType = ScratchType.Unknown;
         scope.Header = $"block {name}";
 
         var locationInformation = new FunctionLocationInformation
@@ -90,6 +91,54 @@ public partial class ScratchScriptVisitor
         }
 
         Exports.Functions[name] = scope;
+        return null;
+    }
+
+    public override TypedValue? VisitReturnStatement(ScratchScriptParser.ReturnStatementContext context)
+    {
+        // return must be used in a function context
+        if (_scope is not FunctionScope function)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ReturnUsedInNonFunctionContext, context, context);
+            return null;
+        }
+
+        // an expression can be null if it returns void ("return;" vs "return 1;")
+        var expression = context.expression() != null ? (ExpressionValue?)Visit(context.expression()) : null;
+        if (context.expression() != null && expression == null)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
+            return null;
+        }
+
+        // ICE handling
+        if (expression != null && expression.Type == ScratchType.Unknown)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ReturnWithExpressionOfUnknownType, context,
+                context.expression());
+            return null;
+        }
+
+        // the function return may have been set earlier, so the expression must be checked if that's the case
+        var expressionType = expression?.Type ?? ScratchType.Void;
+        if (function.ReturnType != ScratchType.Unknown && function.ReturnType != expressionType)
+        {
+            var typeSetterContext = LocationInformation.Functions[function.FunctionName].ReturnTypeSetter;
+
+            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(),
+                function.ReturnType, expressionType);
+            DiagnosticReporter.Note((int)ScratchScriptNote.ReturnTypeSetAt, typeSetterContext, typeSetterContext);
+            return null;
+        }
+
+        // or if the function's return type is currently unknown, make it the expression's type
+        if (function.ReturnType == ScratchType.Unknown) function.ReturnType = expressionType;
+
+        LocationInformation.Functions[function.FunctionName] = LocationInformation.Functions[function.FunctionName] with
+        {
+            ReturnTypeSetter = context
+        };
+        _functionHandler.HandleFunctionExit(ref _scope, expression);
         return null;
     }
 }

@@ -13,9 +13,10 @@ public record DiagnosticLocationStorage
 
 public record struct FunctionLocationInformation
 {
-    public ParserRuleContext DefinitionContext;
-    public ITerminalNode FunctionNameIdentifier;
     public Dictionary<string, (ITerminalNode Identifier, ParserRuleContext? TypeSetter)> ArgumentInformation;
+    public ParserRuleContext DefinitionContext;
+    public ParserRuleContext ReturnTypeSetter;
+    public ITerminalNode FunctionNameIdentifier;
 }
 
 public record struct VariableLocationInformation

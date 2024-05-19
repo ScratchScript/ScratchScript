@@ -37,7 +37,7 @@ public partial class ScratchScriptVisitor
         ParserRuleContext ownSource)
     {
         if (expected == ScratchType.Unknown) return false;
-        
+
         //TODO: handle function arguments
         if (value.Type != expected)
         {

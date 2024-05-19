@@ -12,7 +12,8 @@ public enum ScratchTypeKind
 
     // these should not be encoded to blocks
     Any,
-    Enum
+    Enum,
+    Void
 }
 
 public class ScratchType(ScratchTypeKind kind, ScratchType? childType = null, ScratchType? parentType = null)
@@ -26,6 +27,7 @@ public class ScratchType(ScratchTypeKind kind, ScratchType? childType = null, Sc
 
     // custom types for the compiler
     public static readonly ScratchType Any = new(ScratchTypeKind.Any);
+    public static readonly ScratchType Void = new(ScratchTypeKind.Void);
 
     public ScratchTypeKind Kind { get; set; } = kind;
     public ScratchType? ParentType { get; set; } = parentType;

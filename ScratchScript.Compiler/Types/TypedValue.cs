@@ -14,7 +14,7 @@ public record TypeDeclarationValue(ScratchType Type) : TypedValue(null, Type);
 
 public record EnumEntryValue(string Name, object? Value, ScratchType Type) : TypedValue(Value, Type);
 
-public record ExpressionValue(object? Value, ScratchType Type, string Dependencies = "", string Cleanup = "")
+public record ExpressionValue(object? Value, ScratchType Type, string Dependencies = "", string Cleanup = "", int StackDebt = 0)
     : TypedValue(Value, Type);
 
 public record IdentifierExpressionValue(
