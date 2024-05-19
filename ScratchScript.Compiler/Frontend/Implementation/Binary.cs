@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Net.Mime;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.Targets;
@@ -33,21 +34,9 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
-        // left operand must be a number
-        if (left.Type != ScratchType.Number)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(0),
-                ScratchType.Number, left.Type);
-            return null;
-        }
-
-        // right operand must also be a number
-        if (right.Type != ScratchType.Number)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(1),
-                ScratchType.Number, right.Type);
-            return null;
-        }
+        // left and right operands must be a number
+        if (MustMatchTypeOrFail(left, ScratchType.Number, context, context.expression(0))) return null;
+        if (MustMatchTypeOrFail(right, ScratchType.Number, context, context.expression(1))) return null;
 
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
         return _binaryHandler.GetBinaryBitwiseExpression(ref _scope, op.Value, left, right);
@@ -77,12 +66,8 @@ public partial class ScratchScriptVisitor
         }
 
         // types of operands must match
-        if (left.Type != right.Type)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(1), left.Type,
-                right.Type);
-            return null;
-        }
+        if (MustMatchTypeOrFail(left, right.Type, context, context.expression(0))) return null;
+        if (MustMatchTypeOrFail(right, left.Type, context, context.expression(1))) return null;
 
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
 
@@ -96,6 +81,7 @@ public partial class ScratchScriptVisitor
             : _binaryHandler.GetBinaryStringEquationExpression(ref _scope, left, right);
 
         if (op.Value == CompareOperators.Equal) return equalExpression;
+        
         return new ExpressionValue($"! {equalExpression.Value}", equalExpression.Type, equalExpression.Dependencies,
             equalExpression.Cleanup);
     }
@@ -124,21 +110,13 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
-        // left operand must be a number
-        if (left.Type != ScratchType.Number)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(0),
-                ScratchType.Number, left.Type);
-            return null;
-        }
-
-        // right operand must also be a number
-        if (right.Type != ScratchType.Number)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(1),
-                ScratchType.Number, right.Type);
-            return null;
-        }
+        // left and right operands must be a number
+        if (MustMatchTypeOrFail(left, ScratchType.Number, context, context.expression(0))) return null;
+        if (MustMatchTypeOrFail(right, ScratchType.Number, context, context.expression(1))) return null;
+        
+        // division by zero check
+        if(right.Value is (decimal)0 && op.Value == MultiplyOperators.Divide)
+            DiagnosticReporter.Warning((int)ScratchScriptWarning.DivisionByZero, context, context);
 
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
         return _binaryHandler.GetBinaryMultiplyExpression(ref _scope, op.Value, left, right);
@@ -147,7 +125,7 @@ public partial class ScratchScriptVisitor
     public override TypedValue? VisitBinaryBooleanExpression(ScratchScriptParser.BinaryBooleanExpressionContext context)
     {
         // get the operator
-        if (Visit(context.booleanOperators()) is not GenericValue<BooleanOperator> op)
+        if (Visit(context.booleanOperators()) is not GenericValue<BooleanOperator>)
         {
             DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.booleanOperators());
             return null;
@@ -167,22 +145,10 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
-        // left operand must be a boolean
-        if (left.Type != ScratchType.Boolean)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(0),
-                ScratchType.Boolean, left.Type);
-            return null;
-        }
-
-        // right operand must also be a boolean
-        if (right.Type != ScratchType.Boolean)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(1),
-                ScratchType.Boolean, right.Type);
-            return null;
-        }
-
+        // left and right operands must be a boolean
+        if (MustMatchTypeOrFail(left, ScratchType.Boolean, context, context.expression(0))) return null;
+        if (MustMatchTypeOrFail(right, ScratchType.Boolean, context, context.expression(1))) return null;
+        
         // the operator in the IR and ScratchScript *should* match
         var irOperator = context.booleanOperators().GetText()!;
         return new ExpressionValue($"{irOperator} {left.Value} {right.Value}", ScratchType.Boolean,
@@ -218,14 +184,10 @@ public partial class ScratchScriptVisitor
         var resultType = ScratchType.Number;
 
         // this is a string join expression
-        if (op.Value == AddOperator.Plus && left.Type == ScratchType.String)
+        if (op.Value == AddOperator.Plus && (left.Type == ScratchType.String || right.Type == ScratchType.String))
         {
-            if (right.Type != ScratchType.String)
-            {
-                DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(1),
-                    ScratchType.String, right.Type);
-                return null;
-            }
+            if (MustMatchTypeOrFail(left, ScratchType.String, context, context.expression(0))) return null;
+            if (MustMatchTypeOrFail(right, ScratchType.String, context, context.expression(1))) return null;
 
             irOperator = "~";
             resultType = ScratchType.String;
@@ -234,19 +196,8 @@ public partial class ScratchScriptVisitor
         // this is a regular +/- expression
         else
         {
-            if (left.Type != ScratchType.Number)
-            {
-                DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(0),
-                    ScratchType.Number, left.Type);
-                return null;
-            }
-
-            if (right.Type != ScratchType.Number)
-            {
-                DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(1),
-                    ScratchType.Number, right.Type);
-                return null;
-            }
+            if (MustMatchTypeOrFail(left, ScratchType.Number, context, context.expression(0))) return null;
+            if (MustMatchTypeOrFail(right, ScratchType.Number, context, context.expression(1))) return null;
         }
 
         return new ExpressionValue($"{irOperator} {left.Value} {right.Value}", resultType,

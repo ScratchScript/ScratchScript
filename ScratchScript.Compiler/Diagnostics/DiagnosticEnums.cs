@@ -9,11 +9,13 @@ public enum ScratchScriptError
     EventAlreadyDeclared,
     IdentifierAlreadyClaimed,
     UnknownIdentifier,
-    VariableNotDefined
+    VariableNotDefined,
+    ArgumentTypeMustBeSpecifiedManually
 }
 
 public enum ScratchScriptWarning
 {
+    DivisionByZero = 1,
 }
 
 public enum ScratchScriptNote

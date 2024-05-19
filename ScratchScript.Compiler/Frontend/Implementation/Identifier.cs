@@ -18,10 +18,10 @@ public partial class ScratchScriptVisitor
         if (_scope?.GetVariableDepth(identifier) is { } variableDepth)
             return (LocationInformation.Variables[variableDepth][identifier].Context,
                 LocationInformation.Variables[variableDepth][identifier].Identifier);
-        
-        if (_scope is FunctionScope functionScope && functionScope.Arguments.ContainsKey(identifier))
+
+        if (_scope is FunctionScope functionScope)
         {
-            if (functionScope.Arguments.ContainsKey(identifier))
+            if (functionScope.Arguments.Any(arg => arg.Name == identifier))
                 return (LocationInformation.Functions[functionScope.FunctionName].DefinitionContext,
                     LocationInformation.Functions[functionScope.FunctionName].ArgumentInformation[identifier]
                         .Identifier);
@@ -31,6 +31,21 @@ public partial class ScratchScriptVisitor
         }
 
         return null;
+    }
+
+    private bool MustMatchTypeOrFail(TypedValue value, ScratchType expected, ParserRuleContext ownContext,
+        ParserRuleContext ownSource)
+    {
+        if (expected == ScratchType.Unknown) return false;
+        
+        //TODO: handle function arguments
+        if (value.Type != expected)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, ownContext, ownSource, expected, value.Type);
+            return true;
+        }
+
+        return false;
     }
 
     private bool RequireIdentifierUnclaimedOrFail(string identifier, ParserRuleContext ownContext,
@@ -49,7 +64,7 @@ public partial class ScratchScriptVisitor
     public override TypedValue? VisitIdentifierExpression(ScratchScriptParser.IdentifierExpressionContext context)
     {
         var name = context.Identifier().GetText();
-        
+
         if (VisitIdentifier(name) is not { } result)
         {
             DiagnosticReporter.Error((int)ScratchScriptError.UnknownIdentifier, context, context.Identifier(),
@@ -57,16 +72,18 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
-        return new ExpressionValue(result.Value, result.Type, ArgumentName: _scope is FunctionScope ? name: "");
+        return new IdentifierExpressionValue(
+            _scope is FunctionScope ? IdentifierType.FunctionArgument : IdentifierType.Variable, name, result.Value,
+            result.Type);
     }
 
     private TypedValue? VisitIdentifier(string identifier)
     {
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
-        
+
         if (_scope.GetVariable(identifier) is { } variable)
             return _dataHandler.GetVariable(ref _scope, variable);
-        if (_scope is FunctionScope functionScope && functionScope.Arguments.ContainsKey(identifier))
+        if (_scope is FunctionScope functionScope && functionScope.Arguments.Any(arg => arg.Name == identifier))
             return _functionHandler.GetArgument(ref _scope, identifier);
         return null;
     }

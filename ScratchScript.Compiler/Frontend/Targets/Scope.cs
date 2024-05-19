@@ -41,6 +41,7 @@ public abstract class Scope
 
 public abstract class FunctionScope : Scope
 {
-    public Dictionary<string, ScratchScriptVariable> Arguments { get; } = [];
+    // dictionaries are not guaranteed to be ordered, so a list is used here
+    public List<ScratchScriptVariable> Arguments { get; } = [];
     public string FunctionName { get; set; }
 }

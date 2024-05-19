@@ -27,4 +27,10 @@
     <data name="W0" xml:space="preserve">
         <value>Reserved</value>
     </data>
+    <data name="W1" xml:space="preserve">
+        <value>division by zero is not recommended and can lead to issues</value>
+    </data>
+    <data name="W2" xml:space="preserve">
+        <value>unused function argument "{0}"</value>
+    </data>
 </root>

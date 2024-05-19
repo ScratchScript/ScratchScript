@@ -1,4 +1,5 @@
-﻿using ScratchScript.Compiler.Frontend.Information;
+﻿using ScratchScript.Compiler.Diagnostics;
+using ScratchScript.Compiler.Frontend.Information;
 using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 
@@ -7,7 +8,7 @@ namespace ScratchScript.Compiler.Frontend.Implementation;
 public partial class ScratchScriptVisitor
 {
     private IFunctionHandler _functionHandler = null!;
-    
+
     public override TypedValue? VisitMemberFunctionCallStatement(
         ScratchScriptParser.MemberFunctionCallStatementContext context)
     {
@@ -43,7 +44,7 @@ public partial class ScratchScriptVisitor
         var scope = CreateFunctionScope();
         scope.FunctionName = name;
         scope.Header = $"block {name}";
-        
+
         var locationInformation = new FunctionLocationInformation
         {
             DefinitionContext = context,
@@ -64,17 +65,31 @@ public partial class ScratchScriptVisitor
             if (RequireIdentifierUnclaimedOrFail(argumentName, context, identifier.Identifier())) return null;
 
             // all functions are top-level (for now) so the scope depth will always be 0
-            scope.Arguments[argumentName] = new ScratchScriptVariable(argumentName,
-                _dataHandler.GenerateVariableId(0, Id, argumentName), argumentType);
+            scope.Arguments.Add(new ScratchScriptVariable(argumentName,
+                _dataHandler.GenerateVariableId(0, Id, argumentName), argumentType));
             locationInformation.ArgumentInformation[argumentName] = (identifier.Identifier(), identifier.type());
         }
-        
+
         // set the LocationInformation before visiting the scope as any identifier checks
         // will fail to point the location of the acquirer otherwise.
         LocationInformation.Functions[name] = locationInformation;
-        
+
         scope = VisitBlock(scope, context.block()).Scope as FunctionScope;
-        Exports.Functions[name] = scope ?? throw new Exception("The scope returned from VisitBlock() was null.");
+        if (scope == null) throw new Exception("The scope returned from VisitBlock() was null.");
+
+        // check that all the arguments have been assigned types (if not done manually)
+        for (var index = 0; index < scope.Arguments.Count; index++)
+        {
+            var argument = scope.Arguments[index];
+            if (argument.Type != ScratchType.Unknown) continue;
+
+            LocationInformation.Functions.Remove(name);
+            DiagnosticReporter.Error((int)ScratchScriptError.ArgumentTypeMustBeSpecifiedManually, context,
+                context.typedIdentifier(index), argument.Name);
+            return null;
+        }
+
+        Exports.Functions[name] = scope;
         return null;
     }
 }

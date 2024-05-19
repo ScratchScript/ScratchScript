@@ -124,8 +124,7 @@ Color: Hashtag HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit;
 mode STRING_MODE;
 
 EnterInterpolatedExpression: '${' -> pushMode(DEFAULT_MODE);
-//Text: ~('$' | '\n' | '`' | '\\')+;
-Text: ~[\\`]+;
 EscapeSequence: '\\' .;
+Text: ~[\\`$]+;
 
 CloseInterpolatedString: '`' -> popMode;

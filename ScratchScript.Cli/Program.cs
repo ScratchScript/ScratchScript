@@ -6,8 +6,8 @@ using ScratchScriptVisitor = ScratchScript.Compiler.Frontend.Implementation.Scra
 
 
 const string source = """
-                      function test(x: number, y: number) {
-                        let a = x + y;
+                      function test(x, y) {
+                        let a = 3 / 0;
                       }
                       """;
 var inputStream = new AntlrInputStream(source);

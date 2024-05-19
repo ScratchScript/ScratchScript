@@ -51,4 +51,7 @@
     <data name="E8" xml:space="preserve">
         <value>variable "{0}" is not defined</value>
     </data>
+    <data name="E9" xml:space="preserve">
+        <value>the type of function's argument "{0}" must be defined manually as it couldn't be understood from the implementation</value>
+    </data>
 </root>

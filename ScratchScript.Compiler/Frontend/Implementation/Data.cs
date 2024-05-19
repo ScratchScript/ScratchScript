@@ -55,7 +55,8 @@ public partial class ScratchScriptVisitor
             DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
             return null;
         }
-
+        
+        //NOTE: MustMatchTypesOrFail cannot be used here
         if (variable.Type != expression.Type)
         {
             var locationInformation = LocationInformation.Variables[_scope.Depth][name];

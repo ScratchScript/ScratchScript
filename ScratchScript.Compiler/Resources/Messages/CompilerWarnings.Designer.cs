@@ -67,5 +67,23 @@ namespace ScratchScript.Compiler.Resources.Messages {
                 return ResourceManager.GetString("W0", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to division by zero is not recommended and can lead to issues.
+        /// </summary>
+        internal static string W1 {
+            get {
+                return ResourceManager.GetString("W1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to unused function argument &quot;{0}&quot;.
+        /// </summary>
+        internal static string W2 {
+            get {
+                return ResourceManager.GetString("W2", resourceCulture);
+            }
+        }
     }
 }

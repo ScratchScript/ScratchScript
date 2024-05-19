@@ -85,4 +85,4 @@ type
     | List Lesser type Greater #listType;
 
 interpolatedString: OpenInterpolatedString interpolatedStringPart* CloseInterpolatedString;
-interpolatedStringPart: Text | EscapeSequence | EnterInterpolatedExpression expression RightBrace;
+interpolatedStringPart: EnterInterpolatedExpression expression RightBrace | Text | EscapeSequence ;

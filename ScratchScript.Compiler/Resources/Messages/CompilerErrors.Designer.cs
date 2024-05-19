@@ -139,5 +139,14 @@ namespace ScratchScript.Compiler.Resources.Messages {
                 return ResourceManager.GetString("E8", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to the type of function&apos;s argument &quot;{0}&quot; must be defined manually as it couldn&apos;t be understood from the implementation.
+        /// </summary>
+        internal static string E9 {
+            get {
+                return ResourceManager.GetString("E9", resourceCulture);
+            }
+        }
     }
 }
