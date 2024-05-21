@@ -9,6 +9,52 @@ public partial class ScratchScriptVisitor
 {
     private IFunctionHandler _functionHandler = null!;
 
+    private IFunctionScope? FindFunction(string name, IEnumerable<ScratchType> signature)
+    {
+        return Exports.Functions.Values.FirstOrDefault(func =>
+            func.FunctionName == name && func.Arguments.Select(arg => arg.Type).SequenceEqual(signature));
+    }
+
+    private (IFunctionScope? Function, ExpressionValue? ReturnValue) HandleFunctionCall(
+        ScratchScriptParser.FunctionCallStatementContext context)
+    {
+        var name = context.Identifier().GetText();
+
+        // strict name check (without signature)
+        if (!Exports.Functions.ContainsKey(name))
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.NoFunctionsWithNameAreDefined, context,
+                context.Identifier(), name);
+            return (null, null);
+        }
+
+        var arguments = new List<ExpressionValue>();
+        // todo: add support for named arguments later (involves combinations and permutations and stuff)
+        foreach (var arg in context.functionArgument())
+        {
+            if (Visit(arg.expression()) is not ExpressionValue expression)
+            {
+                DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, arg.expression());
+                return (null, null);
+            }
+
+            arguments.Add(expression);
+        }
+
+        var signature = arguments.Select(arg => arg.Type).ToList();
+        var function = FindFunction(name, signature);
+
+        if (function == null)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.NoFunctionWithMatchingSignatureDefined, context, context,
+                $"{name}({string.Join(", ", signature.Select(type => type.ToString()))})");
+            return (null, null);
+        }
+
+        var value = _functionHandler.HandleFunctionCall(ref _scope, function, arguments);
+        return (function, value);
+    }
+
     public override TypedValue? VisitMemberFunctionCallStatement(
         ScratchScriptParser.MemberFunctionCallStatementContext context)
     {
@@ -17,12 +63,18 @@ public partial class ScratchScriptVisitor
 
     public override TypedValue? VisitFunctionCallStatement(ScratchScriptParser.FunctionCallStatementContext context)
     {
-        return base.VisitFunctionCallStatement(context);
+        var (function, returnValue) = HandleFunctionCall(context);
+        if (function == null) return null;
+        //todo: warning about the unused return value
+        return null;
     }
 
     public override TypedValue? VisitFunctionCallExpression(ScratchScriptParser.FunctionCallExpressionContext context)
     {
-        return base.VisitFunctionCallExpression(context);
+        var (function, returnValue) = HandleFunctionCall(context.functionCallStatement());
+        if (function == null) return null;
+        if (returnValue == null) return null; // todo: error
+        return returnValue;
     }
 
     public override TypedValue? VisitMemberFunctionCallExpression(
@@ -75,7 +127,7 @@ public partial class ScratchScriptVisitor
         // will fail to point the location of the acquirer otherwise.
         LocationInformation.Functions[name] = locationInformation;
 
-        scope = VisitBlock(scope, context.block()).Scope as FunctionScope;
+        scope = VisitBlock(scope, context.block()).Scope as IFunctionScope;
         if (scope == null) throw new Exception("The scope returned from VisitBlock() was null.");
 
         // check that all the arguments have been assigned types (if not done manually)
@@ -97,7 +149,7 @@ public partial class ScratchScriptVisitor
     public override TypedValue? VisitReturnStatement(ScratchScriptParser.ReturnStatementContext context)
     {
         // return must be used in a function context
-        if (_scope is not FunctionScope function)
+        if (_scope is not IFunctionScope function)
         {
             DiagnosticReporter.Error((int)ScratchScriptError.ReturnUsedInNonFunctionContext, context, context);
             return null;

@@ -6,8 +6,12 @@ using ScratchScriptVisitor = ScratchScript.Compiler.Frontend.Implementation.Scra
 
 
 const string source = """
-                      function test(x: number, y: number) {
+                      function sum(x: number, y: number) {
                         return x + y;
+                      }
+
+                      on start {
+                        let a = sum(sum(1, 3), 2);
                       }
                       """;
 var inputStream = new AntlrInputStream(source);

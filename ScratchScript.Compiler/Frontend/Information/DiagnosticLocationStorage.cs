@@ -15,8 +15,8 @@ public record struct FunctionLocationInformation
 {
     public Dictionary<string, (ITerminalNode Identifier, ParserRuleContext? TypeSetter)> ArgumentInformation;
     public ParserRuleContext DefinitionContext;
-    public ParserRuleContext ReturnTypeSetter;
     public ITerminalNode FunctionNameIdentifier;
+    public ParserRuleContext ReturnTypeSetter;
 }
 
 public record struct VariableLocationInformation

@@ -14,7 +14,7 @@ public record TypeDeclarationValue(ScratchType Type) : TypedValue(null, Type);
 
 public record EnumEntryValue(string Name, object? Value, ScratchType Type) : TypedValue(Value, Type);
 
-public record ExpressionValue(object? Value, ScratchType Type, string Dependencies = "", string Cleanup = "", int StackDebt = 0)
+public record ExpressionValue(object? Value, ScratchType Type, string Dependencies = "", string Cleanup = "")
     : TypedValue(Value, Type);
 
 public record IdentifierExpressionValue(
@@ -23,7 +23,7 @@ public record IdentifierExpressionValue(
     object? Value,
     ScratchType Type) : ExpressionValue(Value, Type);
 
-public record ScopeValue(Scope Scope) : TypedValue(null, ScratchType.Unknown);
+public record ScopeValue(IScope Scope) : TypedValue(null, ScratchType.Unknown);
 
 public record GenericValue<T>(T Value) : TypedValue(Value, ScratchType.Unknown)
 {

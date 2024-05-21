@@ -1,25 +1,44 @@
 ﻿using System.Text;
 using ScratchScript.Compiler.Extensions;
+using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Targets.Scratch3;
 
-public class Scratch3Scope : Scope
+public class Scratch3Scope : IScope
 {
-    public override string ToString(char separator)
+    // the "stack debt" value is unique to the Scratch3 target, since it
+    // doesn't have a native function return value reporter.
+    // the concept is as follows: every function call increases this value
+    // by one. the compiler should strive to keep this value at zero, i.e.
+    // popping the function return value right after the statement in which
+    // it was called. this value is used for correctly locating where the
+    // function return value be for a specific function call.
+    public int StackDebt { get; set; } = 0;
+    public List<string> Content { get; init; } = [];
+    public int Depth { get; set; } = 0;
+    public string Header { get; set; } = "";
+    public IScope? ParentScope { get; set; } = null;
+    public Dictionary<string, ScratchScriptVariable> Variables { get; init; } = [];
+
+    public string ToString(char separator)
     {
         return new DefaultScratch3ScopeFormatter(this, separator).ToString();
     }
 }
 
-public class Scratch3FunctionScope : FunctionScope
+public class Scratch3FunctionScope : Scratch3Scope, IFunctionScope
 {
-    public override string ToString(char separator)
+    public string ToString(char separator)
     {
         return new DefaultScratch3ScopeFormatter(this, separator).ToString();
     }
+
+    public List<ScratchScriptVariable> Arguments { get; init; } = [];
+    public string FunctionName { get; set; } = "";
+    public ScratchType ReturnType { get; set; } = ScratchType.Void;
 }
 
-internal class DefaultScratch3ScopeFormatter(Scope scope, char separator)
+internal class DefaultScratch3ScopeFormatter(IScope scope, char separator)
 {
     public override string ToString()
     {

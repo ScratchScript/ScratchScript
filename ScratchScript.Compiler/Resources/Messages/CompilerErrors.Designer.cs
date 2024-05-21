@@ -96,6 +96,24 @@ namespace ScratchScript.Compiler.Resources.Messages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to no functions with the name &quot;{0}&quot; are defined.
+        /// </summary>
+        internal static string E12 {
+            get {
+                return ResourceManager.GetString("E12", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to function &quot;{0}&quot; is not defined.
+        /// </summary>
+        internal static string E13 {
+            get {
+                return ResourceManager.GetString("E13", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to expected {0}, got {1}.
         /// </summary>
         internal static string E2 {

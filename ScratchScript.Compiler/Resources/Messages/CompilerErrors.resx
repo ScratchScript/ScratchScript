@@ -60,4 +60,10 @@
     <data name="E11" xml:space="preserve">
         <value>cannot return a value of unknown type</value>
     </data>
+    <data name="E12" xml:space="preserve">
+        <value>no functions with the name "{0}" are defined</value>
+    </data>
+    <data name="E13" xml:space="preserve">
+        <value>function "{0}" is not defined</value>
+    </data>
 </root>

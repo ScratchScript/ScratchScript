@@ -12,7 +12,9 @@ public enum ScratchScriptError
     VariableNotDefined,
     ArgumentTypeMustBeSpecifiedManually,
     ReturnUsedInNonFunctionContext,
-    ReturnWithExpressionOfUnknownType
+    ReturnWithExpressionOfUnknownType,
+    NoFunctionsWithNameAreDefined,
+    NoFunctionWithMatchingSignatureDefined
 }
 
 public enum ScratchScriptWarning

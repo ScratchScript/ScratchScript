@@ -8,6 +8,11 @@ public static class Scratch3Helper
     public const string VariableNamesList = "__VN";
     public const string VariableValuesList = "__VV";
 
+    public static string CallFunction(string name)
+    {
+        return $"call {name}";
+    }
+
     public static string Push(string list, object value)
     {
         return $"push {list} {value}";

@@ -20,7 +20,7 @@ public record ScratchScriptVisitorSettings(char CommandSeparator = ' ');
 
 public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<TypedValue?>
 {
-    private Scope? _scope;
+    private IScope? _scope;
 
     private CompilerTarget _target = CompilerTarget.Scratch3;
 
@@ -76,10 +76,10 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         {
             var sb = new StringBuilder();
 
-            foreach (var eventScope in Exports.Events.Values)
-                sb.AppendLine(eventScope.ToString(Settings.CommandSeparator));
             foreach (var functionScope in Exports.Functions.Values)
                 sb.AppendLine(functionScope.ToString(Settings.CommandSeparator));
+            foreach (var eventScope in Exports.Events.Values)
+                sb.AppendLine(eventScope.ToString(Settings.CommandSeparator));
 
             return sb.ToString();
         }
@@ -145,7 +145,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         return VisitBlock(scope, context);
     }
 
-    private ScopeValue VisitBlock(Scope scope, ScratchScriptParser.BlockContext context)
+    private ScopeValue VisitBlock(IScope scope, ScratchScriptParser.BlockContext context)
     {
         if (_scope != null)
         {
@@ -165,7 +165,13 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         return new ScopeValue(scope);
     }
 
-    private Scope CreateDefaultScope()
+    public override TypedValue? VisitLine(ScratchScriptParser.LineContext context)
+    {
+        if (_scope is Scratch3Scope scope) scope.StackDebt = 0;
+        return base.VisitLine(context);
+    }
+
+    private IScope CreateDefaultScope()
     {
         return Target switch
         {
@@ -174,7 +180,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         };
     }
 
-    private FunctionScope CreateFunctionScope()
+    private IFunctionScope CreateFunctionScope()
     {
         return Target switch
         {

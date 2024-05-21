@@ -19,7 +19,7 @@ public partial class ScratchScriptVisitor
             return (LocationInformation.Variables[variableDepth][identifier].Context,
                 LocationInformation.Variables[variableDepth][identifier].Identifier);
 
-        if (_scope is FunctionScope functionScope)
+        if (_scope is IFunctionScope functionScope)
         {
             if (functionScope.Arguments.Any(arg => arg.Name == identifier))
                 return (LocationInformation.Functions[functionScope.FunctionName].DefinitionContext,
@@ -73,7 +73,7 @@ public partial class ScratchScriptVisitor
         }
 
         return new IdentifierExpressionValue(
-            _scope is FunctionScope ? IdentifierType.FunctionArgument : IdentifierType.Variable, name, result.Value,
+            _scope is IFunctionScope ? IdentifierType.FunctionArgument : IdentifierType.Variable, name, result.Value,
             result.Type);
     }
 
@@ -83,7 +83,7 @@ public partial class ScratchScriptVisitor
 
         if (_scope.GetVariable(identifier) is { } variable)
             return _dataHandler.GetVariable(ref _scope, variable);
-        if (_scope is FunctionScope functionScope && functionScope.Arguments.Any(arg => arg.Name == identifier))
+        if (_scope is IFunctionScope functionScope && functionScope.Arguments.Any(arg => arg.Name == identifier))
             return _functionHandler.GetArgument(ref _scope, identifier);
         return null;
     }

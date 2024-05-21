@@ -4,15 +4,15 @@ namespace ScratchScript.Compiler.Frontend.Targets;
 
 public record ScratchScriptVariable(string Name, string Id, ScratchType Type);
 
-public abstract class Scope
+public interface IScope
 {
-    public readonly List<string> Content = [];
-    public int Depth;
-    public string Header = "";
-    public Scope? ParentScope;
-    public Dictionary<string, ScratchScriptVariable> Variables { get; } = [];
+    public List<string> Content { get; init; }
+    public int Depth { get; set; }
+    public string Header { get; set; }
+    public IScope? ParentScope { get; set; }
+    public Dictionary<string, ScratchScriptVariable> Variables { get; init; }
 
-    public abstract string ToString(char separator);
+    public string ToString(char separator);
 
     public ScratchScriptVariable? GetVariable(string name)
     {
@@ -39,10 +39,10 @@ public abstract class Scope
     }
 }
 
-public abstract class FunctionScope : Scope
+public interface IFunctionScope : IScope
 {
     // dictionaries are not guaranteed to be ordered, so a list is used here
-    public List<ScratchScriptVariable> Arguments { get; } = [];
-    public string FunctionName { get; set; } = null!;
-    public ScratchType ReturnType { get; set; } = ScratchType.Void;
+    public List<ScratchScriptVariable> Arguments { get; init; }
+    public string FunctionName { get; set; }
+    public ScratchType ReturnType { get; set; }
 }
