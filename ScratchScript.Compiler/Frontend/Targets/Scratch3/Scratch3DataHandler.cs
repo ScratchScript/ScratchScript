@@ -9,10 +9,10 @@ public class Scratch3DataHandler : IDataHandler
     {
         if (value.Value == null) throw new Exception("Cannot set variable to null.");
 
-        if (!string.IsNullOrEmpty(value.Dependencies)) scope.Content.Add(value.Dependencies);
+        if (value.Dependencies != null) scope.Content.AddRange(value.Dependencies);
         scope.Content.Add(Scratch3Helper.Push(Scratch3Helper.VariableNamesList, id.Surround('"')));
         scope.Content.Add(Scratch3Helper.Push(Scratch3Helper.VariableValuesList, value.Value));
-        if (!string.IsNullOrEmpty(value.Cleanup)) scope.Content.Add(value.Cleanup);
+        if (value.Cleanup != null) scope.Content.AddRange(value.Cleanup);
 
         scope.Variables[name] = new ScratchScriptVariable(name, id, value.Type);
     }
@@ -21,9 +21,9 @@ public class Scratch3DataHandler : IDataHandler
     {
         if (value.Value == null) throw new Exception("Cannot set variable to null.");
 
-        if (!string.IsNullOrEmpty(value.Dependencies)) scope.Content.Add(value.Dependencies);
+        if (value.Dependencies != null) scope.Content.AddRange(value.Dependencies);
         scope.Content.Add(Scratch3Helper.SetVariableValue(variable.Id, value.Value));
-        if (!string.IsNullOrEmpty(value.Cleanup)) scope.Content.Add(value.Cleanup);
+        if (value.Cleanup != null) scope.Content.AddRange(value.Cleanup);
     }
 
     public TypedValue GetVariable(ref IScope scope, ScratchScriptVariable variable)

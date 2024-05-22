@@ -1,4 +1,6 @@
-﻿namespace ScratchScript.Compiler.Extensions;
+﻿using ScratchScript.Compiler.Types;
+
+namespace ScratchScript.Compiler.Extensions;
 
 public static class StringExtensions
 {
@@ -20,5 +22,10 @@ public static class StringExtensions
     public static string Capitalize(this string str)
     {
         return string.Concat(str[0].ToString().ToUpper(), str.AsSpan(1));
+    }
+
+    public static string GetFunctionSignatureString(string name, IEnumerable<ScratchType> types)
+    {
+        return $"{name}({string.Join(", ", types.Select(type => type.ToString()))})";
     }
 }

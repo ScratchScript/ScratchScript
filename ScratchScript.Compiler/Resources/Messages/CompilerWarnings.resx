@@ -31,6 +31,6 @@
         <value>division by zero is not recommended and can lead to issues</value>
     </data>
     <data name="W2" xml:space="preserve">
-        <value>unused function argument "{0}"</value>
+        <value>function "{0}" returns a {1}, but the value is not used</value>
     </data>
 </root>

@@ -78,7 +78,7 @@ namespace ScratchScript.Compiler.Resources.Messages {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to unused function argument &quot;{0}&quot;.
+        ///   Looks up a localized string similar to function &quot;{0}&quot; returns a {1}, but the value is not used.
         /// </summary>
         internal static string W2 {
             get {

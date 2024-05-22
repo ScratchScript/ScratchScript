@@ -151,8 +151,8 @@ public partial class ScratchScriptVisitor
         // the operator in the IR and ScratchScript *should* match
         var irOperator = context.booleanOperators().GetText()!;
         return new ExpressionValue($"{irOperator} {left.Value} {right.Value}", ScratchType.Boolean,
-            left.Dependencies.Combine(Settings.CommandSeparator, right.Dependencies),
-            left.Cleanup.Combine(Settings.CommandSeparator, right.Cleanup));
+            left.Dependencies.ConcatNullable(right.Dependencies),
+            left.Cleanup.ConcatNullable(right.Dependencies));
     }
 
     public override TypedValue? VisitBinaryAddExpression(ScratchScriptParser.BinaryAddExpressionContext context)
@@ -200,7 +200,7 @@ public partial class ScratchScriptVisitor
         }
 
         return new ExpressionValue($"{irOperator} {left.Value} {right.Value}", resultType,
-            left.Dependencies.Combine(Settings.CommandSeparator, right.Dependencies),
-            left.Cleanup.Combine(Settings.CommandSeparator, right.Cleanup));
+            left.Dependencies.ConcatNullable(right.Dependencies),
+            left.Cleanup.ConcatNullable(right.Cleanup));
     }
 }

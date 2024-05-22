@@ -14,12 +14,14 @@ public enum ScratchScriptError
     ReturnUsedInNonFunctionContext,
     ReturnWithExpressionOfUnknownType,
     NoFunctionsWithNameAreDefined,
-    NoFunctionWithMatchingSignatureDefined
+    NoFunctionWithMatchingSignatureDefined,
+    FunctionDoesNotReturnAValue
 }
 
 public enum ScratchScriptWarning
 {
-    DivisionByZero = 1
+    DivisionByZero = 1,
+    UnusedFunctionReturnValue
 }
 
 public enum ScratchScriptNote

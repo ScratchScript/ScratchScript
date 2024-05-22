@@ -1,4 +1,5 @@
 ﻿using ScratchScript.Compiler.Diagnostics;
+using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.Information;
 using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
@@ -18,6 +19,8 @@ public partial class ScratchScriptVisitor
     private (IFunctionScope? Function, ExpressionValue? ReturnValue) HandleFunctionCall(
         ScratchScriptParser.FunctionCallStatementContext context)
     {
+        if (_scope is null) return (null, null);
+
         var name = context.Identifier().GetText();
 
         // strict name check (without signature)
@@ -47,7 +50,7 @@ public partial class ScratchScriptVisitor
         if (function == null)
         {
             DiagnosticReporter.Error((int)ScratchScriptError.NoFunctionWithMatchingSignatureDefined, context, context,
-                $"{name}({string.Join(", ", signature.Select(type => type.ToString()))})");
+                StringExtensions.GetFunctionSignatureString(name, signature));
             return (null, null);
         }
 
@@ -65,7 +68,10 @@ public partial class ScratchScriptVisitor
     {
         var (function, returnValue) = HandleFunctionCall(context);
         if (function == null) return null;
-        //todo: warning about the unused return value
+        if (returnValue != null)
+            DiagnosticReporter.Warning((int)ScratchScriptWarning.UnusedFunctionReturnValue, context, context,
+                function.SignatureString, function.ReturnType.ToString());
+
         return null;
     }
 
@@ -73,7 +79,13 @@ public partial class ScratchScriptVisitor
     {
         var (function, returnValue) = HandleFunctionCall(context.functionCallStatement());
         if (function == null) return null;
-        if (returnValue == null) return null; // todo: error
+        if (returnValue == null)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.FunctionDoesNotReturnAValue, context, context,
+                function.SignatureString);
+            return null;
+        }
+
         return returnValue;
     }
 
@@ -141,6 +153,8 @@ public partial class ScratchScriptVisitor
                 context.typedIdentifier(index), argument.Name);
             return null;
         }
+
+        if (scope.ReturnType == ScratchType.Unknown) scope.ReturnType = ScratchType.Void;
 
         Exports.Functions[name] = scope;
         return null;

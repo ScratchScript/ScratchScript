@@ -1,4 +1,5 @@
-﻿using ScratchScript.Compiler.Types;
+﻿using ScratchScript.Compiler.Extensions;
+using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Targets;
 
@@ -45,4 +46,7 @@ public interface IFunctionScope : IScope
     public List<ScratchScriptVariable> Arguments { get; init; }
     public string FunctionName { get; set; }
     public ScratchType ReturnType { get; set; }
+
+    public string SignatureString =>
+        StringExtensions.GetFunctionSignatureString(FunctionName, Arguments.Select(arg => arg.Type));
 }

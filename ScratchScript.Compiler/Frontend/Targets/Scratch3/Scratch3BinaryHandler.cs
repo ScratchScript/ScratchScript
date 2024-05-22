@@ -11,8 +11,8 @@ public class Scratch3BinaryHandler(char commandSeparator) : IBinaryHandler
     public ExpressionValue GetBinaryMultiplyExpression(ref IScope scope, MultiplyOperators op, ExpressionValue left,
         ExpressionValue right)
     {
-        var dependencies = left.Dependencies.Combine(commandSeparator, right.Dependencies);
-        var cleanup = left.Cleanup.Combine(commandSeparator, right.Cleanup);
+        var dependencies = left.Dependencies.ConcatNullable(right.Dependencies);
+        var cleanup = left.Cleanup.ConcatNullable(right.Cleanup);
 
         return op switch
         {
@@ -37,8 +37,8 @@ public class Scratch3BinaryHandler(char commandSeparator) : IBinaryHandler
     {
         // TODO: account for float calculations later
         return new ExpressionValue($"== {left.Value} {right.Value}", ScratchType.Boolean,
-            left.Dependencies.Combine(commandSeparator, right.Dependencies),
-            left.Cleanup.Combine(commandSeparator, right.Cleanup));
+            left.Dependencies.ConcatNullable(right.Dependencies),
+            left.Cleanup.ConcatNullable(right.Cleanup));
     }
 
     public ExpressionValue GetBinaryBitwiseExpression(ref IScope scope, BitwiseOperators op, ExpressionValue left,
@@ -51,8 +51,8 @@ public class Scratch3BinaryHandler(char commandSeparator) : IBinaryHandler
         ExpressionValue left,
         ExpressionValue right)
     {
-        var dependencies = left.Dependencies.Combine(commandSeparator, right.Dependencies);
-        var cleanup = left.Cleanup.Combine(commandSeparator, right.Cleanup);
+        var dependencies = left.Dependencies.ConcatNullable(right.Dependencies);
+        var cleanup = left.Cleanup.ConcatNullable(right.Cleanup);
 
         return op switch
         {

@@ -24,11 +24,18 @@ public class Scratch3FunctionHandler : IFunctionHandler
         if (scope is not Scratch3FunctionScope function)
             throw new Exception("Expected a Scratch3FunctionScope for GetArgument.");
 
-        if (!string.IsNullOrEmpty(value?.Dependencies)) scope.Content.Add(value.Dependencies);
+        // return statement structure:
+        // {dependencies needed for the return value}
+        // {push return value to (stack debt + argument count + 1)}
+        // {cleanup of the return value}
+        // {pop arguments from the stack}
+        // {stop the script}
+
+        if (value?.Dependencies != null) scope.Content.AddRange(value.Dependencies);
         if (value != null)
             function.Content.Add(Scratch3Helper.PushAt(Scratch3Helper.StackList,
                 (function.StackDebt + function.Arguments.Count + 1).ToString(), value.Value!));
-        if (!string.IsNullOrEmpty(value?.Cleanup)) scope.Content.Add(value.Cleanup);
+        if (value?.Cleanup != null) scope.Content.AddRange(value.Cleanup);
         function.Content.Add(Scratch3Helper.Repeat(function.Arguments.Count.ToString(),
             Scratch3Helper.Pop(Scratch3Helper.StackList)));
         function.Content.Add(Scratch3Helper.StopThisScript());
@@ -40,26 +47,25 @@ public class Scratch3FunctionHandler : IFunctionHandler
         if (_scope is not Scratch3Scope scope)
             throw new Exception("Expected a Scratch3Scope for HandleFunctionCall.");
 
-        var dependencies = "";
-        var cleanup = "";
+        var dependencies = new List<string>();
+        var cleanup = new List<string>();
         foreach (var argument in arguments.Reverse())
         {
             if (argument.Value == null) throw new Exception("A function argument had a null value.");
 
-            // todo: very much temporary (perhaps dependencies should be a list as well?)
-            dependencies = ((dependencies + ' ' + argument.Dependencies).Trim() + ' ' +
-                            Scratch3Helper.PushAt(Scratch3Helper.StackList, "1", argument.Value)).Trim();
-            cleanup += argument.Cleanup;
+            dependencies.AddRange(argument.Dependencies ?? []);
+            dependencies.Add(Scratch3Helper.PushAt(Scratch3Helper.StackList, "1", argument.Value));
+            cleanup.AddRange(argument.Cleanup ?? []);
         }
 
-        dependencies = (dependencies + ' ' + Scratch3Helper.CallFunction(function.FunctionName)).Trim();
-        cleanup = (cleanup + ' ' + Scratch3Helper.PopAt(Scratch3Helper.StackList, "1")).Trim();
+        dependencies.Add(Scratch3Helper.CallFunction(function.FunctionName));
+        cleanup.Add(Scratch3Helper.PopAt(Scratch3Helper.StackList, "1"));
         scope.StackDebt++;
 
         if (function.ReturnType == ScratchType.Void)
         {
-            scope.Content.Add(dependencies);
-            scope.Content.Add(cleanup);
+            scope.Content.AddRange(dependencies);
+            scope.Content.AddRange(cleanup);
             return null;
         }
 

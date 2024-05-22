@@ -114,6 +114,15 @@ namespace ScratchScript.Compiler.Resources.Messages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to expected a value, but the function &quot;{0}&quot; doesn&apos;t return one.
+        /// </summary>
+        internal static string E14 {
+            get {
+                return ResourceManager.GetString("E14", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to expected {0}, got {1}.
         /// </summary>
         internal static string E2 {
