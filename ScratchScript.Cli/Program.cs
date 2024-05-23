@@ -7,7 +7,8 @@ using ScratchScriptVisitor = ScratchScript.Compiler.Frontend.Implementation.Scra
 
 const string source = """
                       function sum(x: number, y: number) {
-
+                        x = x + 2;
+                        return x + y * 2;
                       }
 
                       on start {

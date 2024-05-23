@@ -10,13 +10,29 @@ public class Scratch3FunctionHandler : IFunctionHandler
             throw new Exception("Expected a Scratch3FunctionScope for GetArgument.");
 
         var index = function.Arguments.FindIndex(arg => arg.Name == name);
-
         if (index == -1)
             throw new Exception(
                 $"The function \"{function.FunctionName}\" does not have an argument with the name \"{name}\".");
 
-        return new TypedValue(Scratch3Helper.ItemOf(Scratch3Helper.StackList, index.ToString()),
+        return new TypedValue(
+            Scratch3Helper.ItemOf(Scratch3Helper.StackList, (index + function.StackDebt + 1).ToString()),
             function.Arguments[index].Type);
+    }
+
+    public void HandleFunctionArgumentAssignment(ref IScope scope, string name, ExpressionValue value)
+    {
+        if (scope is not Scratch3FunctionScope function)
+            throw new Exception("Expected a Scratch3FunctionScope for HandleFunctionArgumentAssignment.");
+
+        var index = function.Arguments.FindIndex(arg => arg.Name == name);
+        if (index == -1)
+            throw new Exception(
+                $"The function \"{function.FunctionName}\" does not have an argument with the name \"{name}\".");
+
+        if (value.Dependencies != null) scope.Content.AddRange(value.Dependencies);
+        scope.Content.Add(Scratch3Helper.Replace(Scratch3Helper.StackList, (function.StackDebt + index + 1).ToString(),
+            value.Value!));
+        if (value.Cleanup != null) scope.Content.AddRange(value.Cleanup);
     }
 
     public void HandleFunctionExit(ref IScope scope, ExpressionValue? value)

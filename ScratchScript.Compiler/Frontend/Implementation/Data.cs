@@ -43,16 +43,37 @@ public partial class ScratchScriptVisitor
     {
         var name = context.Identifier().GetText();
 
-        if (_scope?.GetVariable(name) is not { } variable)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.VariableNotDefined, context, context.Identifier(), name);
-            return null;
-        }
-
         // in case of an ICE
         if (Visit(context.expression()) is not ExpressionValue expression)
         {
             DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
+            return null;
+        }
+
+        if (_scope is IFunctionScope function && function.Arguments.FirstOrDefault(arg => arg.Name == name) is
+                { } argument)
+        {
+            if (argument.Type != expression.Type)
+            {
+                var typeSetter = LocationInformation.Functions[function.FunctionName].ArgumentInformation[name]
+                    .TypeSetter;
+                if (typeSetter == null)
+                    throw new Exception(
+                        $"DiagnosticLocationStorage didn't contain the type setter for function argument \"{name}\" (function \"{function.FunctionName}\")");
+
+                DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(),
+                    argument.Type, expression.Type);
+                DiagnosticReporter.Note((int)ScratchScriptNote.FunctionArgumentTypeSetAt, typeSetter, typeSetter);
+                return null;
+            }
+
+            _functionHandler.HandleFunctionArgumentAssignment(ref _scope, name, expression);
+            return null;
+        }
+
+        if (_scope.GetVariable(name) is not { } variable)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.VariableNotDefined, context, context.Identifier(), name);
             return null;
         }
 

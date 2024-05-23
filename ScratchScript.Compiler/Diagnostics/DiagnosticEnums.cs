@@ -31,5 +31,6 @@ public enum ScratchScriptNote
     EventDeclaredAt,
     IdentifierClaimedAt,
     VariableTypeSetAt,
-    ReturnTypeSetAt
+    ReturnTypeSetAt,
+    FunctionArgumentTypeSetAt
 }
