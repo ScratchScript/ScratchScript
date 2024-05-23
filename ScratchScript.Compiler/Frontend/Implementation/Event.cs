@@ -39,7 +39,7 @@ public partial class ScratchScriptVisitor
         }
 
         var scope = scopeValue.Scope;
-        scope.Header = $"on {eventName}"; // TODO: temporary implementation
+        scope.Header = [$"on {eventName}"]; // TODO: temporary implementation
 
         LocationInformation.Events[eventName] = locationInformation;
         Exports.Events[eventName] = scope;

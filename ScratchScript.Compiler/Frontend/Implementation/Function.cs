@@ -108,7 +108,7 @@ public partial class ScratchScriptVisitor
         var scope = CreateFunctionScope();
         scope.FunctionName = name;
         scope.ReturnType = ScratchType.Unknown;
-        scope.Header = $"block {name}";
+        scope.Header = [$"block {name}"];
 
         var locationInformation = new FunctionLocationInformation
         {

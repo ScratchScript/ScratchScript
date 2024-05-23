@@ -16,7 +16,7 @@ public class Scratch3Scope : IScope
     public int StackDebt { get; set; } = 0;
     public List<string> Content { get; init; } = [];
     public int Depth { get; set; } = 0;
-    public string Header { get; set; } = "";
+    public List<string> Header { get; set; } = [];
     public IScope? ParentScope { get; set; } = null;
     public Dictionary<string, ScratchScriptVariable> Variables { get; init; } = [];
 
@@ -43,9 +43,12 @@ internal class DefaultScratch3ScopeFormatter(IScope scope, char separator)
     public override string ToString()
     {
         var sb = new StringBuilder();
-
-        sb.Append(scope.Header);
-        sb.Append(separator);
+        
+        foreach (var line in scope.Header)
+        {
+            sb.Append(line);
+            sb.Append(separator);
+        }
 
         foreach (var line in scope.Content)
         {
@@ -63,7 +66,7 @@ internal class DefaultScratch3ScopeFormatter(IScope scope, char separator)
             sb.Append(separator);
         }
 
-        sb.AppendLine("end");
+        sb.Append("end");
         return sb.ToString();
     }
 }

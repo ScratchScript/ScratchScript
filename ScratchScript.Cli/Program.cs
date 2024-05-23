@@ -12,7 +12,13 @@ const string source = """
                       }
 
                       on start {
-                        let a = sum(1,2);
+                        let a = 0;
+                        if(1 + 2 == 3) {
+                            a = sum(1, 2);
+                        }
+                        else {
+                            a = sum(0, 0);
+                        }
                       }
                       """;
 var inputStream = new AntlrInputStream(source);

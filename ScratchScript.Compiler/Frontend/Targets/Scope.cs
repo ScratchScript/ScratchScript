@@ -9,7 +9,7 @@ public interface IScope
 {
     public List<string> Content { get; init; }
     public int Depth { get; set; }
-    public string Header { get; set; }
+    public List<string> Header { get; set; }
     public IScope? ParentScope { get; set; }
     public Dictionary<string, ScratchScriptVariable> Variables { get; init; }
 
@@ -20,9 +20,9 @@ public interface IScope
         var scope = this;
         do
         {
-            if (Variables.TryGetValue(name, out var variable)) return variable;
+            if (scope.Variables.TryGetValue(name, out var variable)) return variable;
             scope = scope.ParentScope;
-        } while (scope?.ParentScope != null);
+        } while (scope != null);
 
         return null;
     }
@@ -32,9 +32,9 @@ public interface IScope
         var scope = this;
         do
         {
-            if (Variables.ContainsKey(name)) return scope.Depth;
+            if (scope.Variables.ContainsKey(name)) return scope.Depth;
             scope = scope.ParentScope;
-        } while (scope?.ParentScope != null);
+        } while (scope != null);
 
         return null;
     }

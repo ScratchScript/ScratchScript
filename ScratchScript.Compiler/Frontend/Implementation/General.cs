@@ -78,6 +78,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
 
             foreach (var functionScope in Exports.Functions.Values)
                 sb.AppendLine(functionScope.ToString(Settings.CommandSeparator));
+            sb.AppendLine();
             foreach (var eventScope in Exports.Events.Values)
                 sb.AppendLine(eventScope.ToString(Settings.CommandSeparator));
 
@@ -158,7 +159,8 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         foreach (var lineContext in context.line())
         {
             if (VisitLine(lineContext) is not { } value) continue;
-            scope.Content.Add(value.ToString());
+            if(value is ScopeValue scopeValue) scope.Content.Add(scopeValue.Scope.ToString(Settings.CommandSeparator));
+            else scope.Content.Add(value.ToString());
         }
 
         _scope = scope.ParentScope as Scratch3Scope;
