@@ -1,4 +1,3 @@
-using System.Net.Mime;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
@@ -7,33 +6,41 @@ namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
+    private IConditionalHandler _conditionalHandler = null!;
+
     public override TypedValue? VisitIfStatement(ScratchScriptParser.IfStatementContext context)
     {
+        // ICE handling
         if (Visit(context.expression()) is not ExpressionValue condition)
         {
             DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
             return null;
         }
 
+        // condition must be a boolean
         if (condition.Type != ScratchType.Boolean)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(), ScratchType.Boolean, condition.Type);
+            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(),
+                ScratchType.Boolean, condition.Type);
             return null;
         }
 
+        // the "X is true" expression is target-specific and can be optimized via extensions
+        var conditionExpression = _conditionalHandler.GetEqualityExpression(condition);
+        if (conditionExpression.Value == null)
+            throw new Exception("The IConditionHandler returned an invalid expression for GetEqualityExpression.");
+
+        // put all statements into a new scope
         var scope = CreateDefaultScope();
-        // TODO: get rid of equal to "true" check later
-        scope.Header = [..condition.Dependencies ?? [], $"if == {condition.Value} \"true\""];
+        scope.Header = [..condition.Dependencies ?? [], $"if {conditionExpression.Value}", ..condition.Cleanup ?? []];
         scope = VisitBlock(scope, context.block()).Scope;
 
+        // put the else-clause immediately after the if-clause (not the same scope!)
         if (context.elseIfStatement() != null &&
             VisitElseIfStatement(context.elseIfStatement()) is ScopeValue elseScopeValue)
         {
-            var elseScope = elseScopeValue.Scope;
-            if (context.elseIfStatement().ifStatement() != null)
-                elseScope.Header[0] = $"else {elseScope.Header[0]}";
-         
-            scope.Content.Add(elseScope.ToString(Settings.CommandSeparator));
+            scope.Content.AddRange(["else", ..condition.Cleanup ?? []]);
+            scope.Content.Add(elseScopeValue.Scope.ToString(Settings.CommandSeparator));
         }
 
         return new ScopeValue(scope);
@@ -48,6 +55,7 @@ public partial class ScratchScriptVisitor
             scope.Header = ["else"];
             return VisitBlock(scope, context.block());
         }
+
         return null;
     }
 }

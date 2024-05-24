@@ -67,6 +67,11 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
                 CompilerTarget.Scratch3 => new Scratch3FunctionHandler(),
                 _ => throw new NotImplementedException()
             };
+            _conditionalHandler = value switch
+            {
+                CompilerTarget.Scratch3 => new Scratch3ConditionalHandler(),
+                _ => throw new NotImplementedException()
+            };
         }
     }
 
@@ -159,7 +164,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         foreach (var lineContext in context.line())
         {
             if (VisitLine(lineContext) is not { } value) continue;
-            if(value is ScopeValue scopeValue) scope.Content.Add(scopeValue.Scope.ToString(Settings.CommandSeparator));
+            if (value is ScopeValue scopeValue) scope.Content.Add(scopeValue.Scope.ToString(Settings.CommandSeparator));
             else scope.Content.Add(value.ToString());
         }
 

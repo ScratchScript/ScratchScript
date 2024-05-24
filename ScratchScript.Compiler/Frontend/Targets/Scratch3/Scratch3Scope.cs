@@ -43,7 +43,7 @@ internal class DefaultScratch3ScopeFormatter(IScope scope, char separator)
     public override string ToString()
     {
         var sb = new StringBuilder();
-        
+
         foreach (var line in scope.Header)
         {
             sb.Append(line);

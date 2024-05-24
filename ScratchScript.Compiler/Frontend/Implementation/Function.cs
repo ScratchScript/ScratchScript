@@ -58,12 +58,6 @@ public partial class ScratchScriptVisitor
         return (function, value);
     }
 
-    public override TypedValue? VisitMemberFunctionCallStatement(
-        ScratchScriptParser.MemberFunctionCallStatementContext context)
-    {
-        return base.VisitMemberFunctionCallStatement(context);
-    }
-
     public override TypedValue? VisitFunctionCallStatement(ScratchScriptParser.FunctionCallStatementContext context)
     {
         var (function, returnValue) = HandleFunctionCall(context);
@@ -87,12 +81,6 @@ public partial class ScratchScriptVisitor
         }
 
         return returnValue;
-    }
-
-    public override TypedValue? VisitMemberFunctionCallExpression(
-        ScratchScriptParser.MemberFunctionCallExpressionContext context)
-    {
-        return base.VisitMemberFunctionCallExpression(context);
     }
 
     public override TypedValue? VisitFunctionDeclarationStatement(
@@ -206,5 +194,17 @@ public partial class ScratchScriptVisitor
         };
         _functionHandler.HandleFunctionExit(ref _scope, expression);
         return null;
+    }
+
+    public override TypedValue? VisitMemberFunctionCallStatement(
+        ScratchScriptParser.MemberFunctionCallStatementContext context)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override TypedValue? VisitMemberFunctionCallExpression(
+        ScratchScriptParser.MemberFunctionCallExpressionContext context)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -12,12 +12,10 @@ const string source = """
                       }
 
                       on start {
-                        let a = 0;
-                        if(1 + 2 == 3) {
-                            a = sum(1, 2);
+                        let a = 3;
+                        if(sum(1, 1) == a) {
                         }
-                        else {
-                            a = sum(0, 0);
+                        else if(sum(1, 1) == 2) {
                         }
                       }
                       """;
