@@ -157,13 +157,6 @@ public interface IScratchIRVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitVariableExpression([NotNull] ScratchIRParser.VariableExpressionContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>stackIndexExpression</c>
-	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitStackIndexExpression([NotNull] ScratchIRParser.StackIndexExpressionContext context);
-	/// <summary>
 	/// Visit a parse tree produced by the <c>arrayExpression</c>
 	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
 	/// </summary>
@@ -239,12 +232,6 @@ public interface IScratchIRVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitIfStatement([NotNull] ScratchIRParser.IfStatementContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="ScratchIRParser.functionArgument"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionArgument([NotNull] ScratchIRParser.FunctionArgumentContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="ScratchIRParser.callFunctionArgument"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -274,12 +261,6 @@ public interface IScratchIRVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitConstant([NotNull] ScratchIRParser.ConstantContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="ScratchIRParser.functionArgumentTypeDeclaration"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFunctionArgumentTypeDeclaration([NotNull] ScratchIRParser.FunctionArgumentTypeDeclarationContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="ScratchIRParser.addOperators"/>.
 	/// </summary>

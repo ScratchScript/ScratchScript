@@ -13,6 +13,7 @@ public record Block
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public Mutation? Mutation;
 
+    [NonSerialized] public string Id;
     public string Next;
     public string Opcode;
     public string Parent;

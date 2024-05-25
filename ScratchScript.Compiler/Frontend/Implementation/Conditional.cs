@@ -39,7 +39,7 @@ public partial class ScratchScriptVisitor
         if (context.elseIfStatement() != null &&
             VisitElseIfStatement(context.elseIfStatement()) is ScopeValue elseScopeValue)
         {
-            scope.Content.AddRange(["else", ..condition.Cleanup ?? []]);
+            scope.Content.AddRange(["end", "else", ..condition.Cleanup ?? []]);
             scope.Content.Add(elseScopeValue.Scope.ToString(Settings.CommandSeparator));
         }
 

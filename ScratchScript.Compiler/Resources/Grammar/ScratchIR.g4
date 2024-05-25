@@ -24,14 +24,13 @@ command
     | 'popall' Identifier #popAllCommand;     
  
 block
-    : 'block' WarpIdentifier? Identifier functionArgument* command*? End #functionBlock
+    : 'block' WarpIdentifier? Identifier command*? End #functionBlock
     | 'on' Event command*? End #eventBlock
     | 'flag' Identifier #flagTopLevelStatement;
 
 expression
     : constant #constantExpression
     | variableIdentifier #variableExpression
-    | StackIndexIdentifier #stackIndexExpression
     | arrayIdentifier #arrayExpression
     | '(' expression ')' #parenthesizedExpression
     | addOperators expression expression #binaryAddExpression
@@ -48,15 +47,12 @@ Event: 'start'; //todo: add other events
 elseIfStatement: command*? End | ifStatement;
 ifStatement: 'if' expression command*? End ('else' elseIfStatement)?;
 
-functionArgument: Identifier functionArgumentTypeDeclaration;
 callFunctionArgument: functionArgumentType Identifier ':' expression;
-
 functionArgumentType: 'i:' | 'f:';
 
 variableIdentifier: 'var:' Identifier;
 arrayIdentifier: 'arr:' Identifier;
 constant: Number | String | Color;
-functionArgumentTypeDeclaration: FunctionType;
 
 addOperators: '+' | '-' | '~';
 multiplyOperators: '*' | '/' | '%';
@@ -65,14 +61,12 @@ booleanOperators: '&&' | '||' | '^';
 compareOperators: '==' | '!=' | '>' | '>=' | '<' | '<=';
 
 Type: NumberType | StringType | ListType;
-FunctionType: StringNumberType | BooleanType;
 NumberType: ':number';
 StringType: ':string';
 ListType: ':list';
 StringNumberType: ':sn';
 BooleanType: ':boolean';
 WarpIdentifier: ':w';
-StackIndexIdentifier: ':si:';
 
 Hashtag: '#';
 Minus: '-';

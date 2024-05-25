@@ -245,18 +245,6 @@ public interface IScratchIRListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitVariableExpression([NotNull] ScratchIRParser.VariableExpressionContext context);
 	/// <summary>
-	/// Enter a parse tree produced by the <c>stackIndexExpression</c>
-	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterStackIndexExpression([NotNull] ScratchIRParser.StackIndexExpressionContext context);
-	/// <summary>
-	/// Exit a parse tree produced by the <c>stackIndexExpression</c>
-	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitStackIndexExpression([NotNull] ScratchIRParser.StackIndexExpressionContext context);
-	/// <summary>
 	/// Enter a parse tree produced by the <c>arrayExpression</c>
 	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
 	/// </summary>
@@ -385,16 +373,6 @@ public interface IScratchIRListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitIfStatement([NotNull] ScratchIRParser.IfStatementContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="ScratchIRParser.functionArgument"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterFunctionArgument([NotNull] ScratchIRParser.FunctionArgumentContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="ScratchIRParser.functionArgument"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitFunctionArgument([NotNull] ScratchIRParser.FunctionArgumentContext context);
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="ScratchIRParser.callFunctionArgument"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -444,16 +422,6 @@ public interface IScratchIRListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitConstant([NotNull] ScratchIRParser.ConstantContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="ScratchIRParser.functionArgumentTypeDeclaration"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterFunctionArgumentTypeDeclaration([NotNull] ScratchIRParser.FunctionArgumentTypeDeclarationContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="ScratchIRParser.functionArgumentTypeDeclaration"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitFunctionArgumentTypeDeclaration([NotNull] ScratchIRParser.FunctionArgumentTypeDeclarationContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="ScratchIRParser.addOperators"/>.
 	/// </summary>
