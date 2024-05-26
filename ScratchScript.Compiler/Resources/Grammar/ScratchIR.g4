@@ -44,8 +44,8 @@ expression
 Event: 'start'; //todo: add other events
 //StopType: 'script'; //todo: add other types
 
-elseIfStatement: command*? End | ifStatement;
-ifStatement: 'if' expression command*? End ('else' elseIfStatement)?;
+elseIfStatement: 'else' command*? End | ifStatement;
+ifStatement: 'if' expression command*? End elseIfStatement?;
 
 callFunctionArgument: functionArgumentType Identifier ':' expression;
 functionArgumentType: 'i:' | 'f:';

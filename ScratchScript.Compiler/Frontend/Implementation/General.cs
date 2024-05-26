@@ -104,6 +104,11 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         return null;
     }
 
+    public override TypedValue? VisitParenthesizedExpression(ScratchScriptParser.ParenthesizedExpressionContext context)
+    {
+        return Visit(context.expression());
+    }
+
     public override TypedValue? VisitConstantExpression(ScratchScriptParser.ConstantExpressionContext context)
     {
         if (Visit(context.constant()) is not { } value)

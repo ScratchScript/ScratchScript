@@ -1,11 +1,12 @@
 ﻿using System.Globalization;
+using ScratchScript.Compiler.Backend.Blocks;
 using ScratchScript.Compiler.Models;
 
 namespace ScratchScript.Compiler.Backend.Implementation;
 
-public partial class ScratchIRVisitor(string Id): ScratchIRBaseVisitor<object?>
+public partial class ScratchIRVisitor(string id): ScratchIRBaseVisitor<object?>
 {
-    public Target Target = new();
+    public readonly Target Target = new();
     private Block? _parent;
     
     public override object? VisitConstant(ScratchIRParser.ConstantContext context)
@@ -27,7 +28,7 @@ public partial class ScratchIRVisitor(string Id): ScratchIRBaseVisitor<object?>
             TopLevel = true,
             Opcode = context.Event().GetText() switch
             {
-                "start" => "event_whenflagclicked",
+                "start" => Control.WhenFlagClicked,
                 _ => throw new ArgumentOutOfRangeException()
             }
         };
@@ -35,16 +36,17 @@ public partial class ScratchIRVisitor(string Id): ScratchIRBaseVisitor<object?>
 
         var commands = VisitCommands(context.command());
         AttachStackToBlock(block, commands);
-        UpdateBlocks(block);
+
+        Target.Blocks[block.Id] = block;
         return block;
     }
 
     private List<Block> VisitCommands(IEnumerable<ScratchIRParser.CommandContext> commands)
     {
         var lastParent = _parent;
-        var blocks = new List<Block>();
         _parent = null;
-
+        
+        var blocks = new List<Block>();
         foreach (var command in commands)
         {
             switch (Visit(command))
@@ -74,35 +76,7 @@ public partial class ScratchIRVisitor(string Id): ScratchIRBaseVisitor<object?>
         }
 
         _parent = lastParent;
-        UpdateBlocks(blocks.ToArray());
+        foreach (var block in blocks) Target.Blocks[block.Id] = block;
         return blocks;
-    }
-    
-    private readonly Dictionary<string, int> _blockNameUsage = [];
-
-    private string GenerateBlockId(string opcode)
-    {
-        // TODO: temporary implementation. may be changed later for space optimizations and similar stuff
-        _blockNameUsage.TryAdd(opcode, 0);
-        _blockNameUsage[opcode]++;
-        return $"_{Id[..5]}_{opcode}_{_blockNameUsage[opcode]}";
-    }
-
-    private void AttachStackToBlock(Block? parent, IEnumerable<Block> stack)
-    {
-        var list = stack.ToList();
-        
-        if (list.Count == 0) return;
-        if (parent == null) return;
-
-        var first = list.First();
-        first.Parent = parent.Id;
-        parent.Next = first.Id;
-    }
-    
-    private void UpdateBlocks(params Block[] blocks)
-    {
-        foreach (var block in blocks)
-            Target.Blocks[block.Id] = block;
     }
 }

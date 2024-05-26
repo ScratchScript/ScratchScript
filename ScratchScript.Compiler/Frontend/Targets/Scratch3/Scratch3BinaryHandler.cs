@@ -20,7 +20,8 @@ public class Scratch3BinaryHandler(char commandSeparator) : IBinaryHandler
                 dependencies, cleanup),
             MultiplyOperators.Divide => new ExpressionValue($"/ {left.Value} {right.Value}", ScratchType.Number,
                 dependencies, cleanup),
-            MultiplyOperators.Modulus => throw new NotImplementedException(),
+            MultiplyOperators.Modulus => new ExpressionValue($"% {left.Value} {right.Value}", ScratchType.Number,
+                dependencies, cleanup),
             MultiplyOperators.Power => throw new NotImplementedException(),
             _ => throw new ArgumentOutOfRangeException(nameof(op), op, null)
         };

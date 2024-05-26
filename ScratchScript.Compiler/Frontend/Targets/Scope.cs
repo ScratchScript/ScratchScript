@@ -10,6 +10,7 @@ public interface IScope
     public List<string> Content { get; init; }
     public int Depth { get; set; }
     public List<string> Header { get; set; }
+    public List<string> End { get; set; }
     public IScope? ParentScope { get; set; }
     public Dictionary<string, ScratchScriptVariable> Variables { get; init; }
 

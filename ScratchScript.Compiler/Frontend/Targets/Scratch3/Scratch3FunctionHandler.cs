@@ -14,6 +14,8 @@ public class Scratch3FunctionHandler : IFunctionHandler
             throw new Exception(
                 $"The function \"{function.FunctionName}\" does not have an argument with the name \"{name}\".");
 
+        // TODO: currently this breaks when the stack debt value is updated later than the argument is gotten
+        // TODO: probably requires rewriting how this works and an additional post-build step
         return new TypedValue(
             Scratch3Helper.ItemOf(Scratch3Helper.StackList, (index + function.StackDebt + 1).ToString()),
             function.Arguments[index].Type);
@@ -85,7 +87,7 @@ public class Scratch3FunctionHandler : IFunctionHandler
             return null;
         }
 
-        return new ExpressionValue(Scratch3Helper.ItemOf(Scratch3Helper.StackList, scope.StackDebt.ToString()),
+        return new ExpressionValue(Scratch3Helper.ItemOf(Scratch3Helper.StackList, scope.TotalStackDebt.ToString()),
             function.ReturnType, dependencies, cleanup);
     }
 }

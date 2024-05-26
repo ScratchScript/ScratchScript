@@ -11,16 +11,15 @@ using ScratchScript.Compiler.Models;
 
 const string source = """
                       function sum(x: number, y: number) {
-                        x = x + 2;
-                        return x + y * 2;
+                        return x + y;
+                      }
+                      
+                      function smth(x: number, y: number) {
+                        return ((x + y * y + (x * 2) + y * (x - 1)) - (x % y) * sum(2, 4)) / sum(1, 4);
                       }
 
                       on start {
-                        let a = 3;
-                        if(sum(1, 1) == a) {
-                        }
-                        else if(sum(1, 1) == 2) {
-                        }
+                        let a = smth(smth(15, 7), smth(3, smth(smth(6, 2), smth(1, 9))));
                       }
                       """;
 var inputStream = new AntlrInputStream(source);

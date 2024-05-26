@@ -32,14 +32,16 @@ public partial class ScratchScriptVisitor
 
         // put all statements into a new scope
         var scope = CreateDefaultScope();
-        scope.Header = [..condition.Dependencies ?? [], $"if {conditionExpression.Value}", ..condition.Cleanup ?? []];
+        scope.Header = [..condition.Dependencies ?? [], $"if {conditionExpression.Value}"];
+        scope.End = ["end", ..condition.Cleanup ?? []];
         scope = VisitBlock(scope, context.block()).Scope;
 
         // put the else-clause immediately after the if-clause (not the same scope!)
         if (context.elseIfStatement() != null &&
             VisitElseIfStatement(context.elseIfStatement()) is ScopeValue elseScopeValue)
         {
-            scope.Content.AddRange(["end", "else", ..condition.Cleanup ?? []]);
+            scope.End.Remove("end");
+            scope.Content.Add("end");
             scope.Content.Add(elseScopeValue.Scope.ToString(Settings.CommandSeparator));
         }
 
@@ -48,14 +50,24 @@ public partial class ScratchScriptVisitor
 
     public override TypedValue? VisitElseIfStatement(ScratchScriptParser.ElseIfStatementContext context)
     {
-        if (context.ifStatement() != null) return VisitIfStatement(context.ifStatement());
-        if (context.block() != null)
+        var scope = CreateDefaultScope();
+        scope.Header = ["else"];
+        scope.ParentScope = _scope;
+        _scope = scope;
+        
+        if (context.ifStatement() != null)
         {
-            var scope = CreateDefaultScope();
-            scope.Header = ["else"];
-            return VisitBlock(scope, context.block());
+            if (VisitIfStatement(context.ifStatement()) is not ScopeValue ifScope)
+            {
+                DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.ifStatement());
+                return null;
+            }
+            scope.Content.Add(ifScope.Scope.ToString(Settings.CommandSeparator));
         }
+        else if (context.block() != null)
+            scope = VisitBlock(scope, context.block()).Scope;
 
-        return null;
+        _scope = scope.ParentScope;
+        return new ScopeValue(scope);
     }
 }

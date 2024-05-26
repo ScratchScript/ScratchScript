@@ -70,8 +70,4 @@
         <Compile Remove="Resources\Grammar\gen\**"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Backend\Blocks\" />
-    </ItemGroup>
-
 </Project>

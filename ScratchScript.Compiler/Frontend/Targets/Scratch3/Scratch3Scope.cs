@@ -13,10 +13,28 @@ public class Scratch3Scope : IScope
     // popping the function return value right after the statement in which
     // it was called. this value is used for correctly locating where the
     // function return value be for a specific function call.
-    public int StackDebt { get; set; } = 0;
+    public int StackDebt { get; set; }
+
+    public int TotalStackDebt
+    {
+        get
+        {
+            var total = 0;
+            var scope = this;
+            do
+            {
+                total += scope.StackDebt;
+                scope = scope.ParentScope as Scratch3Scope;
+            } while (scope != null);
+
+            return total;
+        }
+    }
+
     public List<string> Content { get; init; } = [];
     public int Depth { get; set; } = 0;
     public List<string> Header { get; set; } = [];
+    public List<string> End { get; set; } = ["end"];
     public IScope? ParentScope { get; set; } = null;
     public Dictionary<string, ScratchScriptVariable> Variables { get; init; } = [];
 
@@ -28,7 +46,7 @@ public class Scratch3Scope : IScope
 
 public class Scratch3FunctionScope : Scratch3Scope, IFunctionScope
 {
-    public string ToString(char separator)
+    public new string ToString(char separator)
     {
         return new DefaultScratch3ScopeFormatter(this, separator).ToString();
     }
@@ -60,13 +78,13 @@ internal class DefaultScratch3ScopeFormatter(IScope scope, char separator)
         {
             var index = Scratch3Helper.IndexOf(Scratch3Helper.VariableNamesList, variable.Id.Surround('"'));
 
-            sb.Append(Scratch3Helper.PopAt(Scratch3Helper.VariableNamesList, index));
-            sb.Append(separator);
             sb.Append(Scratch3Helper.PopAt(Scratch3Helper.VariableValuesList, index));
             sb.Append(separator);
+            sb.Append(Scratch3Helper.PopAt(Scratch3Helper.VariableNamesList, index));
+            sb.Append(separator);
         }
-
-        sb.Append("end");
+        
+        sb.AppendJoin(separator, scope.End);
         return sb.ToString();
     }
 }
