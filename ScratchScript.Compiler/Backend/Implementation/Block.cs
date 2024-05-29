@@ -19,7 +19,7 @@ public partial class ScratchIRVisitor
         // TODO: temporary implementation. may be changed later for space optimizations and similar stuff
         _blockNameUsage.TryAdd(opcode, 0);
         _blockNameUsage[opcode]++;
-        return $"_{id[..5]}_{opcode}_{_blockNameUsage[opcode]}";
+        return $"_{Settings.VisitorId[..5]}_{opcode}_{_blockNameUsage[opcode]}";
     }
 
     private void AttachStackToBlock(Block? parent, IEnumerable<Block> stack)
@@ -34,7 +34,7 @@ public partial class ScratchIRVisitor
 
         parent.Next = first.Id;
     }
-    
+
     private void AttachStackToBlock(Block? parent, IEnumerable<Block> stack, string to)
     {
         var list = stack.ToList();
@@ -44,7 +44,7 @@ public partial class ScratchIRVisitor
 
         var first = list.First();
         first.Parent = parent.Id;
-        
+
         parent.Inputs[to] = CreateInput(first, parent);
     }
 

@@ -13,9 +13,9 @@ public class Scratch3Scope : IScope
     // popping the function return value right after the statement in which
     // it was called. this value is used for correctly locating where the
     // function return value be for a specific function call.
-    public int StackDebt { get; set; }
+    public int IntermediateStackCount { get; set; }
 
-    public int TotalStackDebt
+    public int TotalIntermediateStackCount
     {
         get
         {
@@ -23,7 +23,7 @@ public class Scratch3Scope : IScope
             var scope = this;
             do
             {
-                total += scope.StackDebt;
+                total += scope.IntermediateStackCount;
                 scope = scope.ParentScope as Scratch3Scope;
             } while (scope != null);
 
@@ -83,7 +83,7 @@ internal class DefaultScratch3ScopeFormatter(IScope scope, char separator)
             sb.Append(Scratch3Helper.PopAt(Scratch3Helper.VariableNamesList, index));
             sb.Append(separator);
         }
-        
+
         sb.AppendJoin(separator, scope.End);
         return sb.ToString();
     }

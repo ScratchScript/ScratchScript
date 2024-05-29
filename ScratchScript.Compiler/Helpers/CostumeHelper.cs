@@ -20,7 +20,7 @@ public static class CostumeHelper
     {
         var image = GetEmptyImage();
         var checksum = image.ToMd5Checksum();
-        
+
         return new Costume
         {
             Name = "empty",

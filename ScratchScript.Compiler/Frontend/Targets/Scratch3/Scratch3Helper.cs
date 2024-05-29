@@ -5,8 +5,11 @@ namespace ScratchScript.Compiler.Frontend.Targets.Scratch3;
 public static class Scratch3Helper
 {
     public const string StackList = "__Stack";
+    public const string IntermediateStackList = "__IntermediateStack";
     public const string VariableNamesList = "__VN";
     public const string VariableValuesList = "__VV";
+    public const string StackPointerReporter = "arg:__sp";
+    public const string IntermediateStackPointerReporter = "arg:__isp";
 
     public static string CallFunction(string name)
     {
@@ -46,6 +49,11 @@ public static class Scratch3Helper
     public static string ItemOf(string list, string index)
     {
         return $"rawshadow data_itemoflist f:LIST:{list.Surround('"')} i:INDEX:{index} endshadow";
+    }
+
+    public static string LengthOf(string list)
+    {
+        return $"rawshadow data_lengthoflist f:LIST:{list.Surround('"')} endshadow";
     }
 
     public static string Replace(string list, string index, object item)

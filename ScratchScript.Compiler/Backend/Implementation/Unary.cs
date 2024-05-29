@@ -14,7 +14,7 @@ public partial class ScratchIRVisitor
         block.Inputs["OPERAND"] = expression is Block expressionBlock
             ? CreateInput(expressionBlock, block)
             : CreateInput(expression);
-        
+
         return block;
     }
 }

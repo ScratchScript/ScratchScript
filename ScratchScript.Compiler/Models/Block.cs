@@ -8,12 +8,13 @@ public record Block
     public string? Comment;
 
     public Dictionary<string, List<object>> Fields = [];
+
+    [NonSerialized] public string Id;
     public Dictionary<string, List<object>> Inputs = [];
 
     [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public Mutation? Mutation;
 
-    [NonSerialized] public string Id;
     public string Next;
     public string Opcode;
     public string Parent;

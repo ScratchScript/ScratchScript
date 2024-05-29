@@ -5,17 +5,25 @@ namespace ScratchScript.Compiler.Backend.Implementation;
 
 public partial class ScratchIRVisitor
 {
-    public override object VisitAddOperators(ScratchIRParser.AddOperatorsContext context) =>
-        CreateOperatorBlock(context.GetText());
+    public override object VisitAddOperators(ScratchIRParser.AddOperatorsContext context)
+    {
+        return CreateOperatorBlock(context.GetText());
+    }
 
-    public override object VisitMultiplyOperators(ScratchIRParser.MultiplyOperatorsContext context) =>
-        CreateOperatorBlock(context.GetText());
+    public override object VisitMultiplyOperators(ScratchIRParser.MultiplyOperatorsContext context)
+    {
+        return CreateOperatorBlock(context.GetText());
+    }
 
-    public override object VisitBooleanOperators(ScratchIRParser.BooleanOperatorsContext context) =>
-        CreateOperatorBlock(context.GetText());
+    public override object VisitBooleanOperators(ScratchIRParser.BooleanOperatorsContext context)
+    {
+        return CreateOperatorBlock(context.GetText());
+    }
 
-    public override object VisitCompareOperators(ScratchIRParser.CompareOperatorsContext context) =>
-        CreateOperatorBlock(context.GetText());
+    public override object VisitCompareOperators(ScratchIRParser.CompareOperatorsContext context)
+    {
+        return CreateOperatorBlock(context.GetText());
+    }
 
     private Block CreateOperatorBlock(string op)
     {

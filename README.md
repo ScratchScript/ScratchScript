@@ -85,12 +85,12 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
       - [ ] Call
       - [ ] Export (a.k.a. dependencies handling)
     - [ ] Control flow
-      - [ ] While loop
-      - [ ] For loop
+      - [x] While loop
+      - [x] For loop
       - [ ] Foreach loop
-      - [ ] Repeat loop
+      - [x] Repeat loop
       - [ ] Breaking out of loops
-      - [ ] If/else if/else statements
+      - [x] If/else if/else statements
       - [ ] Switch statements
     - [ ] Imports
       - [ ] Handling name collisions

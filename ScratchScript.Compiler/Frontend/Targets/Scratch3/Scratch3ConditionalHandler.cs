@@ -9,6 +9,8 @@ public class Scratch3ConditionalHandler : IConditionalHandler
         if (value is IdentifierExpressionValue identifierExpressionValue)
             return new ExpressionValue($"== {identifierExpressionValue.Value} \"true\"", ScratchType.Boolean,
                 value.Dependencies, value.Cleanup);
+        if ((value.Value?.ToString() ?? "").Replace("\"", "") is "true" or "false")
+            return new ExpressionValue($"== {value.Value} \"true\"", ScratchType.Boolean);
 
         return value;
     }

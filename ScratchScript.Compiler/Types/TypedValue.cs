@@ -27,6 +27,11 @@ public record IdentifierExpressionValue(
     object? Value,
     ScratchType Type) : ExpressionValue(Value, Type);
 
+public record StatementValue(
+    IEnumerable<string> Commands,
+    IEnumerable<string>? Dependencies = null,
+    IEnumerable<string>? Cleanup = null) : TypedValue(Commands, ScratchType.Unknown);
+
 public record ScopeValue(IScope Scope) : TypedValue(null, ScratchType.Unknown);
 
 public record GenericValue<T>(T Value) : TypedValue(Value, ScratchType.Unknown)

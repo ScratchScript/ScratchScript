@@ -1,25 +1,25 @@
-﻿using Spectre.Console;
-using Antlr4.Runtime;
+﻿using Antlr4.Runtime;
 using Ionic.Zip;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using ScratchScript.Compiler.Backend.Implementation;
-using ScratchScript.Compiler.Frontend.Implementation;
 using ScratchScript.Compiler.Diagnostics;
+using ScratchScript.Compiler.Frontend.Implementation;
 using ScratchScript.Compiler.Helpers;
 using ScratchScript.Compiler.Models;
+using Spectre.Console;
 
 const string source = """
                       function sum(x: number, y: number) {
                         return x + y;
                       }
-                      
-                      function smth(x: number, y: number) {
-                        return ((x + y * y + (x * 2) + y * (x - 1)) - (x % y) * sum(2, 4)) / sum(1, 4);
-                      }
 
                       on start {
-                        let a = smth(smth(15, 7), smth(3, smth(smth(6, 2), smth(1, 9))));
+                        for(let a = sum(0, 0); a < sum(5, 5); a = sum(a, 1)) {
+                            if(a == 2) {
+                                a = sum(a, sum(sum(2, a), sum(a * 3 * 2 + 3, 4)));
+                            }
+                        }
                       }
                       """;
 var inputStream = new AntlrInputStream(source);
@@ -39,7 +39,8 @@ var irInputStream = new AntlrInputStream(output);
 var irLexer = new ScratchIRLexer(irInputStream);
 var irTokenStream = new CommonTokenStream(irLexer);
 var irParser = new ScratchIRParser(irTokenStream);
-var irVisitor = new ScratchIRVisitor(visitor.Id);
+var irVisitor =
+    new ScratchIRVisitor(new ScratchIRVisitorSettings(visitor.Id, visitor.Target is CompilerTarget.Scratch3));
 irVisitor.Visit(irParser.program());
 
 Console.WriteLine("packing into an archive");
@@ -73,9 +74,7 @@ var archive = new ZipFile();
 archive.AddEntry("project.json", json);
 foreach (var costume in project.Targets.SelectMany(t => t.Costumes)
              .DistinctBy(c => c.Md5Extension))
-{
     archive.AddEntry(costume.Md5Extension, costume.Data);
-}
 archive.Save("output.sb3");
 archive.Dispose();
 

@@ -45,10 +45,10 @@ public partial class ScratchIRVisitor
         var list = context.Identifier().GetText();
         var index = Visit(context.expression());
         if (index == null) throw new Exception("An expression in VisitPopAtCommand was null.");
-        
+
         var block = new Block { Opcode = Data.DeleteFromList, Id = GenerateBlockId(Data.DeleteFromList) };
         block.Fields["LIST"] = CreateField(list);
-        block.Inputs["INDEX"] = index is Block indexBlock ? CreateInput(indexBlock, block): CreateInput(index);
+        block.Inputs["INDEX"] = index is Block indexBlock ? CreateInput(indexBlock, block) : CreateInput(index);
         return block;
     }
 

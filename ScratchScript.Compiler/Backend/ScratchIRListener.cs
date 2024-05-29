@@ -257,6 +257,18 @@ public interface IScratchIRListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitArrayExpression([NotNull] ScratchIRParser.ArrayExpressionContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>argumentExpression</c>
+	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterArgumentExpression([NotNull] ScratchIRParser.ArgumentExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>argumentExpression</c>
+	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitArgumentExpression([NotNull] ScratchIRParser.ArgumentExpressionContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>parenthesizedExpression</c>
 	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
 	/// </summary>
@@ -412,6 +424,16 @@ public interface IScratchIRListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitArrayIdentifier([NotNull] ScratchIRParser.ArrayIdentifierContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="ScratchIRParser.argumentIdentifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterArgumentIdentifier([NotNull] ScratchIRParser.ArgumentIdentifierContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="ScratchIRParser.argumentIdentifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitArgumentIdentifier([NotNull] ScratchIRParser.ArgumentIdentifierContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="ScratchIRParser.constant"/>.
 	/// </summary>

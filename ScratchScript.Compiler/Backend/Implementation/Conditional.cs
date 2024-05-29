@@ -18,16 +18,27 @@ public partial class ScratchIRVisitor
 
         return block;
     }
-    
+
     public override object? VisitWhileCommand(ScratchIRParser.WhileCommandContext context)
     {
-        return base.VisitWhileCommand(context);
+        var condition = Visit(context.expression());
+        if (condition is not Block conditionBlock)
+            throw new Exception("VisitWhileStatement expected the condition expression to be a block, but it wasn't.");
+
+        var block = new Block { Opcode = Control.While, Id = GenerateBlockId(Control.While) };
+        block.Inputs["CONDITION"] = CreateInput(conditionBlock, block);
+
+        var stack = VisitCommands(context.command());
+        AttachStackToBlock(block, stack, "SUBSTACK");
+
+        return block;
     }
 
     public override object VisitIfStatement(ScratchIRParser.IfStatementContext context)
     {
         var condition = Visit(context.expression());
-        if (condition is not Block conditionBlock) throw new Exception("VisitIfStatement expected the condition expression to be a block, but it wasn't.");
+        if (condition is not Block conditionBlock)
+            throw new Exception("VisitIfStatement expected the condition expression to be a block, but it wasn't.");
 
         var block = new Block { Opcode = context.elseIfStatement() != null ? Control.IfElse : Control.If };
         block.Id = GenerateBlockId(block.Opcode);

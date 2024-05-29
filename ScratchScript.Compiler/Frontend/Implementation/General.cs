@@ -98,7 +98,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         if (context.String() is { } s)
             return new TypedValue(s.GetText(), ScratchType.String);
         if (context.boolean() is { } b)
-            return new TypedValue(b.GetText() == "true", ScratchType.Boolean);
+            return new TypedValue(b.GetText().Surround('"'), ScratchType.Boolean);
         if (context.Color() is { } c)
             return new TypedValue(c.GetText()[1..], ScratchType.Color);
         return null;
@@ -169,8 +169,26 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         foreach (var lineContext in context.line())
         {
             if (VisitLine(lineContext) is not { } value) continue;
-            if (value is ScopeValue scopeValue) scope.Content.Add(scopeValue.Scope.ToString(Settings.CommandSeparator));
-            else scope.Content.Add(value.ToString());
+            switch (value)
+            {
+                case ScopeValue scopeValue:
+                {
+                    scope.Content.Add(scopeValue.Scope.ToString(Settings.CommandSeparator));
+                    break;
+                }
+                case StatementValue statementValue:
+                {
+                    scope.Content.AddRange(statementValue.Dependencies ?? []);
+                    scope.Content.AddRange(statementValue.Commands);
+                    scope.Content.AddRange(statementValue.Cleanup ?? []);
+                    break;
+                }
+                default:
+                {
+                    scope.Content.Add(value.ToString());
+                    break;
+                }
+            }
         }
 
         _scope = scope.ParentScope as Scratch3Scope;
@@ -179,7 +197,8 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
 
     public override TypedValue? VisitLine(ScratchScriptParser.LineContext context)
     {
-        if (_scope is Scratch3Scope scope) scope.StackDebt = 0;
+        if (_scope is Scratch3Scope scope) scope.IntermediateStackCount = 0;
+        if (context.statement() != null) return VisitStatement(context.statement());
         return base.VisitLine(context);
     }
 

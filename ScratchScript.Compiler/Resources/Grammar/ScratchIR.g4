@@ -32,6 +32,7 @@ expression
     : constant #constantExpression
     | variableIdentifier #variableExpression
     | arrayIdentifier #arrayExpression
+    | argumentIdentifier # argumentExpression
     | '(' expression ')' #parenthesizedExpression
     | addOperators expression expression #binaryAddExpression
     | multiplyOperators expression expression #binaryMultiplyExpression
@@ -52,6 +53,7 @@ functionArgumentType: 'i:' | 'f:';
 
 variableIdentifier: 'var:' Identifier;
 arrayIdentifier: 'arr:' Identifier;
+argumentIdentifier: 'arg:' Identifier;
 constant: Number | String | Color;
 
 addOperators: '+' | '-' | '~';

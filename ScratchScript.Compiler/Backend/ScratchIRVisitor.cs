@@ -164,6 +164,13 @@ public interface IScratchIRVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitArrayExpression([NotNull] ScratchIRParser.ArrayExpressionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>argumentExpression</c>
+	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitArgumentExpression([NotNull] ScratchIRParser.ArgumentExpressionContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>parenthesizedExpression</c>
 	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
 	/// </summary>
@@ -255,6 +262,12 @@ public interface IScratchIRVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitArrayIdentifier([NotNull] ScratchIRParser.ArrayIdentifierContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="ScratchIRParser.argumentIdentifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitArgumentIdentifier([NotNull] ScratchIRParser.ArgumentIdentifierContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="ScratchIRParser.constant"/>.
 	/// </summary>

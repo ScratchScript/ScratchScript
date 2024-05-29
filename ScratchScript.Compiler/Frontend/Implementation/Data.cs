@@ -26,7 +26,8 @@ public partial class ScratchScriptVisitor
         }
 
         if (_scope == null) throw new Exception("Cannot declare variables without a scope.");
-        _dataHandler.AddVariable(ref _scope, name, _dataHandler.GenerateVariableId(_scope.Depth, Id, name), expression);
+        var statement = _dataHandler.AddVariable(ref _scope, name,
+            _dataHandler.GenerateVariableId(_scope.Depth, Id, name), expression);
 
         if (!LocationInformation.Variables.ContainsKey(_scope.Depth)) // since it's a nested dictionary
             LocationInformation.Variables[_scope.Depth] = new Dictionary<string, VariableLocationInformation>();
@@ -36,7 +37,7 @@ public partial class ScratchScriptVisitor
             Identifier = context.Identifier(),
             TypeSetterExpression = context.expression()
         };
-        return null;
+        return statement;
     }
 
     public override TypedValue? VisitAssignmentStatement(ScratchScriptParser.AssignmentStatementContext context)
@@ -89,7 +90,7 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
-        _dataHandler.SetVariable(ref _scope, variable, expression);
-        return null;
+        return _dataHandler.SetVariable(ref _scope, variable, expression);
+        ;
     }
 }

@@ -4,11 +4,14 @@ using ScratchScript.Compiler.Models;
 
 namespace ScratchScript.Compiler.Backend.Implementation;
 
-public partial class ScratchIRVisitor(string id): ScratchIRBaseVisitor<object?>
+public record ScratchIRVisitorSettings(string VisitorId, bool UseStack);
+
+public partial class ScratchIRVisitor(ScratchIRVisitorSettings settings) : ScratchIRBaseVisitor<object?>
 {
     public readonly Target Target = new();
     private Block? _parent;
-    
+    public ScratchIRVisitorSettings Settings { get; init; } = settings;
+
     public override object? VisitConstant(ScratchIRParser.ConstantContext context)
     {
         if (context.Number() is { } n)
@@ -45,10 +48,9 @@ public partial class ScratchIRVisitor(string id): ScratchIRBaseVisitor<object?>
     {
         var lastParent = _parent;
         _parent = null;
-        
+
         var blocks = new List<Block>();
         foreach (var command in commands)
-        {
             switch (Visit(command))
             {
                 case null: continue;
@@ -59,6 +61,7 @@ public partial class ScratchIRVisitor(string id): ScratchIRBaseVisitor<object?>
                         block.Parent = _parent.Id;
                         _parent.Next = block.Id;
                     }
+
                     _parent = block;
                     blocks.Add(block);
                     break;
@@ -73,7 +76,6 @@ public partial class ScratchIRVisitor(string id): ScratchIRBaseVisitor<object?>
                     break;
                 }
             }
-        }
 
         _parent = lastParent;
         foreach (var block in blocks) Target.Blocks[block.Id] = block;
