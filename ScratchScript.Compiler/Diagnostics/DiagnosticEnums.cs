@@ -15,7 +15,9 @@ public enum ScratchScriptError
     ReturnWithExpressionOfUnknownType,
     NoFunctionsWithNameAreDefined,
     NoFunctionWithMatchingSignatureDefined,
-    FunctionDoesNotReturnAValue
+    FunctionDoesNotReturnAValue,
+    ExpectedStatement,
+    ExpectedExpression
 }
 
 public enum ScratchScriptWarning

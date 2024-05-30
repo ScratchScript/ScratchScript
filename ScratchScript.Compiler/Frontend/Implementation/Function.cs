@@ -37,7 +37,7 @@ public partial class ScratchScriptVisitor
         {
             if (Visit(arg.expression()) is not ExpressionValue expression)
             {
-                DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, arg.expression());
+                DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, arg.expression());
                 return (null, null);
             }
 
@@ -161,7 +161,7 @@ public partial class ScratchScriptVisitor
         var expression = context.expression() != null ? (ExpressionValue?)Visit(context.expression()) : null;
         if (context.expression() != null && expression == null)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
             return null;
         }
 

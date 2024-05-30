@@ -69,4 +69,10 @@
     <data name="E14" xml:space="preserve">
         <value>expected a value, but the function "{0}" doesn't return one</value>
     </data>
+    <data name="E15" xml:space="preserve">
+        <value>expected a statement here</value>
+    </data>
+    <data name="E16" xml:space="preserve">
+        <value>expected an expression here</value>
+    </data>
 </root>

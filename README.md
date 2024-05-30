@@ -72,7 +72,7 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
           - [ ] Binary shift expressions (`>>`, `<<`)
           - [ ] Binary bitwise expressions (`&`, `|`, `^`)
       - [x] Unary expressions (`+`, `-`, `!`)
-      - [ ] Function call expressions (`a()`)
+      - [x] Function call expressions (`a()`)
       - [ ] Member function call expressions (`a.b()`)
       - [ ] Member property access expressions (`a.b`)
       - [ ] Ternary expressions (`a ? b: c`)
@@ -116,9 +116,5 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
       - [ ] `std/string`
         - [ ] `std/string/unicode`
       - [ ] `std/math`
-      
-  
-  - [ ] Backend
-    - Nothing. I haven't started implementing it yet.
 
 </details>

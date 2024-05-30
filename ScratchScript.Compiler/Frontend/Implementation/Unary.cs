@@ -20,7 +20,7 @@ public partial class ScratchScriptVisitor
         // get the left operand
         if (Visit(context.expression()) is not ExpressionValue operand)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
             return null;
         }
 
@@ -40,7 +40,7 @@ public partial class ScratchScriptVisitor
         // get the operand
         if (Visit(context.expression()) is not ExpressionValue operand)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
             return null;
         }
 

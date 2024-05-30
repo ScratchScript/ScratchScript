@@ -22,14 +22,14 @@ public partial class ScratchScriptVisitor
         // get the left operand
         if (Visit(context.expression(0)) is not ExpressionValue left)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(0));
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(0));
             return null;
         }
 
         // get the right operand
         if (Visit(context.expression(1)) is not ExpressionValue right)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(1));
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(1));
             return null;
         }
 
@@ -53,14 +53,14 @@ public partial class ScratchScriptVisitor
         // get the left operand
         if (Visit(context.expression(0)) is not ExpressionValue left)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(0));
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(0));
             return null;
         }
 
         // get the right operand
         if (Visit(context.expression(1)) is not ExpressionValue right)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(1));
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(1));
             return null;
         }
 
@@ -98,14 +98,14 @@ public partial class ScratchScriptVisitor
         // get the left operand
         if (Visit(context.expression(0)) is not ExpressionValue left)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(0));
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(0));
             return null;
         }
 
         // get the right operand
         if (Visit(context.expression(1)) is not ExpressionValue right)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(1));
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(1));
             return null;
         }
 
@@ -133,14 +133,14 @@ public partial class ScratchScriptVisitor
         // get the left operand
         if (Visit(context.expression(0)) is not ExpressionValue left)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(0));
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(0));
             return null;
         }
 
         // get the right operand
         if (Visit(context.expression(1)) is not ExpressionValue right)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(1));
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(1));
             return null;
         }
 
@@ -167,14 +167,14 @@ public partial class ScratchScriptVisitor
         // get the left operand
         if (Visit(context.expression(0)) is not ExpressionValue left)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(0));
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(0));
             return null;
         }
 
         // get the right operand
         if (Visit(context.expression(1)) is not ExpressionValue right)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(1));
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(1));
             return null;
         }
 

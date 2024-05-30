@@ -15,11 +15,8 @@ const string source = """
                       }
 
                       on start {
-                        for(let a = sum(0, 0); a < sum(5, 5); a = sum(a, 1)) {
-                            if(a == 2) {
-                                a = sum(a, sum(sum(2, a), sum(a * 3 * 2 + 3, 4)));
-                            }
-                        }
+                        let a = 0;
+                        a *= sum(1, 1) * 2 + 3;
                       }
                       """;
 var inputStream = new AntlrInputStream(source);

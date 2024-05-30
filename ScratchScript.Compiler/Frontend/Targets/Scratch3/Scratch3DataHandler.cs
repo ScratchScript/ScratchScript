@@ -27,7 +27,7 @@ public class Scratch3DataHandler : IDataHandler
 
     public TypedValue GetVariable(ref IScope scope, ScratchScriptVariable variable)
     {
-        return new TypedValue(Scratch3Helper.GetVariableValue(variable.Id), variable.Type);
+        return new ExpressionValue(Scratch3Helper.GetVariableValue(variable.Id), variable.Type);
     }
 
     public string GenerateVariableId(int scopeDepth, string visitorId, string variableName)

@@ -21,7 +21,7 @@ public partial class ScratchScriptVisitor
         // in case of an ICE
         if (Visit(context.expression()) is not ExpressionValue expression)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
             return null;
         }
 
@@ -47,7 +47,13 @@ public partial class ScratchScriptVisitor
         // in case of an ICE
         if (Visit(context.expression()) is not ExpressionValue expression)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
+            return null;
+        }
+
+        if (Visit(context.assignmentOperators()) is not GenericValue<AssignmentOperator> assignmentOperator)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.assignmentOperators());
             return null;
         }
 
@@ -68,8 +74,9 @@ public partial class ScratchScriptVisitor
                 return null;
             }
 
-            _functionHandler.HandleFunctionArgumentAssignment(ref _scope, name, expression);
-            return null;
+            expression = ConvertAssignmentToBinaryExpression(assignmentOperator.Value,
+                (ExpressionValue)_functionHandler.GetArgument(ref _scope, name), expression);
+            return _functionHandler.HandleFunctionArgumentAssignment(ref _scope, name, expression);
         }
 
         if (_scope.GetVariable(name) is not { } variable)
@@ -90,7 +97,43 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
+        expression = ConvertAssignmentToBinaryExpression(assignmentOperator.Value,
+            (ExpressionValue)_dataHandler.GetVariable(ref _scope, variable), expression);
         return _dataHandler.SetVariable(ref _scope, variable, expression);
-        ;
+    }
+
+    // TODO: add bitwise operations support when imports are implemented
+    private ExpressionValue ConvertAssignmentToBinaryExpression(AssignmentOperator op, ExpressionValue variable,
+        ExpressionValue value)
+    {
+        if (_scope is null) throw new Exception("Cannot perform variable assignment in the root scope.");
+
+        switch (op)
+        {
+            case AssignmentOperator.Assignment:
+                return value;
+            case AssignmentOperator.AdditionAssignment:
+            case AssignmentOperator.SubtractionAssignment:
+            {
+                // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
+                var str = op switch
+                {
+                    AssignmentOperator.AdditionAssignment when variable.Type.Kind is ScratchTypeKind.String &&
+                                                               value.Type.Kind is ScratchTypeKind.String =>
+                        $"~ {variable.Value} {value.Value}",
+                    AssignmentOperator.AdditionAssignment => $"+ {variable.Value} {value.Value}",
+                    AssignmentOperator.SubtractionAssignment => $"- {variable.Value} {value.Value}",
+                    _ => throw new ArgumentOutOfRangeException(nameof(op), op, null)
+                };
+                return new ExpressionValue(str, variable.Type, value.Dependencies, value.Cleanup);
+            }
+            case AssignmentOperator.MultiplicationAssignment:
+            case AssignmentOperator.DivisionAssignment:
+            case AssignmentOperator.ModulusAssignment:
+            case AssignmentOperator.PowerAssignment:
+                return _binaryHandler.GetBinaryMultiplyExpression(ref _scope, op.ToMultiplyOperator(), variable, value);
+            default:
+                throw new ArgumentOutOfRangeException(nameof(op), op, null);
+        }
     }
 }

@@ -123,6 +123,24 @@ namespace ScratchScript.Compiler.Resources.Messages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to expected a statement here.
+        /// </summary>
+        internal static string E15 {
+            get {
+                return ResourceManager.GetString("E15", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to expected an expression here.
+        /// </summary>
+        internal static string E16 {
+            get {
+                return ResourceManager.GetString("E16", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to expected {0}, got {1}.
         /// </summary>
         internal static string E2 {

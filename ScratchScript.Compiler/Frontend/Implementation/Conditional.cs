@@ -37,7 +37,7 @@ public partial class ScratchScriptVisitor
         {
             if (Visit(context.statement(0)) is not StatementValue initializeStatement)
             {
-                DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.statement(0));
+                DiagnosticReporter.Error((int)ScratchScriptError.ExpectedStatement, context, context.statement(0));
                 return null;
             }
 
@@ -49,7 +49,7 @@ public partial class ScratchScriptVisitor
         {
             if (Visit(context.expression()) is not ExpressionValue conditionExpression)
             {
-                DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
+                DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
                 return null;
             }
 
@@ -89,7 +89,7 @@ public partial class ScratchScriptVisitor
             {
                 if (Visit(context.statement(1)) is not StatementValue changeStatement)
                 {
-                    DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.statement(1));
+                    DiagnosticReporter.Error((int)ScratchScriptError.ExpectedStatement, context, context.statement(1));
                     return true;
                 }
 
@@ -113,7 +113,7 @@ public partial class ScratchScriptVisitor
         // ICE handling
         if (Visit(context.expression()) is not ExpressionValue times)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
             return null;
         }
 
@@ -152,7 +152,7 @@ public partial class ScratchScriptVisitor
         // ICE handling
         if (Visit(context.expression()) is not ExpressionValue condition)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
             return null;
         }
 
@@ -184,7 +184,7 @@ public partial class ScratchScriptVisitor
         // ICE handling
         if (Visit(context.expression()) is not ExpressionValue condition)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression());
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
             return null;
         }
 

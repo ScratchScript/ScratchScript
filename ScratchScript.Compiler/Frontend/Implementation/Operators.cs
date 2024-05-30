@@ -41,8 +41,53 @@ public enum BitwiseOperators
     RightShift
 }
 
+public enum AssignmentOperator
+{
+    Assignment,
+    AdditionAssignment,
+    SubtractionAssignment,
+    MultiplicationAssignment,
+    DivisionAssignment,
+    ModulusAssignment,
+    PowerAssignment
+}
+
+public static class AssignmentOperatorExtensions
+{
+    public static MultiplyOperators ToMultiplyOperator(this AssignmentOperator op)
+    {
+        // ReSharper disable once SwitchExpressionHandlesSomeKnownEnumValuesWithExceptionInDefault
+        return op switch
+        {
+            AssignmentOperator.MultiplicationAssignment => MultiplyOperators.Multiply,
+            AssignmentOperator.DivisionAssignment => MultiplyOperators.Divide,
+            AssignmentOperator.ModulusAssignment => MultiplyOperators.Modulus,
+            AssignmentOperator.PowerAssignment => MultiplyOperators.Power,
+            _ => throw new ArgumentOutOfRangeException(nameof(op), op, null)
+        };
+    }
+}
+
 public partial class ScratchScriptVisitor
 {
+    public override TypedValue? VisitAssignmentOperators(ScratchScriptParser.AssignmentOperatorsContext context)
+    {
+        if (context.Assignment() != null) return new GenericValue<AssignmentOperator>(AssignmentOperator.Assignment);
+        if (context.AdditionAsignment() != null)
+            return new GenericValue<AssignmentOperator>(AssignmentOperator.AdditionAssignment);
+        if (context.SubtractionAssignment() != null)
+            return new GenericValue<AssignmentOperator>(AssignmentOperator.SubtractionAssignment);
+        if (context.MultiplicationAssignment() != null)
+            return new GenericValue<AssignmentOperator>(AssignmentOperator.MultiplicationAssignment);
+        if (context.DivisionAssignment() != null)
+            return new GenericValue<AssignmentOperator>(AssignmentOperator.DivisionAssignment);
+        if (context.ModulusAssignment() != null)
+            return new GenericValue<AssignmentOperator>(AssignmentOperator.ModulusAssignment);
+        if (context.PowerAssignment() != null)
+            return new GenericValue<AssignmentOperator>(AssignmentOperator.PowerAssignment);
+        return null;
+    }
+
     public override TypedValue? VisitAddOperators(ScratchScriptParser.AddOperatorsContext context)
     {
         if (context.Plus() != null) return new GenericValue<AddOperator>(AddOperator.Plus);
