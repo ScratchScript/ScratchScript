@@ -13,10 +13,8 @@ public class Scratch3FunctionHandler : IFunctionHandler
         if (index == -1)
             throw new Exception(
                 $"The function \"{function.FunctionName}\" does not have an argument with the name \"{name}\".");
-
-        // TODO: currently this breaks when the stack debt value is updated later than the argument is gotten
-        // TODO: probably requires rewriting how this works and an additional post-build step
-        return new TypedValue(
+        
+        return new ExpressionValue(
             Scratch3Helper.ItemOf(Scratch3Helper.StackList,
                 $"- {Scratch3Helper.StackPointerReporter} {function.Arguments.Count - index - 1}"),
             function.Arguments[index].Type);

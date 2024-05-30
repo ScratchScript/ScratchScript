@@ -10,13 +10,14 @@ using ScratchScript.Compiler.Models;
 using Spectre.Console;
 
 const string source = """
-                      function sum(x: number, y: number) {
-                        return x + y;
+                      function double(x: number) {
+                        x *= 2;
+                        return x;
                       }
 
                       on start {
-                        let a = 0;
-                        a *= sum(1, 1) * 2 + 3;
+                        let a = double(2);
+                        for(a = 2; a < double(6); a += 1) {}
                       }
                       """;
 var inputStream = new AntlrInputStream(source);
