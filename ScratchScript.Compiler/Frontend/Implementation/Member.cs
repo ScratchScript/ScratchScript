@@ -18,19 +18,6 @@ public partial class ScratchScriptVisitor
 
         if (value is IdentifierExpressionValue identifierExpressionValue)
         {
-            if (_scope == null) throw new Exception("Cannot perform member access expressions in the root scope.");
-
-            var identifierValue = identifierExpressionValue.IdentifierType switch
-            {
-                IdentifierType.CustomType => null,
-                IdentifierType.FunctionArgument => _functionHandler.GetArgument(_scope,
-                    identifierExpressionValue.Identifier),
-                IdentifierType.Variable => _dataHandler.GetVariable(_scope,
-                    _scope.GetVariable(identifierExpressionValue.Identifier) ?? throw new Exception(
-                        $"No variable with the name \"{identifierExpressionValue.Identifier}\" exists, despite being returned from VisitIdentifier.")),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-
             if (identifierExpressionValue.IdentifierType == IdentifierType.CustomType)
                 if (Exports.Enums.TryGetValue(identifierExpressionValue.Identifier, out var enumType))
                 {
@@ -43,25 +30,45 @@ public partial class ScratchScriptVisitor
                         string.Join(", ", enumType.Values.Keys));
                     return null;
                 }
+        }
 
-            if (value.Type is EnumScratchType valueEnumType && property is "value" or "name")
-            {
-                if (property == "value")
-                    return _enumHandler.GetEnumValue(valueEnumType, identifierValue!);
-                if (property == "name")
-                    return _enumHandler.GetEnumName(valueEnumType, identifierValue!);
-            }
-            else
-            {
-                DiagnosticReporter.Error((int)ScratchScriptError.NoPropertyDefined, context, context.Identifier(),
-                    property,
-                    value.Type.ToString());
-                DiagnosticReporter.Note((int)ScratchScriptNote.ListEnumProperties,
-                    string.Join(", ", ["value", "name"]));
-                return null;
-            }
+        if (value.Type is EnumScratchType valueEnumType && property is "value" or "name")
+        {
+            var reference = GetValueReference(value);
+            if (property == "value")
+                return _enumHandler.GetEnumValue(valueEnumType, reference);
+            if (property == "name")
+                return _enumHandler.GetEnumName(valueEnumType, reference);
+        }
+        else
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.NoPropertyDefined, context, context.Identifier(),
+                property,
+                value.Type.ToString());
+            DiagnosticReporter.Note((int)ScratchScriptNote.ListEnumProperties,
+                string.Join(", ", ["value", "name"]));
+            return null;
         }
 
         return null;
+    }
+
+    private TypedValue GetValueReference(TypedValue original)
+    {
+        if (_scope == null) throw new Exception("Cannot get a reference to a value in the root scope.");
+        
+        return original switch
+        {
+            IdentifierExpressionValue identifierExpression => identifierExpression.IdentifierType switch
+            {
+                IdentifierType.FunctionArgument => _functionHandler.GetArgument(_scope,
+                    identifierExpression.Identifier),
+                IdentifierType.Variable => _dataHandler.GetVariable(_scope,
+                    _scope.GetVariable(identifierExpression.Identifier) ?? throw new Exception(
+                        $"No variable with the name \"{identifierExpression.Identifier}\" exists, despite being returned from VisitIdentifier.")),
+                _ => identifierExpression
+            },
+            _ => original
+        };
     }
 }

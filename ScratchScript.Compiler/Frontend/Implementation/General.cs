@@ -173,6 +173,33 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         return VisitBlock(scope, context);
     }
 
+    public override TypedValue? VisitInterpolatedString(ScratchScriptParser.InterpolatedStringContext context)
+    {
+        var result = "";
+        var dependencies = new List<string>();
+        var cleanup = new List<string>();
+        
+        foreach (var part in context.interpolatedStringPart())
+        {
+            if (part.Text() != null)
+            {
+                var processedText = part.Text().GetText().Surround('"');
+                result = string.IsNullOrEmpty(result) ? processedText: $"~ {result} {processedText}";
+            }
+            else if (part.expression() != null && Visit(part.expression()) is { } partValue)
+            {
+                result = string.IsNullOrEmpty(result) ? partValue.Value!.ToString(): $"~ {result} {partValue.Value}";
+                if (partValue is ExpressionValue expression)
+                {
+                    dependencies.AddRange(expression.Dependencies ?? []);
+                    cleanup.AddRange(expression.Cleanup ?? []);
+                }
+            }
+        }
+
+        return new ExpressionValue(result, ScratchType.String, dependencies, cleanup);
+    }
+
     private ScopeValue VisitBlock(IScope scope, ScratchScriptParser.BlockContext context)
     {
         if (_scope != null)

@@ -10,17 +10,14 @@ using ScratchScript.Compiler.Models;
 using Spectre.Console;
 
 const string source = """
-                      enum CalculateType {
-                        simple = "heyy",
-                        complex = "hi"
+                      enum Greeting {
+                        simple = "hey",
+                        complex = "good day to you"
                       }
-
-                      function perform(type: CalculateType) {
-                        let x = type.value;
-                      }
-
+                      
                       on start {
-                        perform(CalculateType.simple);
+                        let a = `${Greeting.simple.value}, friend!`;
+                        let b = `${Greeting.complex.value}, stranger!`;
                       }
                       """;
 var inputStream = new AntlrInputStream(source);
