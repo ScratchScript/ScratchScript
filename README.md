@@ -45,10 +45,10 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
   <summary>Implemented features</summary>
 
   - [ ] Frontend
-    - [ ] Enums
+    - [x] Enums
       - [x] Declaration
-      - [ ] Usage
-      - [ ] `enum.value` and `enum.name`
+      - [x] Usage
+      - [x] `enum.value` and `enum.name`
       - [x] Export
     - [ ] Variables
       - [x] Declaration
@@ -65,7 +65,7 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
     - [ ] Expressions
       - [x] Constant expressions
       - [x] Identifier expressions
-      - [ ] Interpolated string expressions
+      - [x] Interpolated string expressions
       - [x] Binary expressions
           - [x] Binary add expressions (`+`, `-`, `*`, `**`, `%`, `/`)
           - [x] Binary compare expressions (`>`, `>=`, `<`, `<=`, `==`, `!=`)
@@ -75,6 +75,9 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
       - [x] Function call expressions (`a()`)
       - [ ] Member function call expressions (`a.b()`)
       - [ ] Member property access expressions (`a.b`)
+          - [x] Enum property access
+          - [ ] `toString` for all base types
+          - [ ] Custom type properties?
       - [ ] Ternary expressions (`a ? b: c`)
     - [ ] Attributes
       - [ ] `@inline`
@@ -82,7 +85,7 @@ ScratchScript is currently being rewritten to have unit tests, proper project st
       - [ ] `@unicode`
     - [ ] Functions
       - [x] Declaration
-      - [ ] Call
+      - [x] Call
       - [ ] Export (a.k.a. dependencies handling)
     - [ ] Control flow
       - [x] While loop

@@ -17,7 +17,11 @@ public enum ScratchScriptError
     NoFunctionWithMatchingSignatureDefined,
     FunctionDoesNotReturnAValue,
     ExpectedStatement,
-    ExpectedExpression
+    ExpectedExpression,
+    NoAttributeWithMatchingSignatureFound,
+    CannotAssignFunctionArgumentInInlinedFunction,
+    EnumEntryNotFound,
+    NoPropertyDefined
 }
 
 public enum ScratchScriptWarning
@@ -34,5 +38,7 @@ public enum ScratchScriptNote
     IdentifierClaimedAt,
     VariableTypeSetAt,
     ReturnTypeSetAt,
-    FunctionArgumentTypeSetAt
+    FunctionArgumentTypeSetAt,
+    ListEnumEntries,
+    ListEnumProperties
 }

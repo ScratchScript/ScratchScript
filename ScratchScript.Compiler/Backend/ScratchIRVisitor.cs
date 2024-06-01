@@ -143,6 +143,13 @@ public interface IScratchIRVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFlagTopLevelStatement([NotNull] ScratchIRParser.FlagTopLevelStatementContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>defineStatement</c>
+	/// labeled alternative in <see cref="ScratchIRParser.block"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitDefineStatement([NotNull] ScratchIRParser.DefineStatementContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>constantExpression</c>
 	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
 	/// </summary>

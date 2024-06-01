@@ -72,6 +72,16 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
                 CompilerTarget.Scratch3 => new Scratch3ConditionalHandler(),
                 _ => throw new NotImplementedException()
             };
+            _attributeHandler = value switch
+            {
+                CompilerTarget.Scratch3 => new Scratch3AttributeHandler(),
+                _ => throw new NotImplementedException()
+            };
+            _enumHandler = value switch
+            {
+                CompilerTarget.Scratch3 => new Scratch3EnumHandler(),
+                _ => throw new NotImplementedException()
+            };
         }
     }
 
@@ -80,6 +90,13 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         get
         {
             var sb = new StringBuilder();
+
+            if (Exports.Enums.Count != 0)
+            {
+                sb.AppendJoin(Settings.CommandSeparator, _enumHandler.ConvertEnumsToBackend(Exports.Enums.Values));
+                sb.AppendLine();
+                sb.AppendLine();
+            }
 
             foreach (var functionScope in Exports.Functions.Values)
                 sb.AppendLine(functionScope.ToString(Settings.CommandSeparator));
@@ -198,6 +215,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
     public override TypedValue? VisitLine(ScratchScriptParser.LineContext context)
     {
         if (_scope is Scratch3Scope scope) scope.IntermediateStackCount = 0;
+
         if (context.statement() != null) return VisitStatement(context.statement());
         return base.VisitLine(context);
     }

@@ -5,7 +5,8 @@ namespace ScratchScript.Compiler.Types;
 public enum IdentifierType
 {
     Variable,
-    FunctionArgument
+    FunctionArgument,
+    CustomType
 }
 
 public record TypedValue(object? Value, ScratchType Type);

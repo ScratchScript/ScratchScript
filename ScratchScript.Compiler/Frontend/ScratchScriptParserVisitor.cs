@@ -274,6 +274,13 @@ public interface IScratchScriptParserVisitor<Result> : IParseTreeVisitor<Result>
 	/// <return>The visitor result.</return>
 	Result VisitArrayInitializeExpression([NotNull] ScratchScriptParser.ArrayInitializeExpressionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>memberPropertyAccessExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitMemberPropertyAccessExpression([NotNull] ScratchScriptParser.MemberPropertyAccessExpressionContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>arrayAccessExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
 	/// </summary>

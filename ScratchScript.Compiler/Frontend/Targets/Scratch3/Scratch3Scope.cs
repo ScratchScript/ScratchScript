@@ -6,13 +6,10 @@ namespace ScratchScript.Compiler.Frontend.Targets.Scratch3;
 
 public class Scratch3Scope : IScope
 {
-    // the "stack debt" value is unique to the Scratch3 target, since it
-    // doesn't have a native function return value reporter.
-    // the concept is as follows: every function call increases this value
-    // by one. the compiler should strive to keep this value at zero, i.e.
-    // popping the function return value right after the statement in which
-    // it was called. this value is used for correctly locating where the
-    // function return value be for a specific function call.
+    // stores the length of the intermediate stack, which is used
+    // for ALL function return values and complex calculations.
+    // this value is increased by one every function call, and
+    // resets to zero at the start of the next line.
     public int IntermediateStackCount { get; set; }
 
     public int TotalIntermediateStackCount
@@ -54,6 +51,7 @@ public class Scratch3FunctionScope : Scratch3Scope, IFunctionScope
     public List<ScratchScriptVariable> Arguments { get; init; } = [];
     public string FunctionName { get; set; } = "";
     public ScratchType ReturnType { get; set; } = ScratchType.Void;
+    public bool Inlined { get; set; } = false;
 }
 
 internal class DefaultScratch3ScopeFormatter(IScope scope, char separator)

@@ -130,5 +130,23 @@ namespace ScratchScript.Compiler.Resources.Messages {
                 return ResourceManager.GetString("N7", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to the enum has these entries: {0}.
+        /// </summary>
+        internal static string N8 {
+            get {
+                return ResourceManager.GetString("N8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to an enum type has these properties: {0}.
+        /// </summary>
+        internal static string N9 {
+            get {
+                return ResourceManager.GetString("N9", resourceCulture);
+            }
+        }
     }
 }

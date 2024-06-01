@@ -1,12 +1,15 @@
 ﻿using System.Diagnostics;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.Information;
+using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
+    private IEnumHandler _enumHandler = null!;
+
     public override TypedValue? VisitEnumDeclarationStatement(
         ScratchScriptParser.EnumDeclarationStatementContext context)
     {

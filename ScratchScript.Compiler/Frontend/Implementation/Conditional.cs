@@ -83,7 +83,7 @@ public partial class ScratchScriptVisitor
 
         // get the change statement inside the scope because otherwise
         // it messes with the TotalIntermediateStackCount
-        var changeFailed = VisitInScope(ref scope, () =>
+        var changeFailed = VisitInScope(scope, () =>
         {
             if (context.statement(1) != null)
             {
@@ -245,12 +245,20 @@ public partial class ScratchScriptVisitor
         return new ScopeValue(scope);
     }
 
-    private T VisitInScope<T>(ref IScope scope, Func<T> visit)
+    private T VisitInScope<T>(IScope scope, Func<T> visit)
     {
         var lastScope = _scope;
         _scope = scope;
         var result = visit();
         _scope = lastScope;
         return result;
+    }
+
+    private void VisitInScope(IScope scope, Action visit)
+    {
+        var lastScope = _scope;
+        _scope = scope;
+        visit();
+        _scope = lastScope;
     }
 }

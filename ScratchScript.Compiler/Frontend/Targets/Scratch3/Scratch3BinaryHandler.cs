@@ -8,7 +8,7 @@ namespace ScratchScript.Compiler.Frontend.Targets.Scratch3;
 
 public class Scratch3BinaryHandler(char commandSeparator) : IBinaryHandler
 {
-    public ExpressionValue GetBinaryMultiplyExpression(ref IScope scope, MultiplyOperators op, ExpressionValue left,
+    public ExpressionValue GetBinaryMultiplyExpression(IScope scope, MultiplyOperators op, ExpressionValue left,
         ExpressionValue right)
     {
         var dependencies = left.Dependencies.ConcatNullable(right.Dependencies);
@@ -27,13 +27,13 @@ public class Scratch3BinaryHandler(char commandSeparator) : IBinaryHandler
         };
     }
 
-    public ExpressionValue GetBinaryStringEquationExpression(ref IScope scope, ExpressionValue left,
+    public ExpressionValue GetBinaryStringEquationExpression(IScope scope, ExpressionValue left,
         ExpressionValue right)
     {
         throw new NotImplementedException();
     }
 
-    public ExpressionValue GetBinaryNumberEquationExpression(ref IScope scope, ExpressionValue left,
+    public ExpressionValue GetBinaryNumberEquationExpression(IScope scope, ExpressionValue left,
         ExpressionValue right)
     {
         // TODO: account for float calculations later
@@ -42,13 +42,13 @@ public class Scratch3BinaryHandler(char commandSeparator) : IBinaryHandler
             left.Cleanup.ConcatNullable(right.Cleanup));
     }
 
-    public ExpressionValue GetBinaryBitwiseExpression(ref IScope scope, BitwiseOperators op, ExpressionValue left,
+    public ExpressionValue GetBinaryBitwiseExpression(IScope scope, BitwiseOperators op, ExpressionValue left,
         ExpressionValue right)
     {
         throw new NotImplementedException();
     }
 
-    public ExpressionValue GetBinaryNumberComparisonExpression(ref IScope scope, CompareOperators op,
+    public ExpressionValue GetBinaryNumberComparisonExpression(IScope scope, CompareOperators op,
         ExpressionValue left,
         ExpressionValue right)
     {

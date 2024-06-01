@@ -4,10 +4,10 @@ namespace ScratchScript.Compiler.Frontend.Targets;
 
 public interface IFunctionHandler
 {
-    public TypedValue GetArgument(ref IScope scope, string name);
-    public TypedValue HandleFunctionArgumentAssignment(ref IScope scope, string name, ExpressionValue value);
-    public void HandleFunctionExit(ref IScope scope, ExpressionValue? value);
+    public TypedValue GetArgument(IScope scope, string name);
+    public TypedValue HandleFunctionArgumentAssignment(IScope scope, string name, ExpressionValue value);
+    public void HandleFunctionExit(IScope scope, ExpressionValue? value);
 
-    public ExpressionValue? HandleFunctionCall(ref IScope scope, IFunctionScope function,
+    public ExpressionValue? HandleFunctionCall(IScope scope, IFunctionScope function,
         IEnumerable<ExpressionValue> arguments);
 }

@@ -4,7 +4,7 @@ namespace ScratchScript.Compiler.Frontend.Targets.Scratch3;
 
 public class Scratch3FunctionHandler : IFunctionHandler
 {
-    public TypedValue GetArgument(ref IScope scope, string name)
+    public TypedValue GetArgument(IScope scope, string name)
     {
         if (scope is not Scratch3FunctionScope function)
             throw new Exception("Expected a Scratch3FunctionScope for GetArgument.");
@@ -13,14 +13,14 @@ public class Scratch3FunctionHandler : IFunctionHandler
         if (index == -1)
             throw new Exception(
                 $"The function \"{function.FunctionName}\" does not have an argument with the name \"{name}\".");
-        
+
         return new ExpressionValue(
             Scratch3Helper.ItemOf(Scratch3Helper.StackList,
                 $"- {Scratch3Helper.StackPointerReporter} {function.Arguments.Count - index - 1}"),
             function.Arguments[index].Type);
     }
 
-    public TypedValue HandleFunctionArgumentAssignment(ref IScope scope, string name, ExpressionValue value)
+    public TypedValue HandleFunctionArgumentAssignment(IScope scope, string name, ExpressionValue value)
     {
         if (scope is not Scratch3FunctionScope function)
             throw new Exception("Expected a Scratch3FunctionScope for HandleFunctionArgumentAssignment.");
@@ -37,14 +37,14 @@ public class Scratch3FunctionHandler : IFunctionHandler
         ], value.Dependencies, value.Cleanup);
     }
 
-    public void HandleFunctionExit(ref IScope scope, ExpressionValue? value)
+    public void HandleFunctionExit(IScope scope, ExpressionValue? value)
     {
         if (scope is not Scratch3FunctionScope function)
             throw new Exception("Expected a Scratch3FunctionScope for GetArgument.");
 
         // return statement structure:
         // {dependencies needed for the return value}
-        // {push return value to (stack debt + argument count + 1)}
+        // {push return value to (stack pointer + 1)}
         // {cleanup of the return value}
         // {pop arguments from the stack}
         // {stop the script}
@@ -60,7 +60,7 @@ public class Scratch3FunctionHandler : IFunctionHandler
         function.Content.Add(Scratch3Helper.StopThisScript());
     }
 
-    public ExpressionValue? HandleFunctionCall(ref IScope _scope, IFunctionScope function,
+    public ExpressionValue? HandleFunctionCall(IScope _scope, IFunctionScope function,
         IEnumerable<ExpressionValue> arguments)
     {
         if (_scope is not Scratch3Scope scope)

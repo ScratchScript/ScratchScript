@@ -54,7 +54,7 @@ public partial class ScratchScriptVisitor
             return (null, null);
         }
 
-        var value = _functionHandler.HandleFunctionCall(ref _scope, function, arguments);
+        var value = _functionHandler.HandleFunctionCall(_scope, function, arguments);
         return (function, value);
     }
 
@@ -127,6 +127,25 @@ public partial class ScratchScriptVisitor
         // will fail to point the location of the acquirer otherwise.
         LocationInformation.Functions[name] = locationInformation;
 
+        // process function attributes
+        for (var index = 0; index < context.attributeStatement().Length; index++)
+        {
+            var attribute = ProcessAttribute(context.attributeStatement(index), false);
+            if (attribute == null)
+            {
+                DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context,
+                    context.attributeStatement(index));
+                return null;
+            }
+
+            VisitInScope(scope,
+                () =>
+                {
+                    _attributeHandler.ProcessFunctionAttribute(_scope!, attribute.Value.Name,
+                        attribute.Value.Values);
+                });
+        }
+
         scope = VisitBlock(scope, context.block()).Scope as IFunctionScope;
         if (scope == null) throw new Exception("The scope returned from VisitBlock() was null.");
 
@@ -157,7 +176,7 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
-        // an expression can be null if it returns void ("return;" vs "return 1;")
+        // an expression can be null if the function returns void ("return;" vs "return 1;")
         var expression = context.expression() != null ? (ExpressionValue?)Visit(context.expression()) : null;
         if (context.expression() != null && expression == null)
         {
@@ -192,7 +211,7 @@ public partial class ScratchScriptVisitor
         {
             ReturnTypeSetter = context
         };
-        _functionHandler.HandleFunctionExit(ref _scope, expression);
+        _functionHandler.HandleFunctionExit(_scope, expression);
         return null;
     }
 

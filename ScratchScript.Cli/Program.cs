@@ -10,14 +10,17 @@ using ScratchScript.Compiler.Models;
 using Spectre.Console;
 
 const string source = """
-                      function double(x: number) {
-                        x *= 2;
-                        return x;
+                      enum CalculateType {
+                        simple = "heyy",
+                        complex = "hi"
+                      }
+
+                      function perform(type: CalculateType) {
+                        let x = type.value;
                       }
 
                       on start {
-                        let a = double(2);
-                        for(a = 2; a < double(6); a += 1) {}
+                        perform(CalculateType.simple);
                       }
                       """;
 var inputStream = new AntlrInputStream(source);

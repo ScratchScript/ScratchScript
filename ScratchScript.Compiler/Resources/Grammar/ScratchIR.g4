@@ -26,7 +26,8 @@ command
 block
     : 'block' WarpIdentifier? Identifier command*? End #functionBlock
     | 'on' Event command*? End #eventBlock
-    | 'flag' Identifier #flagTopLevelStatement;
+    | 'flag' Identifier #flagTopLevelStatement
+    | 'define' DefineType Identifier constant*? #defineStatement;
 
 expression
     : constant #constantExpression
@@ -62,6 +63,7 @@ multiplyOperators: '*' | '/' | '%';
 booleanOperators: '&&' | '||' | '^';
 compareOperators: '==' | '!=' | '>' | '>=' | '<' | '<=';
 
+DefineType: 'var' | 'list';
 Type: NumberType | StringType | ListType;
 NumberType: ':number';
 StringType: ':string';

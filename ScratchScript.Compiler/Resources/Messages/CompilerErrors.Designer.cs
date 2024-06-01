@@ -141,11 +141,47 @@ namespace ScratchScript.Compiler.Resources.Messages {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to attribute &quot;{0}&quot; does not exist.
+        /// </summary>
+        internal static string E17 {
+            get {
+                return ResourceManager.GetString("E17", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to function arguments cannot be assigned to a new value in an inlined function.
+        /// </summary>
+        internal static string E18 {
+            get {
+                return ResourceManager.GetString("E18", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to no entry with the name &quot;{0}&quot; in the &quot;{1}&quot; enum is defined.
+        /// </summary>
+        internal static string E19 {
+            get {
+                return ResourceManager.GetString("E19", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to expected {0}, got {1}.
         /// </summary>
         internal static string E2 {
             get {
                 return ResourceManager.GetString("E2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to no property &quot;{0}&quot; is defined for type &quot;{1}&quot;.
+        /// </summary>
+        internal static string E20 {
+            get {
+                return ResourceManager.GetString("E20", resourceCulture);
             }
         }
         

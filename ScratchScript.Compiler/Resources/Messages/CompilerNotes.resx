@@ -48,4 +48,10 @@
     <data name="N7" xml:space="preserve">
         <value>function argument type was set here</value>
     </data>
+    <data name="N8" xml:space="preserve">
+        <value>the enum has these entries: {0}</value>
+    </data>
+    <data name="N9" xml:space="preserve">
+        <value>an enum type has these properties: {0}</value>
+    </data>
 </root>

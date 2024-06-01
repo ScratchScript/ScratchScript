@@ -210,6 +210,17 @@ public partial class ScratchIRBaseVisitor<Result> : AbstractParseTreeVisitor<Res
 	/// <return>The visitor result.</return>
 	public virtual Result VisitFlagTopLevelStatement([NotNull] ScratchIRParser.FlagTopLevelStatementContext context) { return VisitChildren(context); }
 	/// <summary>
+	/// Visit a parse tree produced by the <c>defineStatement</c>
+	/// labeled alternative in <see cref="ScratchIRParser.block"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitDefineStatement([NotNull] ScratchIRParser.DefineStatementContext context) { return VisitChildren(context); }
+	/// <summary>
 	/// Visit a parse tree produced by the <c>constantExpression</c>
 	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
 	/// <para>

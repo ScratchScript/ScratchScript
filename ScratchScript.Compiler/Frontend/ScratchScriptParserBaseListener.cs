@@ -520,6 +520,20 @@ public partial class ScratchScriptParserBaseListener : IScratchScriptParserListe
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitArrayInitializeExpression([NotNull] ScratchScriptParser.ArrayInitializeExpressionContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>memberPropertyAccessExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterMemberPropertyAccessExpression([NotNull] ScratchScriptParser.MemberPropertyAccessExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>memberPropertyAccessExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitMemberPropertyAccessExpression([NotNull] ScratchScriptParser.MemberPropertyAccessExpressionContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>arrayAccessExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>

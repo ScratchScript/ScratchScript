@@ -38,7 +38,7 @@ public partial class ScratchScriptVisitor
         if (MustMatchTypeOrFail(right, ScratchType.Number, context, context.expression(1))) return null;
 
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
-        return _binaryHandler.GetBinaryBitwiseExpression(ref _scope, op.Value, left, right);
+        return _binaryHandler.GetBinaryBitwiseExpression(_scope, op.Value, left, right);
     }
 
     public override TypedValue? VisitBinaryCompareExpression(ScratchScriptParser.BinaryCompareExpressionContext context)
@@ -71,13 +71,13 @@ public partial class ScratchScriptVisitor
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
 
         if (op.Value is not (CompareOperators.Equal or CompareOperators.NotEqual))
-            return _binaryHandler.GetBinaryNumberComparisonExpression(ref _scope, op.Value, left, right);
+            return _binaryHandler.GetBinaryNumberComparisonExpression(_scope, op.Value, left, right);
 
         //TODO: this logic should be updated to handle enums and custom types in the future
 
         var equalExpression = left.Type == ScratchType.Number
-            ? _binaryHandler.GetBinaryNumberEquationExpression(ref _scope, left, right)
-            : _binaryHandler.GetBinaryStringEquationExpression(ref _scope, left, right);
+            ? _binaryHandler.GetBinaryNumberEquationExpression(_scope, left, right)
+            : _binaryHandler.GetBinaryStringEquationExpression(_scope, left, right);
 
         if (op.Value == CompareOperators.Equal) return equalExpression;
 
@@ -118,7 +118,7 @@ public partial class ScratchScriptVisitor
             DiagnosticReporter.Warning((int)ScratchScriptWarning.DivisionByZero, context, context);
 
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
-        return _binaryHandler.GetBinaryMultiplyExpression(ref _scope, op.Value, left, right);
+        return _binaryHandler.GetBinaryMultiplyExpression(_scope, op.Value, left, right);
     }
 
     public override TypedValue? VisitBinaryBooleanExpression(ScratchScriptParser.BinaryBooleanExpressionContext context)

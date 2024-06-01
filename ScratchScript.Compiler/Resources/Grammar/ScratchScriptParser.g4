@@ -45,6 +45,7 @@ expression
     | Identifier #identifierExpression
     | functionCallStatement #functionCallExpression
     | expression Dot functionCallStatement #memberFunctionCallExpression
+    | expression Dot Identifier #memberPropertyAccessExpression
     | LeftBracket (expression (Comma expression)*?)? RightBracket #arrayInitializeExpression
     | LeftParen expression RightParen #parenthesizedExpression
     | Not expression #notExpression

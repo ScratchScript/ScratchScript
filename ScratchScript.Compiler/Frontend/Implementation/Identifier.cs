@@ -72,8 +72,14 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
+        var type = result is TypeDeclarationValue
+            ? IdentifierType.CustomType
+            : _scope is IFunctionScope
+                ? IdentifierType.FunctionArgument
+                : IdentifierType.Variable;
+
         return new IdentifierExpressionValue(
-            _scope is IFunctionScope ? IdentifierType.FunctionArgument : IdentifierType.Variable, name, result.Value,
+            type, name, result.Value,
             result.Type);
     }
 
@@ -82,9 +88,12 @@ public partial class ScratchScriptVisitor
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
 
         if (_scope.GetVariable(identifier) is { } variable)
-            return _dataHandler.GetVariable(ref _scope, variable);
+            return _dataHandler.GetVariable(_scope, variable);
         if (_scope is IFunctionScope functionScope && functionScope.Arguments.Any(arg => arg.Name == identifier))
-            return _functionHandler.GetArgument(ref _scope, identifier);
+            return _functionHandler.GetArgument(_scope, identifier);
+        if (Exports.Enums.TryGetValue(identifier, out var type))
+            return new TypeDeclarationValue(type);
+
         return null;
     }
 }

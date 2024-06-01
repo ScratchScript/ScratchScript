@@ -81,4 +81,25 @@ public partial class ScratchIRVisitor(ScratchIRVisitorSettings settings) : Scrat
         foreach (var block in blocks) Target.Blocks[block.Id] = block;
         return blocks;
     }
+
+    public override object? VisitDefineStatement(ScratchIRParser.DefineStatementContext context)
+    {
+        var name = context.Identifier().GetText();
+        var type = context.DefineType().GetText();
+        var id = $"_{Settings.VisitorId[..5]}_{name}";
+
+        if (type == "var")
+        {
+            Target.Variables[id] = [name, ""];
+            if (context.constant().Length != 0)
+                Target.Variables[id][1] = VisitConstant(context.constant(0)) ??
+                                          throw new Exception("Expected a non-null value for DefineStatement.");
+        }
+        else if (type == "list")
+        {
+            Target.Lists[id] = [name, context.constant().Select(Visit).OfType<object>().Select(obj => obj.ToString())];
+        }
+
+        return null;
+    }
 }

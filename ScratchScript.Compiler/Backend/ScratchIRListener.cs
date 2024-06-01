@@ -221,6 +221,18 @@ public interface IScratchIRListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitFlagTopLevelStatement([NotNull] ScratchIRParser.FlagTopLevelStatementContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>defineStatement</c>
+	/// labeled alternative in <see cref="ScratchIRParser.block"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterDefineStatement([NotNull] ScratchIRParser.DefineStatementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>defineStatement</c>
+	/// labeled alternative in <see cref="ScratchIRParser.block"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitDefineStatement([NotNull] ScratchIRParser.DefineStatementContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>constantExpression</c>
 	/// labeled alternative in <see cref="ScratchIRParser.expression"/>.
 	/// </summary>

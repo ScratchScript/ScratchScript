@@ -75,4 +75,16 @@
     <data name="E16" xml:space="preserve">
         <value>expected an expression here</value>
     </data>
+    <data name="E17" xml:space="preserve">
+        <value>attribute "{0}" does not exist</value>
+    </data>
+    <data name="E18" xml:space="preserve">
+        <value>function arguments cannot be assigned to a new value in an inlined function</value>
+    </data>
+    <data name="E19" xml:space="preserve">
+        <value>no entry with the name "{0}" in the "{1}" enum is defined</value>
+    </data>
+    <data name="E20" xml:space="preserve">
+        <value>no property "{0}" is defined for type "{1}"</value>
+    </data>
 </root>

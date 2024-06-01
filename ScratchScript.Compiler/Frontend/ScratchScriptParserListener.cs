@@ -437,6 +437,18 @@ public interface IScratchScriptParserListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitArrayInitializeExpression([NotNull] ScratchScriptParser.ArrayInitializeExpressionContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>memberPropertyAccessExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterMemberPropertyAccessExpression([NotNull] ScratchScriptParser.MemberPropertyAccessExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>memberPropertyAccessExpression</c>
+	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitMemberPropertyAccessExpression([NotNull] ScratchScriptParser.MemberPropertyAccessExpressionContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>arrayAccessExpression</c>
 	/// labeled alternative in <see cref="ScratchScriptParser.expression"/>.
 	/// </summary>

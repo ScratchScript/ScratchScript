@@ -5,7 +5,7 @@ namespace ScratchScript.Compiler.Frontend.Targets.Scratch3;
 
 public class Scratch3DataHandler : IDataHandler
 {
-    public TypedValue AddVariable(ref IScope scope, string name, string id, ExpressionValue value)
+    public TypedValue AddVariable(IScope scope, string name, string id, ExpressionValue value)
     {
         if (value.Value == null) throw new Exception("Cannot set variable to null.");
 
@@ -17,7 +17,7 @@ public class Scratch3DataHandler : IDataHandler
         return new StatementValue(commands, value.Dependencies, value.Cleanup);
     }
 
-    public TypedValue SetVariable(ref IScope scope, ScratchScriptVariable variable, ExpressionValue value)
+    public TypedValue SetVariable(IScope scope, ScratchScriptVariable variable, ExpressionValue value)
     {
         if (value.Value == null) throw new Exception("Cannot set variable to null.");
 
@@ -25,7 +25,7 @@ public class Scratch3DataHandler : IDataHandler
             value.Cleanup);
     }
 
-    public TypedValue GetVariable(ref IScope scope, ScratchScriptVariable variable)
+    public TypedValue GetVariable(IScope scope, ScratchScriptVariable variable)
     {
         return new ExpressionValue(Scratch3Helper.GetVariableValue(variable.Id), variable.Type);
     }
