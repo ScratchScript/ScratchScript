@@ -141,7 +141,7 @@ public partial class ScratchScriptVisitor
             VisitInScope(scope,
                 () =>
                 {
-                    _attributeHandler.ProcessFunctionAttribute(_scope!, attribute.Value.Name,
+                    _attributeHandler.ProcessFunctionAttribute(ref _scope!, attribute.Value.Name,
                         attribute.Value.Values);
                 });
         }

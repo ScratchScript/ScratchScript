@@ -17,5 +17,6 @@ public class TypeTests
         yield return [ScratchType.Number, "number"];
         yield return [ScratchType.List(ScratchType.Number), "list<number>"];
         yield return [ScratchType.List(ScratchType.List(ScratchType.Number)), "list<list<number>>"];
+        yield return [new EnumScratchType("TestEnum", ScratchType.Number, []), "enum<number>"];
     }
 }

@@ -16,29 +16,29 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
-        if (value is IdentifierExpressionValue identifierExpressionValue)
-        {
-            if (identifierExpressionValue.IdentifierType == IdentifierType.CustomType)
-                if (Exports.Enums.TryGetValue(identifierExpressionValue.Identifier, out var enumType))
-                {
-                    if (enumType.Values.ContainsKey(property))
-                        return new ExpressionValue($"\"{identifierExpressionValue.Identifier}_{property}\"", enumType);
+        if (value is IdentifierExpressionValue { IdentifierType: IdentifierType.CustomType } identifierExpressionValue)
+            if (Exports.Enums.TryGetValue(identifierExpressionValue.Identifier, out var enumType))
+            {
+                if (enumType.Values.ContainsKey(property))
+                    return new ExpressionValue($"\"{identifierExpressionValue.Identifier}_{property}\"", enumType);
 
-                    DiagnosticReporter.Error((int)ScratchScriptError.EnumEntryNotFound, context, context.Identifier(),
-                        property, identifierExpressionValue.Identifier);
-                    DiagnosticReporter.Note((int)ScratchScriptNote.ListEnumEntries,
-                        string.Join(", ", enumType.Values.Keys));
-                    return null;
-                }
-        }
+                DiagnosticReporter.Error((int)ScratchScriptError.EnumEntryNotFound, context, context.Identifier(),
+                    property, identifierExpressionValue.Identifier);
+                DiagnosticReporter.Note((int)ScratchScriptNote.ListEnumEntries,
+                    string.Join(", ", enumType.Values.Keys));
+                return null;
+            }
 
         if (value.Type is EnumScratchType valueEnumType && property is "value" or "name")
         {
             var reference = GetValueReference(value);
-            if (property == "value")
-                return _enumHandler.GetEnumValue(valueEnumType, reference);
-            if (property == "name")
-                return _enumHandler.GetEnumName(valueEnumType, reference);
+            switch (property)
+            {
+                case "value":
+                    return _enumHandler.GetEnumValue(valueEnumType, reference);
+                case "name":
+                    return _enumHandler.GetEnumName(valueEnumType, reference);
+            }
         }
         else
         {
@@ -56,7 +56,7 @@ public partial class ScratchScriptVisitor
     private TypedValue GetValueReference(TypedValue original)
     {
         if (_scope == null) throw new Exception("Cannot get a reference to a value in the root scope.");
-        
+
         return original switch
         {
             IdentifierExpressionValue identifierExpression => identifierExpression.IdentifierType switch

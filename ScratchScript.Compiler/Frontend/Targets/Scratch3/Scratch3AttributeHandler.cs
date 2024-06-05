@@ -20,7 +20,7 @@ public class Scratch3AttributeHandler : IAttributeHandler
         }
     }
 
-    public void ProcessFunctionAttribute(IScope scope, string attributeName, IEnumerable<TypedValue> values)
+    public void ProcessFunctionAttribute(ref IScope scope, string attributeName, IEnumerable<TypedValue> values)
     {
         switch (attributeName)
         {

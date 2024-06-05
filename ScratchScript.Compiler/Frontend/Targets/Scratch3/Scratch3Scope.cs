@@ -48,10 +48,12 @@ public class Scratch3FunctionScope : Scratch3Scope, IFunctionScope
         return new DefaultScratch3ScopeFormatter(this, separator).ToString();
     }
 
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public List<ScratchScriptVariable> Arguments { get; init; } = [];
     public string FunctionName { get; set; } = "";
     public ScratchType ReturnType { get; set; } = ScratchType.Void;
     public bool Inlined { get; set; } = false;
+    public ExpressionValue? InlinedReturnValue { get; set; } = null;
 }
 
 internal class DefaultScratch3ScopeFormatter(IScope scope, char separator)

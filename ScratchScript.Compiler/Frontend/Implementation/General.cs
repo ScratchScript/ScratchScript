@@ -98,9 +98,11 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
                 sb.AppendLine();
             }
 
-            foreach (var functionScope in Exports.Functions.Values)
+            var functions = Exports.Functions.Values.Where(function => !function.Inlined).ToList();
+            foreach (var functionScope in functions)
                 sb.AppendLine(functionScope.ToString(Settings.CommandSeparator));
-            sb.AppendLine();
+            if (functions.Count != 0) sb.AppendLine();
+
             foreach (var eventScope in Exports.Events.Values)
                 sb.AppendLine(eventScope.ToString(Settings.CommandSeparator));
 
@@ -178,24 +180,22 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         var result = "";
         var dependencies = new List<string>();
         var cleanup = new List<string>();
-        
+
         foreach (var part in context.interpolatedStringPart())
-        {
             if (part.Text() != null)
             {
                 var processedText = part.Text().GetText().Surround('"');
-                result = string.IsNullOrEmpty(result) ? processedText: $"~ {result} {processedText}";
+                result = string.IsNullOrEmpty(result) ? processedText : $"~ {result} {processedText}";
             }
             else if (part.expression() != null && Visit(part.expression()) is { } partValue)
             {
-                result = string.IsNullOrEmpty(result) ? partValue.Value!.ToString(): $"~ {result} {partValue.Value}";
+                result = string.IsNullOrEmpty(result) ? partValue.Value!.ToString() : $"~ {result} {partValue.Value}";
                 if (partValue is ExpressionValue expression)
                 {
                     dependencies.AddRange(expression.Dependencies ?? []);
                     cleanup.AddRange(expression.Cleanup ?? []);
                 }
             }
-        }
 
         return new ExpressionValue(result, ScratchType.String, dependencies, cleanup);
     }

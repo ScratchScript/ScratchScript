@@ -1,3 +1,4 @@
+using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Targets.Scratch3;
@@ -14,6 +15,10 @@ public class Scratch3FunctionHandler : IFunctionHandler
             throw new Exception(
                 $"The function \"{function.FunctionName}\" does not have an argument with the name \"{name}\".");
 
+        if (function.Inlined)
+            return new ExpressionValue(GenerateInlinedFunctionArgumentId(function.Id, name),
+                function.Arguments[index].Type);
+
         return new ExpressionValue(
             Scratch3Helper.ItemOf(Scratch3Helper.StackList,
                 $"- {Scratch3Helper.StackPointerReporter} {function.Arguments.Count - index - 1}"),
@@ -24,6 +29,8 @@ public class Scratch3FunctionHandler : IFunctionHandler
     {
         if (scope is not Scratch3FunctionScope function)
             throw new Exception("Expected a Scratch3FunctionScope for HandleFunctionArgumentAssignment.");
+        if (function.Inlined)
+            throw new Exception("Cannot assign new values to inlined function arguments.");
 
         var index = function.Arguments.FindIndex(arg => arg.Name == name);
         if (index == -1)
@@ -49,15 +56,22 @@ public class Scratch3FunctionHandler : IFunctionHandler
         // {pop arguments from the stack}
         // {stop the script}
 
-        if (value?.Dependencies != null) scope.Content.AddRange(value.Dependencies);
-        if (value != null)
-            function.Content.Add(Scratch3Helper.PushAt(Scratch3Helper.StackList,
-                $"+ {Scratch3Helper.StackPointerReporter} 1", value.Value!));
-        if (value?.Cleanup != null) scope.Content.AddRange(value.Cleanup);
-        function.Content.Add(Scratch3Helper.Repeat(function.Arguments.Count.ToString(),
-            Scratch3Helper.PopAt(Scratch3Helper.StackList,
-                $"- {Scratch3Helper.StackPointerReporter} {function.Arguments.Count - 1}")));
-        function.Content.Add(Scratch3Helper.StopThisScript());
+        if (function.Inlined)
+        {
+            function.InlinedReturnValue = value;
+        }
+        else
+        {
+            if (value?.Dependencies != null) scope.Content.AddRange(value.Dependencies);
+            if (value != null)
+                function.Content.Add(Scratch3Helper.PushAt(Scratch3Helper.StackList,
+                    $"+ {Scratch3Helper.StackPointerReporter} 1", value.Value!));
+            if (value?.Cleanup != null) scope.Content.AddRange(value.Cleanup);
+            function.Content.Add(Scratch3Helper.Repeat(function.Arguments.Count.ToString(),
+                Scratch3Helper.PopAt(Scratch3Helper.StackList,
+                    $"- {Scratch3Helper.StackPointerReporter} {function.Arguments.Count - 1}")));
+            function.Content.Add(Scratch3Helper.StopThisScript());
+        }
     }
 
     public ExpressionValue? HandleFunctionCall(IScope _scope, IFunctionScope function,
@@ -68,8 +82,57 @@ public class Scratch3FunctionHandler : IFunctionHandler
 
         var dependencies = new List<string>();
         var cleanup = new List<string>();
-        var push = new List<string>();
 
+        // TODO: add documentation to this process later
+        if (function.Inlined)
+        {
+            var argumentsList = arguments.ToList();
+            var returnValue = function.InlinedReturnValue;
+
+            void ReplaceArgument(string id, string with)
+            {
+                for (var lineIndex = 0; lineIndex < function.Content.Count; lineIndex++)
+                    function.Content[lineIndex] = function.Content[lineIndex].Replace(id, with);
+
+                if (returnValue?.Value != null)
+                    returnValue = returnValue with
+                    {
+                        Value = returnValue.Value.ToString()!.Replace(id, with),
+                        Dependencies = returnValue.Dependencies?.Select(line => line.Replace(id, with)),
+                        Cleanup = returnValue.Cleanup?.Select(line => line.Replace(id, with))
+                    };
+            }
+
+            for (var idx = 0; idx < argumentsList.Count; idx++)
+            {
+                var argument = argumentsList[idx];
+                if (argument.Value == null) throw new Exception("A function argument had a null value.");
+
+                dependencies.AddRange(argument.Dependencies ?? []);
+                cleanup.AddRange(argument.Cleanup ?? []);
+
+                ReplaceArgument(GenerateInlinedFunctionArgumentId(function.Id, function.Arguments[idx].Name),
+                    argument.Value.ToString()!);
+            }
+
+            ReplaceArgument(
+                GenerateInlinedFunctionArgumentId(function.Id, Scratch3Helper.IntermediateStackPointerReporter),
+                scope.TotalIntermediateStackCount.ToString());
+
+            if (function.ReturnType == ScratchType.Void)
+            {
+                scope.Content.AddRange([..dependencies, ..cleanup, ..function.Content]);
+                return null;
+            }
+
+            returnValue = returnValue! with
+            {
+                Dependencies = function.Content.ConcatNullable(returnValue.Dependencies)
+            };
+            return returnValue;
+        }
+
+        var push = new List<string>();
         foreach (var argument in arguments)
         {
             if (argument.Value == null) throw new Exception("A function argument had a null value.");
@@ -98,11 +161,16 @@ public class Scratch3FunctionHandler : IFunctionHandler
         }
 
         var resultIndex = scope is Scratch3FunctionScope functionScope
-            ? $"+ {Scratch3Helper.IntermediateStackPointerReporter} {functionScope.TotalIntermediateStackCount}"
+            ? $"+ {(functionScope.Inlined ? GenerateInlinedFunctionArgumentId(functionScope.Id, Scratch3Helper.IntermediateStackPointerReporter) : Scratch3Helper.IntermediateStackPointerReporter)} {functionScope.TotalIntermediateStackCount}"
             : scope.TotalIntermediateStackCount.ToString();
 
         return new ExpressionValue(
             Scratch3Helper.ItemOf(Scratch3Helper.IntermediateStackList, resultIndex),
             function.ReturnType, dependencies, cleanup);
+    }
+
+    private static string GenerateInlinedFunctionArgumentId(string id, string name)
+    {
+        return $"__function_argument_{id}_{name}__";
     }
 }
