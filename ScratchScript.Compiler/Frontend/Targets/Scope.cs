@@ -3,7 +3,7 @@ using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Targets;
 
-public record ScratchScriptVariable(string Name, string Id, ScratchType Type);
+public record ScratchScriptVariable(string Name, string Id, ScratchType Type, TypedValue? LastKnownValue);
 
 public interface IScope
 {

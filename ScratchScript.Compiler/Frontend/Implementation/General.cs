@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
+using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Information;
 using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Frontend.Targets.Scratch3;
@@ -117,7 +118,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
         if (context.String() is { } s)
             return new TypedValue(s.GetText(), ScratchType.String);
         if (context.boolean() is { } b)
-            return new TypedValue(b.GetText().Surround('"'), ScratchType.Boolean);
+            return new TypedValue(b.GetText() == "true", ScratchType.Boolean);
         if (context.Color() is { } c)
             return new TypedValue(c.GetText()[1..], ScratchType.Color);
         return null;
@@ -136,7 +137,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
             return null;
         }
 
-        return new ExpressionValue(value.Value, value.Type);
+        return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
     }
 
     public override TypedValue? VisitRegularType(ScratchScriptParser.RegularTypeContext context)
@@ -198,6 +199,46 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
             }
 
         return new ExpressionValue(result, ScratchType.String, dependencies, cleanup);
+    }
+
+    public override TypedValue VisitIrBlockStatement(ScratchScriptParser.IrBlockStatementContext context)
+    {
+        var lines = new List<string>();
+        foreach (var statement in context.irStatement())
+        {
+            var result = "";
+            var dependencies = new List<string>();
+            var cleanup = new List<string>();
+
+            // string handling for ir blocks is different so VisitInterpolatedString cannot be called here.
+            foreach (var part in statement.interpolatedString().interpolatedStringPart())
+            {
+                if (part.Text() != null) result += part.Text().GetText();
+                else if (part.expression() != null && Visit(part.expression()) is { } partValue)
+                {
+                    result += partValue.Value!.ToString();
+                    if (partValue is ExpressionValue expression)
+                    {
+                        dependencies.AddRange(expression.Dependencies ?? []);
+                        cleanup.AddRange(expression.Cleanup ?? []);
+                    }
+                }
+            }
+
+            if (statement.Return() != null && _scope is IFunctionScope functionScope)
+            {
+                // TODO: how is the type determined here?
+                var returnValue = new ExpressionValue(result, functionScope.ReturnType, dependencies, cleanup);
+
+                if (functionScope.Inlined)
+                    functionScope.InlinedReturnValue = returnValue;
+                else
+                    _functionHandler.HandleFunctionExit(_scope, returnValue);
+            }
+            else if (statement.Return() == null) lines.AddRange([..dependencies, result, ..cleanup]);
+        }
+
+        return new StatementValue(lines);
     }
 
     private ScopeValue VisitBlock(IScope scope, ScratchScriptParser.BlockContext context)

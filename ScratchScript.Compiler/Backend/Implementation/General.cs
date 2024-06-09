@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using ScratchScript.Compiler.Backend.Blocks;
+using ScratchScript.Compiler.Backend.GeneratedVisitor;
 using ScratchScript.Compiler.Models;
 
 namespace ScratchScript.Compiler.Backend.Implementation;

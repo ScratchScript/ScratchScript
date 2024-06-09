@@ -2,6 +2,7 @@
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using ScratchScript.Compiler.Diagnostics;
+using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 
@@ -79,7 +80,7 @@ public partial class ScratchScriptVisitor
                 : IdentifierType.Variable;
 
         return new IdentifierExpressionValue(
-            type, name, result.Value,
+            type, name, _scope, result.Value,
             result.Type);
     }
 

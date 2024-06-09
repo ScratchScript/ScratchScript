@@ -1,4 +1,5 @@
 ﻿using ScratchScript.Compiler.Backend.Blocks;
+using ScratchScript.Compiler.Backend.GeneratedVisitor;
 using ScratchScript.Compiler.Backend.Information;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.Targets.Scratch3;

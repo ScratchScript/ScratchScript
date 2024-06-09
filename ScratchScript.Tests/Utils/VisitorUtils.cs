@@ -1,5 +1,6 @@
 ﻿using Antlr4.Runtime;
 using ScratchScript.Compiler.Diagnostics;
+using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Implementation;
 
 namespace ScratchScript.Tests.Utils;

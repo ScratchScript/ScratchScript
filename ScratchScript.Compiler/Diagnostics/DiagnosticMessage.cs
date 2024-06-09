@@ -2,6 +2,7 @@
 using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
 using ScratchScript.Compiler.Extensions;
+using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Resources.Messages;
 
 namespace ScratchScript.Compiler.Diagnostics;

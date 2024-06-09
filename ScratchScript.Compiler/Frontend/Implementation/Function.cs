@@ -1,5 +1,6 @@
 ﻿using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
+using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Information;
 using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
@@ -119,7 +120,7 @@ public partial class ScratchScriptVisitor
 
             // all functions are top-level (for now) so the scope depth will always be 0
             scope.Arguments.Add(new ScratchScriptVariable(argumentName,
-                _dataHandler.GenerateVariableId(0, Id, argumentName), argumentType));
+                _dataHandler.GenerateVariableId(0, Id, argumentName), argumentType, null));
             locationInformation.ArgumentInformation[argumentName] = (identifier.Identifier(), identifier.type());
         }
 

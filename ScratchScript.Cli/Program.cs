@@ -2,24 +2,18 @@
 using Ionic.Zip;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using ScratchScript.Compiler.Backend.GeneratedVisitor;
 using ScratchScript.Compiler.Backend.Implementation;
 using ScratchScript.Compiler.Diagnostics;
+using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Implementation;
 using ScratchScript.Compiler.Helpers;
 using ScratchScript.Compiler.Models;
 using Spectre.Console;
 
 const string source = """
-                      function triple(x: number) {
-                        return x * 3;
-                      }
-
-                      @inline function double(x: number) {
-                        return triple(x * 2);
-                      }
-
                       on start {
-                        let a = double(2);
+                        let a = 22;
                       }
                       """;
 var inputStream = new AntlrInputStream(source);

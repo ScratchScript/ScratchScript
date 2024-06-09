@@ -1,5 +1,6 @@
 ﻿using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
+using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 

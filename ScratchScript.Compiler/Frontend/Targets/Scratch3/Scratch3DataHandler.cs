@@ -9,11 +9,13 @@ public class Scratch3DataHandler : IDataHandler
     {
         if (value.Value == null) throw new Exception("Cannot set variable to null.");
 
-        var commands = new List<string>();
-        commands.Add(Scratch3Helper.Push(Scratch3Helper.VariableNamesList, id.Surround('"')));
-        commands.Add(Scratch3Helper.Push(Scratch3Helper.VariableValuesList, value.Value));
+        var commands = new List<string>
+        {
+            Scratch3Helper.Push(Scratch3Helper.VariableNamesList, id.Surround('"')),
+            Scratch3Helper.Push(Scratch3Helper.VariableValuesList, value.Value)
+        };
 
-        scope.Variables[name] = new ScratchScriptVariable(name, id, value.Type);
+        scope.Variables[name] = new ScratchScriptVariable(name, id, value.Type, value);
         return new StatementValue(commands, value.Dependencies, value.Cleanup);
     }
 

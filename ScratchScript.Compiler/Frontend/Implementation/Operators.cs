@@ -1,4 +1,5 @@
-﻿using ScratchScript.Compiler.Types;
+﻿using ScratchScript.Compiler.Frontend.GeneratedVisitor;
+using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 

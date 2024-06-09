@@ -19,12 +19,14 @@ public record ExpressionValue(
     object? Value,
     ScratchType Type,
     IEnumerable<string>? Dependencies = null,
-    IEnumerable<string>? Cleanup = null)
+    IEnumerable<string>? Cleanup = null,
+    bool ContainsIntermediateRepresentation = true)
     : TypedValue(Value, Type);
 
 public record IdentifierExpressionValue(
     IdentifierType IdentifierType,
     string Identifier,
+    IScope? RelatedScope,
     object? Value,
     ScratchType Type) : ExpressionValue(Value, Type);
 
