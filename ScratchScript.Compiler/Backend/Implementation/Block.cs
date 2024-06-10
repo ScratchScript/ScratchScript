@@ -64,7 +64,7 @@ public partial class ScratchIRVisitor
         var type = obj switch
         {
             int => ScratchType.Number,
-            decimal => ScratchType.Number,
+            double => ScratchType.Number,
             string => ScratchType.String,
             bool => ScratchType.Boolean,
             _ => throw new ArgumentOutOfRangeException(nameof(obj), obj, null)

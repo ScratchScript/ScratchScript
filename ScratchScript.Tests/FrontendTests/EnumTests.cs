@@ -27,9 +27,9 @@ public class EnumTests
         visitor.Exports.Enums.Values.Should().ContainSingle("because a single enum was created");
         visitor.Exports.Enums.Values.First().Values.Should().Contain(new List<KeyValuePair<string, EnumEntryValue>>
         {
-            new("first", new EnumEntryValue("first", (decimal)1, ScratchType.Number)),
-            new("second", new EnumEntryValue("second", (decimal)2, ScratchType.Number)),
-            new("third", new EnumEntryValue("third", (decimal)3, ScratchType.Number))
+            new("first", new EnumEntryValue("first", (double)1, ScratchType.Number)),
+            new("second", new EnumEntryValue("second", (double)2, ScratchType.Number)),
+            new("third", new EnumEntryValue("third", (double)3, ScratchType.Number))
         });
     }
 
@@ -43,9 +43,9 @@ public class EnumTests
             .Be(ScratchType.Number, "because the default enum type is number");
         visitor.Exports.Enums.Values.First().Values.Should().Contain(new List<KeyValuePair<string, EnumEntryValue>>
         {
-            new("first", new EnumEntryValue("first", (decimal)0, ScratchType.Number)),
-            new("second", new EnumEntryValue("second", (decimal)1, ScratchType.Number)),
-            new("third", new EnumEntryValue("third", (decimal)2, ScratchType.Number))
+            new("first", new EnumEntryValue("first", (double)0, ScratchType.Number)),
+            new("second", new EnumEntryValue("second", (double)1, ScratchType.Number)),
+            new("third", new EnumEntryValue("third", (double)2, ScratchType.Number))
         });
     }
 

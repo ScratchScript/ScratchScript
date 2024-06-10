@@ -2,6 +2,7 @@
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
+using ScratchScript.Compiler.Frontend.Optimization.ConstantEvaluator;
 using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 
@@ -38,6 +39,15 @@ public partial class ScratchScriptVisitor
         if (MustMatchTypeOrFail(left, ScratchType.Number, context, context.expression(0))) return null;
         if (MustMatchTypeOrFail(right, ScratchType.Number, context, context.expression(1))) return null;
 
+        // evaluate at compile-time if possible
+        if (Settings.UseConstantEvaluation && ConstantEvaluatorHelper.IsConstant(left) &&
+            ConstantEvaluatorHelper.IsConstant(right))
+        {
+            var value = ConstantEvaluatorHelper.Evaluate($"{context.bitwiseOperators().GetText()} left right",
+                new Dictionary<string, TypedValue> { ["left"] = left, ["right"] = right });
+            return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
+        }
+
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
         return _binaryHandler.GetBinaryBitwiseExpression(_scope, op.Value, left, right);
     }
@@ -68,6 +78,15 @@ public partial class ScratchScriptVisitor
         // types of operands must match
         if (MustMatchTypeOrFail(left, right.Type, context, context.expression(0))) return null;
         if (MustMatchTypeOrFail(right, left.Type, context, context.expression(1))) return null;
+
+        // evaluate at compile-time if possible
+        if (Settings.UseConstantEvaluation && ConstantEvaluatorHelper.IsConstant(left) &&
+            ConstantEvaluatorHelper.IsConstant(right))
+        {
+            var value = ConstantEvaluatorHelper.Evaluate($"{context.compareOperators().GetText()} left right",
+                new Dictionary<string, TypedValue> { ["left"] = left, ["right"] = right });
+            return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
+        }
 
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
 
@@ -115,8 +134,17 @@ public partial class ScratchScriptVisitor
         if (MustMatchTypeOrFail(right, ScratchType.Number, context, context.expression(1))) return null;
 
         // division by zero check
-        if (right.Value is (decimal)0 && op.Value == MultiplyOperators.Divide)
+        if (right.Value is (double)0 && op.Value == MultiplyOperators.Divide)
             DiagnosticReporter.Warning((int)ScratchScriptWarning.DivisionByZero, context, context);
+
+        // evaluate at compile-time if possible
+        if (Settings.UseConstantEvaluation && ConstantEvaluatorHelper.IsConstant(left) &&
+            ConstantEvaluatorHelper.IsConstant(right))
+        {
+            var value = ConstantEvaluatorHelper.Evaluate($"{context.multiplyOperators().GetText()} left right",
+                new Dictionary<string, TypedValue> { ["left"] = left, ["right"] = right });
+            return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
+        }
 
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
         return _binaryHandler.GetBinaryMultiplyExpression(_scope, op.Value, left, right);
@@ -148,6 +176,15 @@ public partial class ScratchScriptVisitor
         // left and right operands must be a boolean
         if (MustMatchTypeOrFail(left, ScratchType.Boolean, context, context.expression(0))) return null;
         if (MustMatchTypeOrFail(right, ScratchType.Boolean, context, context.expression(1))) return null;
+
+        // evaluate at compile-time if possible
+        if (Settings.UseConstantEvaluation && ConstantEvaluatorHelper.IsConstant(left) &&
+            ConstantEvaluatorHelper.IsConstant(right))
+        {
+            var value = ConstantEvaluatorHelper.Evaluate($"{context.booleanOperators().GetText()} left right",
+                new Dictionary<string, TypedValue> { ["left"] = left, ["right"] = right });
+            return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
+        }
 
         // the operator in the IR and ScratchScript *should* match
         var irOperator = context.booleanOperators().GetText()!;
@@ -198,6 +235,15 @@ public partial class ScratchScriptVisitor
         {
             if (MustMatchTypeOrFail(left, ScratchType.Number, context, context.expression(0))) return null;
             if (MustMatchTypeOrFail(right, ScratchType.Number, context, context.expression(1))) return null;
+        }
+
+        // evaluate at compile-time if possible
+        if (Settings.UseConstantEvaluation && ConstantEvaluatorHelper.IsConstant(left) &&
+            ConstantEvaluatorHelper.IsConstant(right))
+        {
+            var value = ConstantEvaluatorHelper.Evaluate($"{irOperator} left right",
+                new Dictionary<string, TypedValue> { ["left"] = left, ["right"] = right });
+            return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
         }
 
         return new ExpressionValue($"{irOperator} {left.Value} {right.Value}", resultType,

@@ -39,6 +39,18 @@ public interface IScope
 
         return null;
     }
+
+    public IScope? GetVariableOwnerScope(string name)
+    {
+        var scope = this;
+        do
+        {
+            if (scope.Variables.ContainsKey(name)) return scope;
+            scope = scope.ParentScope;
+        } while (scope != null);
+
+        return null;
+    }
 }
 
 public interface IFunctionScope : IScope

@@ -1,5 +1,6 @@
 ﻿using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
+using ScratchScript.Compiler.Frontend.Optimization.ConstantEvaluator;
 using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 
@@ -33,6 +34,17 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
+        // evaluate at compile-time if possible
+        if (Settings.UseConstantEvaluation && ConstantEvaluatorHelper.IsConstant(operand))
+        {
+            var value = ConstantEvaluatorHelper.Evaluate("* operand multiplier", new Dictionary<string, TypedValue>
+            {
+                ["operand"] = operand,
+                ["multiplier"] = new TypedValue(op.Value == AddOperator.Plus ? 1 : -1, ScratchType.Number)
+            });
+            return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
+        }
+
         return _unaryHandler.GetUnaryExpression(op.Value, operand);
     }
 
@@ -51,6 +63,14 @@ public partial class ScratchScriptVisitor
             DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(),
                 ScratchType.Boolean, operand.Type);
             return null;
+        }
+
+        // evaluate at compile-time if possible
+        if (Settings.UseConstantEvaluation && ConstantEvaluatorHelper.IsConstant(operand))
+        {
+            var value = ConstantEvaluatorHelper.Evaluate("! operand",
+                new Dictionary<string, TypedValue> { ["operand"] = operand });
+            return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
         }
 
         // the not operator (!) is universal for all targets

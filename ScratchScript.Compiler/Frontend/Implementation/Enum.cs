@@ -96,7 +96,7 @@ public partial class ScratchScriptVisitor
         if (valueType.Kind is ScratchTypeKind.Number or ScratchTypeKind.Unknown)
         {
             valueType = ScratchType.Number;
-            var currentValue = (decimal)0;
+            var currentValue = (double)0;
 
             foreach (var (key, entry) in values)
                 if (entry.Value == null)
@@ -106,7 +106,7 @@ public partial class ScratchScriptVisitor
                 }
                 else
                 {
-                    currentValue = (decimal)entry.Value;
+                    currentValue = (double)entry.Value;
                 }
         }
 

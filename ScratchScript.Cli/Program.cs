@@ -13,7 +13,16 @@ using Spectre.Console;
 
 const string source = """
                       on start {
-                        let a = 22;
+                        let a = 1;
+                        let b = a + 2 * 2;
+                        let valid = 0;
+                        
+                        if(b == 5) {
+                            valid = 1;
+                        }
+                        else {
+                            valid = 0;
+                        }
                       }
                       """;
 var inputStream = new AntlrInputStream(source);

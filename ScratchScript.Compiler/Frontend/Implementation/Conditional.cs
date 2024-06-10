@@ -225,7 +225,6 @@ public partial class ScratchScriptVisitor
         var scope = CreateDefaultScope();
         scope.Header = ["else"];
         scope.ParentScope = _scope;
-        _scope = scope;
 
         if (context.ifStatement() != null)
         {
@@ -242,7 +241,6 @@ public partial class ScratchScriptVisitor
             scope = VisitBlock(scope, context.block()).Scope;
         }
 
-        _scope = scope.ParentScope;
         return new ScopeValue(scope);
     }
 

@@ -23,6 +23,9 @@ public class Scratch3DataHandler : IDataHandler
     {
         if (value.Value == null) throw new Exception("Cannot set variable to null.");
 
+        var ownerScope = scope.GetVariableOwnerScope(variable.Name);
+        if (ownerScope != null) ownerScope.Variables[variable.Name] = variable with { LastKnownValue = value };
+
         return new StatementValue([Scratch3Helper.SetVariableValue(variable.Id, value.Value)], value.Dependencies,
             value.Cleanup);
     }

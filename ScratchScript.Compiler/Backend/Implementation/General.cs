@@ -16,7 +16,7 @@ public partial class ScratchIRVisitor(ScratchIRVisitorSettings settings) : Scrat
     public override object? VisitConstant(ScratchIRParser.ConstantContext context)
     {
         if (context.Number() is { } n)
-            return decimal.Parse(n.GetText(), CultureInfo.InvariantCulture);
+            return double.Parse(n.GetText(), CultureInfo.InvariantCulture);
         if (context.String() is { } s)
             return s.GetText()[1..^1];
         if (context.Color() is { } c)

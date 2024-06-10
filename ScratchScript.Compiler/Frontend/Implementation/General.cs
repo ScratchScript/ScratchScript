@@ -17,7 +17,7 @@ public enum CompilerTarget
     TurboWarp
 }
 
-public record ScratchScriptVisitorSettings(char CommandSeparator = ' ');
+public record ScratchScriptVisitorSettings(char CommandSeparator = ' ', bool UseConstantEvaluation = true);
 
 public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<TypedValue?>
 {
@@ -114,7 +114,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
     public override TypedValue? VisitConstant(ScratchScriptParser.ConstantContext context)
     {
         if (context.Number() is { } n)
-            return new TypedValue(decimal.Parse(n.GetText(), CultureInfo.InvariantCulture), ScratchType.Number);
+            return new TypedValue(double.Parse(n.GetText(), CultureInfo.InvariantCulture), ScratchType.Number);
         if (context.String() is { } s)
             return new TypedValue(s.GetText(), ScratchType.String);
         if (context.boolean() is { } b)
@@ -212,8 +212,10 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
 
             // string handling for ir blocks is different so VisitInterpolatedString cannot be called here.
             foreach (var part in statement.interpolatedString().interpolatedStringPart())
-            {
-                if (part.Text() != null) result += part.Text().GetText();
+                if (part.Text() != null)
+                {
+                    result += part.Text().GetText();
+                }
                 else if (part.expression() != null && Visit(part.expression()) is { } partValue)
                 {
                     result += partValue.Value!.ToString();
@@ -223,7 +225,6 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
                         cleanup.AddRange(expression.Cleanup ?? []);
                     }
                 }
-            }
 
             if (statement.Return() != null && _scope is IFunctionScope functionScope)
             {
@@ -235,7 +236,10 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
                 else
                     _functionHandler.HandleFunctionExit(_scope, returnValue);
             }
-            else if (statement.Return() == null) lines.AddRange([..dependencies, result, ..cleanup]);
+            else if (statement.Return() == null)
+            {
+                lines.AddRange([..dependencies, result, ..cleanup]);
+            }
         }
 
         return new StatementValue(lines);
@@ -276,7 +280,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
             }
         }
 
-        _scope = scope.ParentScope as Scratch3Scope;
+        _scope = scope.ParentScope;
         return new ScopeValue(scope);
     }
 
