@@ -7,6 +7,7 @@ using ScratchScript.Compiler.Backend.Implementation;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Implementation;
+using ScratchScript.Compiler.Frontend.Targets.Scratch3;
 using ScratchScript.Compiler.Helpers;
 using ScratchScript.Compiler.Models;
 using Spectre.Console;
@@ -33,6 +34,7 @@ var visitor = new ScratchScriptVisitor(source);
 visitor.DiagnosticReporter.Reported +=
     message => AnsiConsole.MarkupLine(new ColorDiagnosticMessageFormatter().Format(message));
 visitor.Settings = new ScratchScriptVisitorSettings('\n');
+visitor.Target = new Scratch3CompilerTarget(visitor.Settings.CommandSeparator);
 visitor.Visit(parser.program());
 
 var output = visitor.Output;
@@ -43,7 +45,7 @@ var irLexer = new ScratchIRLexer(irInputStream);
 var irTokenStream = new CommonTokenStream(irLexer);
 var irParser = new ScratchIRParser(irTokenStream);
 var irVisitor =
-    new ScratchIRVisitor(new ScratchIRVisitorSettings(visitor.Id, visitor.Target is CompilerTarget.Scratch3));
+    new ScratchIRVisitor(new ScratchIRVisitorSettings(visitor.Id, visitor.Target is Scratch3CompilerTarget));
 irVisitor.Visit(irParser.program());
 
 Console.WriteLine("packing into an archive");

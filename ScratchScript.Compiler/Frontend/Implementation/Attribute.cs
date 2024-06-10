@@ -1,15 +1,12 @@
 ﻿using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
-using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
-    private IAttributeHandler _attributeHandler = null!;
-
     private (string Name, IEnumerable<TypedValue> Values)? ProcessAttribute(
         ScratchScriptParser.AttributeStatementContext context, bool topLevel)
     {
@@ -28,8 +25,8 @@ public partial class ScratchScriptVisitor
 
         var signature = filteredConstants.Select(constant => constant.Type).ToList();
         var signatureString = StringExtensions.GetFunctionSignatureString(name, signature);
-        if ((topLevel && !_attributeHandler.TopLevelAttributes.Contains(signatureString)) ||
-            (!topLevel && !_attributeHandler.FunctionAttributes.Contains(signatureString)))
+        if ((topLevel && !Target.Attribute.TopLevelAttributes.Contains(signatureString)) ||
+            (!topLevel && !Target.Attribute.FunctionAttributes.Contains(signatureString)))
         {
             DiagnosticReporter.Error((int)ScratchScriptError.NoAttributeWithMatchingSignatureFound, context, context,
                 StringExtensions.GetFunctionSignatureString(name, signature));
@@ -43,7 +40,7 @@ public partial class ScratchScriptVisitor
     {
         var result = ProcessAttribute(context, true);
         if (result == null) return null;
-        _attributeHandler.ProcessTopLevelAttribute(result.Value.Name, result.Value.Values);
+        Target.Attribute.ProcessTopLevelAttribute(result.Value.Name, result.Value.Values);
         return null;
     }
 }

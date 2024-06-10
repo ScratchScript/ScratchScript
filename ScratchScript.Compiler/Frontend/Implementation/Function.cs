@@ -9,8 +9,6 @@ namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
-    private IFunctionHandler _functionHandler = null!;
-
     private IFunctionScope? FindFunction(string name, IEnumerable<ScratchType> signature)
     {
         return Exports.Functions.Values.FirstOrDefault(func =>
@@ -55,7 +53,7 @@ public partial class ScratchScriptVisitor
             return (null, null);
         }
 
-        var value = _functionHandler.HandleFunctionCall(_scope, function, arguments);
+        var value = Target.Function.HandleFunctionCall(_scope, function, arguments);
         return (function, value);
     }
 
@@ -120,7 +118,7 @@ public partial class ScratchScriptVisitor
 
             // all functions are top-level (for now) so the scope depth will always be 0
             scope.Arguments.Add(new ScratchScriptVariable(argumentName,
-                _dataHandler.GenerateVariableId(0, Id, argumentName), argumentType, null));
+                Target.Data.GenerateVariableId(0, Id, argumentName), argumentType, null));
             locationInformation.ArgumentInformation[argumentName] = (identifier.Identifier(), identifier.type());
         }
 
@@ -142,7 +140,7 @@ public partial class ScratchScriptVisitor
             VisitInScope(scope,
                 () =>
                 {
-                    _attributeHandler.ProcessFunctionAttribute(ref _scope!, attribute.Value.Name,
+                    Target.Attribute.ProcessFunctionAttribute(ref _scope!, attribute.Value.Name,
                         attribute.Value.Values);
                 });
         }
@@ -212,7 +210,7 @@ public partial class ScratchScriptVisitor
         {
             ReturnTypeSetter = context
         };
-        _functionHandler.HandleFunctionExit(_scope, expression);
+        Target.Function.HandleFunctionExit(_scope, expression);
         return null;
     }
 

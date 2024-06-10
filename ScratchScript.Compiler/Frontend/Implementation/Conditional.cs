@@ -7,8 +7,6 @@ namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
-    private IConditionalHandler _conditionalHandler = null!;
-
     public override TypedValue? VisitForStatement(ScratchScriptParser.ForStatementContext context)
     {
         /*
@@ -62,7 +60,7 @@ public partial class ScratchScriptVisitor
                 ScratchType.Boolean); // TODO: temporary implementation, good for a "while true" condition
         }
 
-        condition = _conditionalHandler.GetEqualityExpression(condition);
+        condition = Target.Conditional.GetEqualityExpression(condition);
 
         // condition must be a boolean
         if (condition.Type != ScratchType.Boolean)
@@ -166,7 +164,7 @@ public partial class ScratchScriptVisitor
         }
 
         // the "X is true" expression is target-specific and can be optimized via extensions
-        var conditionExpression = _conditionalHandler.GetEqualityExpression(condition);
+        var conditionExpression = Target.Conditional.GetEqualityExpression(condition);
         if (conditionExpression.Value == null)
             throw new Exception("The IConditionHandler returned an invalid expression for GetEqualityExpression.");
 
@@ -198,7 +196,7 @@ public partial class ScratchScriptVisitor
         }
 
         // the "X is true" expression is target-specific and can be optimized via extensions
-        var conditionExpression = _conditionalHandler.GetEqualityExpression(condition);
+        var conditionExpression = Target.Conditional.GetEqualityExpression(condition);
         if (conditionExpression.Value == null)
             throw new Exception("The IConditionHandler returned an invalid expression for GetEqualityExpression.");
 

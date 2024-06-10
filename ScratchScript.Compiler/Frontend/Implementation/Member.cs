@@ -36,9 +36,9 @@ public partial class ScratchScriptVisitor
             switch (property)
             {
                 case "value":
-                    return _enumHandler.GetEnumValue(valueEnumType, reference);
+                    return Target.Enum.GetEnumValue(valueEnumType, reference);
                 case "name":
-                    return _enumHandler.GetEnumName(valueEnumType, reference);
+                    return Target.Enum.GetEnumName(valueEnumType, reference);
             }
         }
         else
@@ -62,9 +62,9 @@ public partial class ScratchScriptVisitor
         {
             IdentifierExpressionValue identifierExpression => identifierExpression.IdentifierType switch
             {
-                IdentifierType.FunctionArgument => _functionHandler.GetArgument(_scope,
+                IdentifierType.FunctionArgument => Target.Function.GetArgument(_scope,
                     identifierExpression.Identifier),
-                IdentifierType.Variable => _dataHandler.GetVariable(_scope,
+                IdentifierType.Variable => Target.Data.GetVariable(_scope,
                     _scope.GetVariable(identifierExpression.Identifier) ?? throw new Exception(
                         $"No variable with the name \"{identifierExpression.Identifier}\" exists, despite being returned from VisitIdentifier.")),
                 _ => identifierExpression

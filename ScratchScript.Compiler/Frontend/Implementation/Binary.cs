@@ -3,15 +3,12 @@ using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Optimization.ConstantEvaluator;
-using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
-    private IBinaryHandler _binaryHandler = null!;
-
     public override TypedValue? VisitBinaryBitwiseExpression(ScratchScriptParser.BinaryBitwiseExpressionContext context)
     {
         // get the operator
@@ -49,7 +46,7 @@ public partial class ScratchScriptVisitor
         }
 
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
-        return _binaryHandler.GetBinaryBitwiseExpression(_scope, op.Value, left, right);
+        return Target.Binary.GetBinaryBitwiseExpression(_scope, op.Value, left, right);
     }
 
     public override TypedValue? VisitBinaryCompareExpression(ScratchScriptParser.BinaryCompareExpressionContext context)
@@ -91,13 +88,13 @@ public partial class ScratchScriptVisitor
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
 
         if (op.Value is not (CompareOperators.Equal or CompareOperators.NotEqual))
-            return _binaryHandler.GetBinaryNumberComparisonExpression(_scope, op.Value, left, right);
+            return Target.Binary.GetBinaryNumberComparisonExpression(_scope, op.Value, left, right);
 
         //TODO: this logic should be updated to handle enums and custom types in the future
 
         var equalExpression = left.Type == ScratchType.Number
-            ? _binaryHandler.GetBinaryNumberEquationExpression(_scope, left, right)
-            : _binaryHandler.GetBinaryStringEquationExpression(_scope, left, right);
+            ? Target.Binary.GetBinaryNumberEquationExpression(_scope, left, right)
+            : Target.Binary.GetBinaryStringEquationExpression(_scope, left, right);
 
         if (op.Value == CompareOperators.Equal) return equalExpression;
 
@@ -147,7 +144,7 @@ public partial class ScratchScriptVisitor
         }
 
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
-        return _binaryHandler.GetBinaryMultiplyExpression(_scope, op.Value, left, right);
+        return Target.Binary.GetBinaryMultiplyExpression(_scope, op.Value, left, right);
     }
 
     public override TypedValue? VisitBinaryBooleanExpression(ScratchScriptParser.BinaryBooleanExpressionContext context)

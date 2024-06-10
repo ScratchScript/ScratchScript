@@ -8,8 +8,6 @@ namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
-    private IDataHandler _dataHandler = null!;
-
     public override TypedValue? VisitVariableDeclarationStatement(
         ScratchScriptParser.VariableDeclarationStatementContext context)
     {
@@ -27,8 +25,8 @@ public partial class ScratchScriptVisitor
         }
 
         if (_scope == null) throw new Exception("Cannot declare variables without a scope.");
-        var statement = _dataHandler.AddVariable(_scope, name,
-            _dataHandler.GenerateVariableId(_scope.Depth, Id, name), expression);
+        var statement = Target.Data.AddVariable(_scope, name,
+            Target.Data.GenerateVariableId(_scope.Depth, Id, name), expression);
 
         if (!LocationInformation.Variables.ContainsKey(_scope.Depth)) // since it's a nested dictionary
             LocationInformation.Variables[_scope.Depth] = new Dictionary<string, VariableLocationInformation>();
@@ -83,8 +81,8 @@ public partial class ScratchScriptVisitor
             }
 
             expression = ConvertAssignmentToBinaryExpression(assignmentOperator.Value,
-                (ExpressionValue)_functionHandler.GetArgument(_scope, name), expression);
-            return _functionHandler.HandleFunctionArgumentAssignment(_scope, name, expression);
+                (ExpressionValue)Target.Function.GetArgument(_scope, name), expression);
+            return Target.Function.HandleFunctionArgumentAssignment(_scope, name, expression);
         }
 
         if (_scope.GetVariable(name) is not { } variable)
@@ -106,8 +104,8 @@ public partial class ScratchScriptVisitor
         }
 
         expression = ConvertAssignmentToBinaryExpression(assignmentOperator.Value,
-            (ExpressionValue)_dataHandler.GetVariable(_scope, variable), expression);
-        return _dataHandler.SetVariable(_scope, variable, expression);
+            (ExpressionValue)Target.Data.GetVariable(_scope, variable), expression);
+        return Target.Data.SetVariable(_scope, variable, expression);
     }
 
     // TODO: add bitwise operations support when imports are implemented
@@ -139,7 +137,7 @@ public partial class ScratchScriptVisitor
             case AssignmentOperator.DivisionAssignment:
             case AssignmentOperator.ModulusAssignment:
             case AssignmentOperator.PowerAssignment:
-                return _binaryHandler.GetBinaryMultiplyExpression(_scope, op.ToMultiplyOperator(), variable, value);
+                return Target.Binary.GetBinaryMultiplyExpression(_scope, op.ToMultiplyOperator(), variable, value);
             default:
                 throw new ArgumentOutOfRangeException(nameof(op), op, null);
         }

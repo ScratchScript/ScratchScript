@@ -2,12 +2,15 @@
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Implementation;
+using ScratchScript.Compiler.Frontend.Targets;
+using ScratchScript.Compiler.Frontend.Targets.Scratch3;
 
 namespace ScratchScript.Tests.Utils;
 
-public class VisitorUtils
+public abstract class VisitorUtils
 {
-    public static (ScratchScriptVisitor, List<DiagnosticMessage>) Run(string source)
+    public static (ScratchScriptVisitor, List<DiagnosticMessage>) Run(string source,
+        ScratchScriptVisitorSettings? settings = null, ICompilerTarget? target = null)
     {
         var inputStream = new AntlrInputStream(source);
         var lexer = new ScratchScriptLexer(inputStream);
@@ -16,6 +19,8 @@ public class VisitorUtils
         var messages = new List<DiagnosticMessage>();
 
         var visitor = new ScratchScriptVisitor(source);
+        visitor.Settings = settings ?? new ScratchScriptVisitorSettings('\n');
+        visitor.Target = target ?? new Scratch3CompilerTarget(visitor.Settings.CommandSeparator);
         visitor.DiagnosticReporter.Reported += message => messages.Add(message);
         visitor.VisitProgram(parser.program());
 

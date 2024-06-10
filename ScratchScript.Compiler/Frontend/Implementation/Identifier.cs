@@ -89,9 +89,9 @@ public partial class ScratchScriptVisitor
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
 
         if (_scope.GetVariable(identifier) is { } variable)
-            return _dataHandler.GetVariable(_scope, variable);
+            return Target.Data.GetVariable(_scope, variable);
         if (_scope is IFunctionScope functionScope && functionScope.Arguments.Any(arg => arg.Name == identifier))
-            return _functionHandler.GetArgument(_scope, identifier);
+            return Target.Function.GetArgument(_scope, identifier);
         if (Exports.Enums.TryGetValue(identifier, out var type))
             return new TypeDeclarationValue(type);
 

@@ -11,29 +11,22 @@ using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 
-public enum CompilerTarget
-{
-    Scratch3,
-    TurboWarp
-}
-
 public record ScratchScriptVisitorSettings(char CommandSeparator = ' ', bool UseConstantEvaluation = true);
 
 public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<TypedValue?>
 {
     private IScope? _scope;
 
-    private CompilerTarget _target = CompilerTarget.Scratch3;
-
-    public ScratchScriptVisitor(string source, CompilerTarget target = CompilerTarget.Scratch3)
+    public ScratchScriptVisitor(string source)
     {
         Id = new Guid(MD5.HashData(Encoding.UTF8.GetBytes(source))).ToString("N");
         DiagnosticReporter.Reported += message =>
         {
             if (message.Kind == DiagnosticMessageKind.Error) Success = false;
         };
-        Target = target;
     }
+
+    public ICompilerTarget Target { get; set; } = null!;
 
     public string Id { get; }
     public bool Success { get; private set; } = true;
@@ -41,50 +34,6 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
     public DiagnosticReporter DiagnosticReporter { get; } = new();
     public DiagnosticLocationStorage LocationInformation { get; } = new();
     public ExportsStorage Exports { get; } = new();
-
-    public CompilerTarget Target
-    {
-        get => _target;
-        set
-        {
-            _target = value;
-            _dataHandler = value switch
-            {
-                CompilerTarget.Scratch3 => new Scratch3DataHandler(),
-                _ => throw new NotImplementedException()
-            };
-            _binaryHandler = value switch
-            {
-                CompilerTarget.Scratch3 => new Scratch3BinaryHandler(Settings.CommandSeparator),
-                _ => throw new NotImplementedException()
-            };
-            _unaryHandler = value switch
-            {
-                CompilerTarget.Scratch3 => new Scratch3UnaryHandler(),
-                _ => throw new NotImplementedException()
-            };
-            _functionHandler = value switch
-            {
-                CompilerTarget.Scratch3 => new Scratch3FunctionHandler(),
-                _ => throw new NotImplementedException()
-            };
-            _conditionalHandler = value switch
-            {
-                CompilerTarget.Scratch3 => new Scratch3ConditionalHandler(),
-                _ => throw new NotImplementedException()
-            };
-            _attributeHandler = value switch
-            {
-                CompilerTarget.Scratch3 => new Scratch3AttributeHandler(),
-                _ => throw new NotImplementedException()
-            };
-            _enumHandler = value switch
-            {
-                CompilerTarget.Scratch3 => new Scratch3EnumHandler(),
-                _ => throw new NotImplementedException()
-            };
-        }
-    }
 
     public string Output
     {
@@ -94,7 +43,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
 
             if (Exports.Enums.Count != 0)
             {
-                sb.AppendJoin(Settings.CommandSeparator, _enumHandler.ConvertEnumsToBackend(Exports.Enums.Values));
+                sb.AppendJoin(Settings.CommandSeparator, Target.Enum.ConvertEnumsToBackend(Exports.Enums.Values));
                 sb.AppendLine();
                 sb.AppendLine();
             }
@@ -234,7 +183,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
                 if (functionScope.Inlined)
                     functionScope.InlinedReturnValue = returnValue;
                 else
-                    _functionHandler.HandleFunctionExit(_scope, returnValue);
+                    Target.Function.HandleFunctionExit(_scope, returnValue);
             }
             else if (statement.Return() == null)
             {
@@ -296,7 +245,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
     {
         return Target switch
         {
-            CompilerTarget.Scratch3 => new Scratch3Scope(),
+            Scratch3CompilerTarget => new Scratch3Scope(),
             _ => throw new NotImplementedException()
         };
     }
@@ -305,7 +254,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
     {
         return Target switch
         {
-            CompilerTarget.Scratch3 => new Scratch3FunctionScope(),
+            Scratch3CompilerTarget => new Scratch3FunctionScope(),
             _ => throw new NotImplementedException()
         };
     }

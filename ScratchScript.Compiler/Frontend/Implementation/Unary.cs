@@ -1,15 +1,12 @@
 ﻿using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Optimization.ConstantEvaluator;
-using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
-    private IUnaryHandler _unaryHandler = null!;
-
     public override TypedValue? VisitUnaryAddExpression(ScratchScriptParser.UnaryAddExpressionContext context)
     {
         // get the operator
@@ -40,12 +37,12 @@ public partial class ScratchScriptVisitor
             var value = ConstantEvaluatorHelper.Evaluate("* operand multiplier", new Dictionary<string, TypedValue>
             {
                 ["operand"] = operand,
-                ["multiplier"] = new TypedValue(op.Value == AddOperator.Plus ? 1 : -1, ScratchType.Number)
+                ["multiplier"] = new(op.Value == AddOperator.Plus ? 1 : -1, ScratchType.Number)
             });
             return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
         }
 
-        return _unaryHandler.GetUnaryExpression(op.Value, operand);
+        return Target.Unary.GetUnaryExpression(op.Value, operand);
     }
 
     public override TypedValue? VisitNotExpression(ScratchScriptParser.NotExpressionContext context)
