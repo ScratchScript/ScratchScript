@@ -13,17 +13,18 @@ using ScratchScript.Compiler.Models;
 using Spectre.Console;
 
 const string source = """
+                      enum Greeting {
+                        Simple = "hi",
+                        Complex = "heyyy"
+                      }
+                      
+                      function greet(greeting: Greeting) {
+                        let value = greeting.value;
+                        let name = greeting.name;
+                      }
+                      
                       on start {
-                        let a = 1;
-                        let b = a + 2 * 2;
-                        let valid = 0;
-                        
-                        if(b == 5) {
-                            valid = 1;
-                        }
-                        else {
-                            valid = 0;
-                        }
+                        greet(Greeting.Simple);
                       }
                       """;
 var inputStream = new AntlrInputStream(source);

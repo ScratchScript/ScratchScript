@@ -19,7 +19,7 @@ public class Scratch3FunctionHandler : IFunctionHandler
             return new ExpressionValue(GenerateInlinedFunctionArgumentId(function.Id, name),
                 function.Arguments[index].Type);
 
-        return new ExpressionValue(
+        return new IdentifierExpressionValue(IdentifierType.FunctionArgument, name, function,
             Scratch3Helper.ItemOf(Scratch3Helper.StackList,
                 $"- {Scratch3Helper.StackPointerReporter} {function.Arguments.Count - index - 1}"),
             function.Arguments[index].Type);

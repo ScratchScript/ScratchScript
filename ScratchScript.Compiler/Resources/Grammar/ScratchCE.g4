@@ -1,13 +1,13 @@
 ﻿grammar ScratchCE;
 
 program: parameter*? expression EOF;
-
-constant: Number | String | Boolean;
 parameter: Identifier '=' constant;
 
 expression
     : constant #constantExpression
     | Identifier #identifierExpression
+    | expression '[' expression ']' #arrayAccessExpression
+    | 'indexof' expression expression #indexOfExpression
     | '(' expression ')' #parenthesizedExpression
     | addOperators expression expression #binaryAddExpression
     | multiplyOperators expression expression #binaryMultiplyExpression
@@ -24,6 +24,9 @@ compareOperators: '==' | '!=' | '>' | '>=' | '<' | '<=';
 leftShift: first='<' second='<' {$first.index + 1 == $second.index}?;
 rightShift: first='>' second='>' {$first.index + 1 == $second.index}?;
 bitwiseOperators: '|' | '^' | '&' | leftShift | rightShift;
+
+constant: Number | String | Boolean | constantArray;
+constantArray: '[' constant* ']';
 
 fragment Digit: [0-9];
 Minus: '-';

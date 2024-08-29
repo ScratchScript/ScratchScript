@@ -34,7 +34,16 @@ public partial class ScratchCEVisitor : ScratchCEBaseVisitor<TypedValue?>
             return new TypedValue(s.GetText()[1..^1], ScratchType.String);
         if (context.Boolean() is { } b)
             return new TypedValue(b.GetText() == "true", ScratchType.Boolean);
+        if (context.constantArray() is not null) return VisitConstantArray(context.constantArray());
+        
         return null;
+    }
+
+    public override TypedValue VisitConstantArray(ScratchCEParser.ConstantArrayContext context)
+    {
+        var array = context.constant().Select(VisitConstant).OfType<TypedValue>().ToList();
+        var type = array.FirstOrDefault()?.Type ?? ScratchType.Unknown;
+        return new TypedValue(array, ScratchType.List(type));
     }
 
     public override TypedValue? VisitConstantExpression(ScratchCEParser.ConstantExpressionContext context)

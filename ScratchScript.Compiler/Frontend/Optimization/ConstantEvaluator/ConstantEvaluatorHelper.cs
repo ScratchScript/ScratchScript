@@ -33,7 +33,7 @@ public static class ConstantEvaluatorHelper
         sb.Append(expression);
 
         var source = sb.ToString();
-        Console.WriteLine($"=== executing ===\n{source}");
+        Console.WriteLine($"=== evaluating ===\n{source}");
         var inputStream = new AntlrInputStream(source);
         var lexer = new ScratchCELexer(inputStream);
         var tokenStream = new CommonTokenStream(lexer);
@@ -55,6 +55,10 @@ public static class ConstantEvaluatorHelper
                 { LastKnownValue: not null } variable)
             return ConvertTypedValue(variable.LastKnownValue);
 
+        if (value.Type.Kind == ScratchTypeKind.List)
+            return
+                $"[{string.Join(' ', (value.Value! as List<TypedValue> ?? throw new InvalidOperationException()).Select(ConvertTypedValue))}]";
+        
         if (value.Type == ScratchType.Boolean) return value.Value.ToString()!.ToLowerInvariant();
         if (value.Type == ScratchType.String) return value.Value.ToString()!.Surround('"');
         return value.Value!.ToString() ?? "";

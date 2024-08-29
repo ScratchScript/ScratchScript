@@ -6,11 +6,7 @@ enum StopTarget {
     OtherScripts = "other scripts"
 }
 
-const function
-wait(seconds
-:
-number
-)
+const function wait(seconds: number)
 {
     ir
     {
@@ -18,11 +14,7 @@ number
     }
 }
 
-const function
-waitUntil(condition
-:
-boolean
-)
+const function waitUntil(condition: boolean)
 {
     ir
     {
@@ -30,11 +22,7 @@ boolean
     }
 }
 
-const function
-stop(target
-:
-StopTarget
-)
+const function stop(target: StopTarget)
 {
     ir
     {

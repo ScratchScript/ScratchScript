@@ -3,9 +3,9 @@ using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Types;
 using ScratchScript.Tests.Utils;
 
-namespace ScratchScript.Tests.FrontendTests;
+namespace ScratchScript.Tests.FrontendTests.SharedTests;
 
-public class EnumTests
+public class SharedEnumTests
 {
     [Fact]
     public void EmptyEnum()
