@@ -1,4 +1,7 @@
-﻿namespace ScratchScript.Compiler.Types;
+﻿using System.Text.RegularExpressions;
+using ScratchScript.Compiler.Backend.Representation;
+
+namespace ScratchScript.Compiler.Types;
 
 public enum ScratchTypeKind
 {
@@ -13,10 +16,11 @@ public enum ScratchTypeKind
     // these should not be encoded to blocks
     Any,
     Enum,
-    Void
+    Void,
+    Object
 }
 
-public class ScratchType(ScratchTypeKind kind, ScratchType? childType = null, ScratchType? parentType = null)
+public partial class ScratchType(ScratchTypeKind kind, ScratchType? childType = null, ScratchType? parentType = null)
     : IEquatable<ScratchType>
 {
     public static readonly ScratchType Unknown = new(ScratchTypeKind.Unknown);
@@ -28,6 +32,7 @@ public class ScratchType(ScratchTypeKind kind, ScratchType? childType = null, Sc
     // custom types for the compiler
     public static readonly ScratchType Any = new(ScratchTypeKind.Any);
     public static readonly ScratchType Void = new(ScratchTypeKind.Void);
+    public static readonly ScratchType Object = new(ScratchTypeKind.Object);
 
     public ScratchTypeKind Kind { get; set; } = kind;
     public ScratchType? ParentType { get; set; } = parentType;
@@ -46,6 +51,37 @@ public class ScratchType(ScratchTypeKind kind, ScratchType? childType = null, Sc
         var type = new ScratchType(ScratchTypeKind.List);
         innerType.ParentType = type;
         type.ChildType = innerType;
+        return type;
+    }
+
+    public static ScratchType? FromString(string str)
+    {
+        if (string.IsNullOrEmpty(str)) return null;
+        var matches = TypeRegex().Matches(str);
+        if (matches.Count != 1) throw new Exception($"Invalid type `{str}`: must match regex exactly once");
+        var (parent, child) = (matches.First().Groups["parent"].Value, matches.First().Groups["child"].Value);
+
+        if (string.IsNullOrEmpty(child))
+            return parent switch
+            {
+                "number" => Number,
+                "string" => String,
+                "boolean" => Boolean,
+                "color" => Color,
+                "any" => Any,
+                "object" => Object,
+                "list" => new ScratchType(ScratchTypeKind.List),
+                _ => null
+            };
+
+        var (parentType, childType) = (FromString(parent), FromString(child));
+        if (parentType == null) throw new Exception($"Invalid type `{str}`: parentType is null");
+        if (parentType.ChildType != null)
+            throw new Exception($"Invalid type `{str}`: childType of parentType must be null");
+
+        var type = new ScratchType(parentType.Kind);
+        if (childType != null) childType.ParentType = type;
+        type.ChildType = childType;
         return type;
     }
 
@@ -70,16 +106,20 @@ public class ScratchType(ScratchTypeKind kind, ScratchType? childType = null, Sc
         return !(first == second);
     }
 
-
     public override int GetHashCode()
     {
         return ToString().GetHashCode();
     }
+
+    [GeneratedRegex(@"(?<parent>[\w\-$@#]+)(?:<(?<child>.*)>)?")]
+    private static partial Regex TypeRegex();
 }
 
-public class EnumScratchType(string name, ScratchType valueType, Dictionary<string, EnumEntryValue> values)
-    : ScratchType(ScratchTypeKind.Enum, valueType)
+public record TypedValue(object? Value, ScratchType Type)
 {
-    public string Name { get; } = name;
-    public Dictionary<string, EnumEntryValue> Values { get; } = values;
+    public static TypedValue String(string value) => new(value, ScratchType.String);
+    public static TypedValue Color(string value) => new(value, ScratchType.Color);
+    public static TypedValue Number(double value) => new(value, ScratchType.Number);
+    public static TypedValue Boolean(bool value) => new(value, ScratchType.Boolean);
+    public static TypedValue Object(Dictionary<string, IrExpressionNode> values) => new(values, ScratchType.Object);
 }

@@ -2,7 +2,6 @@
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Implementation;
-using ScratchScript.Compiler.Frontend.Targets;
 using ScratchScript.Compiler.Frontend.Targets.Scratch3;
 
 namespace ScratchScript.Tests.Utils;

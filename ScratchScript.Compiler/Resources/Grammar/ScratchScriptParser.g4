@@ -23,15 +23,16 @@ enumEntry: Identifier (Assignment constant)?;
 irBlockStatement: Ir LeftBrace (irStatement)*? RightBrace;
 irStatement: Return? interpolatedString Semicolon;
 
-ifStatement: If LeftParen expression RightParen block (Else elseIfStatement)?;
-whileStatement: While LeftParen expression RightParen block;
-forStatement: For LeftParen statement? Semicolon expression? Semicolon statement? RightParen block;
-elseIfStatement: block | ifStatement;
+ifStatement: If LeftParen expression RightParen block (Else lineOrBlock)?;
+whileStatement: While LeftParen expression RightParen lineOrBlock;
+forStatement: For LeftParen statement? Semicolon expression? Semicolon statement? RightParen lineOrBlock;
+repeatStatement: Repeat LeftParen expression RightParen lineOrBlock;
+lineOrBlock: line | block;
+
 postIncrementStatement: Identifier postIncrementOperators;
 importStatement: Import ((LeftBrace Identifier (Comma Identifier)*? RightBrace) | importAll) From String Semicolon;
 attributeStatement: At Identifier (LeftParen (constant (Comma constant)*?)? RightParen)?;
 returnStatement: Return expression? Semicolon;
-repeatStatement: Repeat LeftParen expression RightParen block;
 throwStatement: Throw String Semicolon;
 breakStatement: Break Semicolon;
 namespaceStatement: Namespace String Semicolon;
@@ -41,24 +42,37 @@ functionArgument: (Identifier Colon)? expression;
 debuggerStatement: Debugger Semicolon;
 
 expression
-    : constant #constantExpression
-    | Identifier #identifierExpression
-    | functionCallStatement #functionCallExpression
-    | expression Dot functionCallStatement #memberFunctionCallExpression
-    | expression Dot Identifier #memberPropertyAccessExpression
-    | LeftBracket (expression (Comma expression)*?)? RightBracket #arrayInitializeExpression
-    | LeftParen expression RightParen #parenthesizedExpression
-    | Not expression #notExpression
-    | expression LeftBracket expression RightBracket #arrayAccessExpression
-    | addOperators expression #unaryAddExpression
-    | expression bitwiseOperators expression #binaryBitwiseExpression
-    | expression multiplyOperators expression #binaryMultiplyExpression
-    | expression addOperators expression #binaryAddExpression
-    | expression compareOperators expression #binaryCompareExpression
-    | expression booleanOperators expression #binaryBooleanExpression
-    | expression Ternary expression Colon expression #ternaryExpression
-    | interpolatedString #interpolatedStringExpression
+    // 1
+    : constant                                                              #constantExpression
+    | Identifier                                                            #identifierExpression
+    | interpolatedString                                                    #interpolatedStringExpression
+    | LeftParen expression RightParen                                       #parenthesizedExpression
+    | LeftBracket (expression (Comma expression)*?)? RightBracket           #arrayInitializeExpression
+    | functionCallStatement                                                 #functionCallExpression
+    | LeftBrace (objectProperty (Comma objectProperty)*?)? RightBrace                                            #objectLiteralExpression
+    // 2
+    | expression Dot functionCallStatement                                  #memberFunctionCallExpression
+    | expression Dot Identifier                                             #memberPropertyAccessExpression
+    | expression LeftBracket expression RightBracket                        #arrayAccessExpression
+    // 3
+    | Not expression                                                        #notExpression
+    | addOperators expression                                               #unaryAddExpression // e.g., +x, -x
+    // 4
+    | expression multiplyOperators expression                               #binaryMultiplyExpression
+    // 5
+    | expression addOperators expression                                    #binaryAddExpression
+    // 6
+    | expression bitwiseOperators expression                                #binaryBitwiseExpression
+    // 7
+    | expression compareOperators expression                                #binaryCompareExpression
+    // 8
+    | expression booleanOperators expression                                #binaryBooleanExpression
+    // 9
+    | expression Ternary expression Colon expression                        #ternaryExpression
     ;
+
+objectProperty: propertyKey Colon expression;
+propertyKey: Identifier | String;
 
 multiplyOperators: Multiply | Divide | Modulus | Power;
 

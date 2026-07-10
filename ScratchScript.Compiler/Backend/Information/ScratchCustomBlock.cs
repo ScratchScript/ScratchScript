@@ -1,15 +1,20 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ScratchScript.Compiler.Backend.Blocks;
-using ScratchScript.Compiler.Backend.Implementation;
 using ScratchScript.Compiler.Models;
 
 namespace ScratchScript.Compiler.Backend.Information;
 
+public enum ScratchShadowType
+{
+    Shadow = 1,
+    NoShadow = 2,
+    ObscuredShadow = 3
+}
+
 public class ScratchCustomBlock
 {
     public const string StackPointerName = "__sp";
-    public const string IntermediateStackPointerName = "__isp";
 
     public ScratchCustomBlock(string name, bool warp, Func<string, string> idGenerator)
     {

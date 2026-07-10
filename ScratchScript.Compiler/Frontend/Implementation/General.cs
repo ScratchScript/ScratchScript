@@ -1,84 +1,77 @@
 ﻿using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using ScratchScript.Compiler.Backend.Representation;
 using ScratchScript.Compiler.Diagnostics;
-using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Information;
-using ScratchScript.Compiler.Frontend.Targets;
-using ScratchScript.Compiler.Frontend.Targets.Scratch3;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 
-public record ScratchScriptVisitorSettings(char CommandSeparator = ' ', bool UseConstantEvaluation = true);
-
-public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<TypedValue?>
+public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNode?>
 {
-    private IScope? _scope;
+    private Scope? _scope;
 
-    public ScratchScriptVisitor(string source)
+    public ScratchScriptVisitor()
     {
-        Id = new Guid(MD5.HashData(Encoding.UTF8.GetBytes(source))).ToString("N");
         DiagnosticReporter.Reported += message =>
         {
             if (message.Kind == DiagnosticMessageKind.Error) Success = false;
         };
     }
 
-    public ICompilerTarget Target { get; set; } = null!;
-
-    public string Id { get; }
     public bool Success { get; private set; } = true;
-    public ScratchScriptVisitorSettings Settings { get; set; } = new();
     public DiagnosticReporter DiagnosticReporter { get; } = new();
     public DiagnosticLocationStorage LocationInformation { get; } = new();
     public ExportsStorage Exports { get; } = new();
 
-    public string Output
+    public override IrNode? VisitProgram(ScratchScriptParser.ProgramContext context)
     {
-        get
-        {
-            var sb = new StringBuilder();
-
-            if (Exports.Enums.Count != 0)
-            {
-                sb.AppendJoin(Settings.CommandSeparator, Target.Enum.ConvertEnumsToBackend(Exports.Enums.Values));
-                sb.AppendLine();
-                sb.AppendLine();
-            }
-
-            var functions = Exports.Functions.Values.Where(function => !function.Inlined).ToList();
-            foreach (var functionScope in functions)
-                sb.AppendLine(functionScope.ToString(Settings.CommandSeparator));
-            if (functions.Count != 0) sb.AppendLine();
-
-            foreach (var eventScope in Exports.Events.Values)
-                sb.AppendLine(eventScope.ToString(Settings.CommandSeparator));
-
-            return sb.ToString();
-        }
+        var blocks = context.topLevelStatement().Select(Visit).Cast<IrBlockNode>().ToList();
+        return new IrProgramNode(blocks, []);
     }
 
-    public override TypedValue? VisitConstant(ScratchScriptParser.ConstantContext context)
+    public override IrNode? VisitConstant(ScratchScriptParser.ConstantContext context)
     {
         if (context.Number() is { } n)
-            return new TypedValue(double.Parse(n.GetText(), CultureInfo.InvariantCulture), ScratchType.Number);
+            return new IrConstantExpressionNode(TypedValue.Number(double.Parse(n.GetText(),
+                CultureInfo.InvariantCulture)));
         if (context.String() is { } s)
-            return new TypedValue(s.GetText(), ScratchType.String);
+            return new IrConstantExpressionNode(TypedValue.String(s.GetText()[1..^1]));
         if (context.boolean() is { } b)
-            return new TypedValue(b.GetText() == "true", ScratchType.Boolean);
+            return new IrConstantExpressionNode(TypedValue.Boolean(b.GetText() == "true"));
         if (context.Color() is { } c)
-            return new TypedValue(c.GetText()[1..], ScratchType.Color);
+            return new IrConstantExpressionNode(TypedValue.Color(c.GetText()[1..]));
         return null;
     }
 
-    public override TypedValue? VisitParenthesizedExpression(ScratchScriptParser.ParenthesizedExpressionContext context)
+    public override IrNode? VisitObjectLiteralExpression(ScratchScriptParser.ObjectLiteralExpressionContext context)
     {
-        return Visit(context.expression());
+        var values = new Dictionary<string, IrExpressionNode>();
+        foreach (var property in context.objectProperty())
+        {
+            var key = property.propertyKey().Identifier()?.GetText() ??
+                      property.propertyKey().String()!.GetText()![1..^1];
+            if (Visit(property.expression()) is not IrExpressionNode value)
+            {
+                DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, property.expression());
+                return null;
+            }
+
+            values[key] = value;
+        }
+
+        return new IrConstantExpressionNode(TypedValue.Object(values));
     }
 
-    public override TypedValue? VisitConstantExpression(ScratchScriptParser.ConstantExpressionContext context)
+    public override IrNode? VisitParenthesizedExpression(ScratchScriptParser.ParenthesizedExpressionContext context)
+    {
+        var expression = Visit(context.expression());
+        return expression == null ? null : new IrParenthesizedExpressionNode((IrExpressionNode)expression);
+    }
+
+    public override IrNode? VisitConstantExpression(ScratchScriptParser.ConstantExpressionContext context)
     {
         if (Visit(context.constant()) is not { } value)
         {
@@ -86,116 +79,38 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
             return null;
         }
 
-        return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
+        return value;
     }
 
-    public override TypedValue? VisitRegularType(ScratchScriptParser.RegularTypeContext context)
+    public override IrNode? VisitInterpolatedString(ScratchScriptParser.InterpolatedStringContext context)
     {
-        if (context.Type() != null)
-        {
-            var kind = Enum.Parse<ScratchTypeKind>(context.Type().GetText().Capitalize());
-            var type = new ScratchType(kind);
-            return new TypeDeclarationValue(type);
-        }
-
-        if (context.Identifier() != null)
-        {
-            var name = context.Identifier().GetText();
-            if (Exports.Enums.TryGetValue(name, out var type)) return new TypeDeclarationValue(type);
-        }
-
-        return null;
-    }
-
-    public override TypedValue? VisitListType(ScratchScriptParser.ListTypeContext context)
-    {
-        if (Visit(context.type()) is not TypeDeclarationValue childType)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context.type(), context.type());
-            return null;
-        }
-
-        var type = ScratchType.List(childType.Type);
-        return new TypeDeclarationValue(type);
-    }
-
-    public override TypedValue VisitBlock(ScratchScriptParser.BlockContext context)
-    {
-        var scope = CreateDefaultScope();
-        return VisitBlock(scope, context);
-    }
-
-    public override TypedValue? VisitInterpolatedString(ScratchScriptParser.InterpolatedStringContext context)
-    {
-        var result = "";
-        var dependencies = new List<string>();
-        var cleanup = new List<string>();
+        IrExpressionNode? result = null;
 
         foreach (var part in context.interpolatedStringPart())
             if (part.Text() != null)
             {
-                var processedText = part.Text().GetText().Surround('"');
-                result = string.IsNullOrEmpty(result) ? processedText : $"~ {result} {processedText}";
+                var value = new IrConstantExpressionNode(new TypedValue(part.Text().GetText(), ScratchType.String));
+                result = result == null
+                    ? value
+                    : new IrBinaryExpressionNode(IrBinaryOperator.Join, result, value);
             }
-            else if (part.expression() != null && Visit(part.expression()) is { } partValue)
+            else if (part.expression() != null)
             {
-                result = string.IsNullOrEmpty(result) ? partValue.Value!.ToString() : $"~ {result} {partValue.Value}";
-                if (partValue is ExpressionValue expression)
-                {
-                    dependencies.AddRange(expression.Dependencies ?? []);
-                    cleanup.AddRange(expression.Cleanup ?? []);
-                }
-            }
-
-        return new ExpressionValue(result, ScratchType.String, dependencies, cleanup);
-    }
-
-    public override TypedValue VisitIrBlockStatement(ScratchScriptParser.IrBlockStatementContext context)
-    {
-        var lines = new List<string>();
-        foreach (var statement in context.irStatement())
-        {
-            var result = "";
-            var dependencies = new List<string>();
-            var cleanup = new List<string>();
-
-            // string handling for ir blocks is different so VisitInterpolatedString cannot be called here.
-            foreach (var part in statement.interpolatedString().interpolatedStringPart())
-                if (part.Text() != null)
-                {
-                    result += part.Text().GetText();
-                }
-                else if (part.expression() != null && Visit(part.expression()) is { } partValue)
-                {
-                    result += partValue.Value!.ToString();
-                    if (partValue is ExpressionValue expression)
-                    {
-                        dependencies.AddRange(expression.Dependencies ?? []);
-                        cleanup.AddRange(expression.Cleanup ?? []);
-                    }
-                }
-
-            if (statement.Return() != null && _scope is IFunctionScope functionScope)
-            {
-                // TODO: how is the type determined here?
-                var returnValue = new ExpressionValue(result, functionScope.ReturnType, dependencies, cleanup);
-
-                if (functionScope.Inlined)
-                    functionScope.InlinedReturnValue = returnValue;
+                if (Visit(part.expression()) is IrExpressionNode partValue)
+                    result = result == null
+                        ? partValue
+                        : new IrBinaryExpressionNode(IrBinaryOperator.Join, result, partValue);
                 else
-                    Target.Function.HandleFunctionExit(_scope, returnValue);
+                    throw new NotImplementedException("Diagnostic error");
             }
-            else if (statement.Return() == null)
-            {
-                lines.AddRange([..dependencies, result, ..cleanup]);
-            }
-        }
 
-        return new StatementValue(lines);
+        return result;
     }
 
-    private ScopeValue VisitBlock(IScope scope, ScratchScriptParser.BlockContext context)
+    public override IrNode? VisitBlock(ScratchScriptParser.BlockContext context)
     {
+        var scope = new Scope();
+
         if (_scope != null)
         {
             scope.ParentScope = _scope;
@@ -209,53 +124,23 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<Typed
             if (VisitLine(lineContext) is not { } value) continue;
             switch (value)
             {
-                case ScopeValue scopeValue:
+                case IrBlockNode blockNode:
                 {
-                    scope.Content.Add(scopeValue.Scope.ToString(Settings.CommandSeparator));
+                    scope.Body.AddRange(blockNode.Scope.Body);
                     break;
                 }
-                case StatementValue statementValue:
+                case IrCommandNode commandNode:
                 {
-                    scope.Content.AddRange(statementValue.Dependencies ?? []);
-                    scope.Content.AddRange(statementValue.Commands);
-                    scope.Content.AddRange(statementValue.Cleanup ?? []);
-                    break;
-                }
-                default:
-                {
-                    scope.Content.Add(value.ToString());
+                    scope.Body.Add(commandNode);
                     break;
                 }
             }
         }
 
         _scope = scope.ParentScope;
-        return new ScopeValue(scope);
+        return new IrBlockNode(scope);
     }
 
-    public override TypedValue? VisitLine(ScratchScriptParser.LineContext context)
-    {
-        if (_scope is Scratch3Scope scope) scope.IntermediateStackCount = 0;
-
-        if (context.statement() != null) return VisitStatement(context.statement());
-        return base.VisitLine(context);
-    }
-
-    private IScope CreateDefaultScope()
-    {
-        return Target switch
-        {
-            Scratch3CompilerTarget => new Scratch3Scope(),
-            _ => throw new NotImplementedException()
-        };
-    }
-
-    private IFunctionScope CreateFunctionScope()
-    {
-        return Target switch
-        {
-            Scratch3CompilerTarget => new Scratch3FunctionScope(),
-            _ => throw new NotImplementedException()
-        };
-    }
+    public override IrNode? VisitLine(ScratchScriptParser.LineContext context)
+        => context.statement() != null ? VisitStatement(context.statement()) : base.VisitLine(context);
 }

@@ -33,7 +33,7 @@ public class DiagnosticTests
         var reporter = new DiagnosticReporter();
         using var monitor = reporter.Monitor();
 
-        reporter.Note(0, []);
+        reporter.Note(0);
         monitor.Should().Raise("Reported").WithArgs<DiagnosticMessage>(message =>
             message.Code == 0 && message.Kind == DiagnosticMessageKind.Note && message.Message == "Reserved");
     }

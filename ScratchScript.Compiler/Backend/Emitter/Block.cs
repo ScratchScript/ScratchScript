@@ -1,8 +1,8 @@
-﻿using ScratchScript.Compiler.Backend.GeneratedVisitor;
+﻿using ScratchScript.Compiler.Backend.Representation;
 using ScratchScript.Compiler.Models;
 using ScratchScript.Compiler.Types;
 
-namespace ScratchScript.Compiler.Backend.Implementation;
+namespace ScratchScript.Compiler.Backend.Emitter;
 
 public enum ScratchShadowType
 {
@@ -11,7 +11,7 @@ public enum ScratchShadowType
     ObscuredShadow = 3
 }
 
-public partial class ScratchIRVisitor
+public partial class ScratchScriptProjectEmitter
 {
     private readonly Dictionary<string, int> _blockNameUsage = [];
 
@@ -20,7 +20,7 @@ public partial class ScratchIRVisitor
         // TODO: temporary implementation. may be changed later for space optimizations and similar stuff
         _blockNameUsage.TryAdd(opcode, 0);
         _blockNameUsage[opcode]++;
-        return $"_{Settings.VisitorId[..5]}_{opcode}_{_blockNameUsage[opcode]}";
+        return $"_{SourceHash[..5]}_{opcode}_{_blockNameUsage[opcode]}";
     }
 
     private void AttachStackToBlock(Block? parent, IEnumerable<Block> stack)
@@ -63,8 +63,7 @@ public partial class ScratchIRVisitor
     {
         var type = obj switch
         {
-            int => ScratchType.Number,
-            double => ScratchType.Number,
+            int or double => ScratchType.Number,
             string => ScratchType.String,
             bool => ScratchType.Boolean,
             _ => throw new ArgumentOutOfRangeException(nameof(obj), obj, null)
@@ -78,48 +77,48 @@ public partial class ScratchIRVisitor
         return [obj, obj];
     }
 
-    public override object VisitRawCommand(ScratchIRParser.RawCommandContext context)
+    public override object? VisitRawCommand(IrRawCommandNode node)
     {
-        var opcode = context.Identifier().GetText();
         var block = new Block
         {
-            Opcode = opcode,
+            Opcode = node.Opcode,
             TopLevel = false,
             Shadow = false,
-            Id = GenerateBlockId(opcode)
+            Id = GenerateBlockId(node.Opcode)
         };
-        SetRawBlockProperties(ref block, context.callFunctionArgument());
+        SetRawBlockProperties(ref block, node.Inputs, node.Fields);
         return block;
     }
 
-    public override object VisitRawShadowExpression(ScratchIRParser.RawShadowExpressionContext context)
+    public override object? VisitShadowExpression(IrShadowExpressionNode node)
     {
-        var opcode = context.Identifier().GetText();
         var block = new Block
         {
-            Opcode = opcode,
+            Opcode = node.Opcode,
             TopLevel = false,
             Shadow = true,
-            Id = GenerateBlockId(opcode)
+            Id = GenerateBlockId(node.Opcode)
         };
-        SetRawBlockProperties(ref block, context.callFunctionArgument());
+        SetRawBlockProperties(ref block, node.Inputs, node.Fields);
         Target.Blocks[block.Id] = block;
         return block;
     }
 
     private void SetRawBlockProperties(ref Block block,
-        IEnumerable<ScratchIRParser.CallFunctionArgumentContext> properties)
+        Dictionary<string, IrExpressionNode> inputs, Dictionary<string, IrExpressionNode> fields)
     {
-        foreach (var property in properties)
+        foreach (var (name, expressionNode) in inputs)
         {
-            var name = property.Identifier().GetText();
-            var value = Visit(property.expression());
+            var value = Visit(expressionNode);
             if (value == null) throw new Exception("An expression in SetRawBlockProperties was null.");
+            block.Inputs[name] = value is Block inputBlock ? CreateInput(inputBlock, block) : CreateInput(value);
+        }
 
-            if (property.functionArgumentType().GetText().StartsWith('i'))
-                block.Inputs[name] = value is Block inputBlock ? CreateInput(inputBlock, block) : CreateInput(value);
-            else
-                block.Fields[name] = CreateField(value);
+        foreach (var (name, expressionNode) in fields)
+        {
+            var value = Visit(expressionNode);
+            if (value == null) throw new Exception("An expression in SetRawBlockProperties was null.");
+            block.Fields[name] = CreateField(value);
         }
     }
 }

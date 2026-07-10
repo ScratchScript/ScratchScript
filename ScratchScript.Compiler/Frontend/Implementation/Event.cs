@@ -1,13 +1,13 @@
-﻿using ScratchScript.Compiler.Diagnostics;
+﻿using ScratchScript.Compiler.Backend.Representation;
+using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Information;
-using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
-    public override TypedValue? VisitEventStatement(ScratchScriptParser.EventStatementContext context)
+    public override IrNode? VisitEventStatement(ScratchScriptParser.EventStatementContext context)
     {
         var eventName = context.Identifier().GetText();
 
@@ -33,17 +33,15 @@ public partial class ScratchScriptVisitor
         };
 
         // in case of an ICE
-        if (VisitBlock(context.block()) is not ScopeValue scopeValue)
+        if (VisitBlock(context.block()) is not IrBlockNode blockNode)
         {
             DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context.block(), context.block());
             return null;
         }
 
-        var scope = scopeValue.Scope;
-        scope.Header = [$"on {eventName}"]; // TODO: temporary implementation
-
         LocationInformation.Events[eventName] = locationInformation;
-        Exports.Events[eventName] = scope;
-        return null;
+        var node = new IrEventNode(eventName, blockNode.Scope);
+        Exports.Events[eventName] = node;
+        return node;
     }
 }

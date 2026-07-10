@@ -1,57 +1,47 @@
-﻿using Antlr4.Runtime;
+﻿using System.Security.Cryptography;
+using System.Text;
+using Antlr4.Runtime;
 using Ionic.Zip;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using ScratchScript.Compiler.Backend.GeneratedVisitor;
-using ScratchScript.Compiler.Backend.Implementation;
+using ScratchScript.Compiler.Backend.Emitter;
+using ScratchScript.Compiler.Backend.Representation;
+using ScratchScript.Compiler.Backend.Rewriters.TargetLowering;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Frontend.Implementation;
-using ScratchScript.Compiler.Frontend.Targets.Scratch3;
 using ScratchScript.Compiler.Helpers;
 using ScratchScript.Compiler.Models;
 using Spectre.Console;
 
 const string source = """
-                      enum Greeting {
-                        Simple = "hi",
-                        Complex = "heyyy"
-                      }
-                      
-                      function greet(greeting: Greeting) {
-                        let value = greeting.value;
-                        let name = greeting.name;
-                      }
-                      
                       on start {
-                        greet(Greeting.Simple);
+                        let c = "test";
+                        let a = 3;
+                        __raw("control_wait", {inputs: {DURATION: a}});
+                        let b = __raw_expr("operator_add", {inputs: {NUM1: 2, NUM2: a}}, "number");
                       }
                       """;
+var id = new Guid(MD5.HashData(Encoding.UTF8.GetBytes(source))).ToString("N");
+
 var inputStream = new AntlrInputStream(source);
 var lexer = new ScratchScriptLexer(inputStream);
 var tokenStream = new CommonTokenStream(lexer);
 var parser = new ScratchScriptParser(tokenStream);
-var visitor = new ScratchScriptVisitor(source);
+var visitor = new ScratchScriptVisitor();
 visitor.DiagnosticReporter.Reported +=
     message => AnsiConsole.MarkupLine(new ColorDiagnosticMessageFormatter().Format(message));
-visitor.Settings = new ScratchScriptVisitorSettings('\n');
-visitor.Target = new Scratch3CompilerTarget(visitor.Settings.CommandSeparator);
-visitor.Visit(parser.program());
+var result = (IrProgramNode)visitor.Visit(parser.program());
 
-var output = visitor.Output;
-Console.WriteLine(output);
-
-var irInputStream = new AntlrInputStream(output);
-var irLexer = new ScratchIRLexer(irInputStream);
-var irTokenStream = new CommonTokenStream(irLexer);
-var irParser = new ScratchIRParser(irTokenStream);
-var irVisitor =
-    new ScratchIRVisitor(new ScratchIRVisitorSettings(visitor.Id, visitor.Target is Scratch3CompilerTarget));
-irVisitor.Visit(irParser.program());
-
+Console.WriteLine(ObjectDumper.Dump(result, DumpStyle.CSharp));
+Console.WriteLine("running lowering pass");
+result = (IrProgramNode)new Scratch3LoweringPass().VisitProgram(result);
+Console.WriteLine(ObjectDumper.Dump(result, DumpStyle.CSharp));
 Console.WriteLine("packing into an archive");
+var emitter = new ScratchScriptProjectEmitter(id);
+emitter.VisitProgram(result);
 
-var target = irVisitor.Target;
+var target = emitter.Target;
 target.LayerOrder = 1;
 target.Name = lexer.SourceName;
 target.Costumes.Add(CostumeHelper.GetEmptyCostume());

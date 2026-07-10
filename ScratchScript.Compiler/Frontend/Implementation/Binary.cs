@@ -1,250 +1,112 @@
-﻿using System.Diagnostics;
+﻿using Antlr4.Runtime;
+using ScratchScript.Compiler.Backend.Representation;
 using ScratchScript.Compiler.Diagnostics;
-using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
-using ScratchScript.Compiler.Frontend.Optimization.ConstantEvaluator;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
 
 public partial class ScratchScriptVisitor
 {
-    public override TypedValue? VisitBinaryBitwiseExpression(ScratchScriptParser.BinaryBitwiseExpressionContext context)
+    private IrNode? GenericBinaryExpressionHandler<T>(Func<T, IrBinaryOperator?> operatorConverter,
+        ParserRuleContext context,
+        T operatorContext,
+        ScratchScriptParser.ExpressionContext leftContext, ScratchScriptParser.ExpressionContext rightContext)
+        where T : ParserRuleContext
     {
         // get the operator
-        if (Visit(context.bitwiseOperators()) is not GenericValue<BitwiseOperators> op)
+        if (operatorConverter(operatorContext) is not { } op)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.bitwiseOperators());
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, operatorContext);
             return null;
         }
 
         // get the left operand
-        if (Visit(context.expression(0)) is not ExpressionValue left)
+        if (Visit(leftContext) is not IrExpressionNode left)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(0));
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, leftContext);
             return null;
         }
 
         // get the right operand
-        if (Visit(context.expression(1)) is not ExpressionValue right)
+        if (Visit(rightContext) is not IrExpressionNode right)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(1));
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, rightContext);
             return null;
         }
 
         // left and right operands must be a number
-        if (MustMatchTypeOrFail(left, ScratchType.Number, context, context.expression(0))) return null;
-        if (MustMatchTypeOrFail(right, ScratchType.Number, context, context.expression(1))) return null;
+        if (MustMatchTypeOrFail(left, ScratchType.Number, context, leftContext)) return null;
+        if (MustMatchTypeOrFail(right, ScratchType.Number, context, rightContext)) return null;
 
-        // evaluate at compile-time if possible
-        if (Settings.UseConstantEvaluation && ConstantEvaluatorHelper.IsConstant(left) &&
-            ConstantEvaluatorHelper.IsConstant(right))
-        {
-            var value = ConstantEvaluatorHelper.Evaluate($"{context.bitwiseOperators().GetText()} left right",
-                new Dictionary<string, TypedValue> { ["left"] = left, ["right"] = right });
-            return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
-        }
-
-        Debug.Assert(_scope != null, nameof(_scope) + " != null");
-        return Target.Binary.GetBinaryBitwiseExpression(_scope, op.Value, left, right);
+        return new IrBinaryExpressionNode(op, left, right);
     }
 
-    public override TypedValue? VisitBinaryCompareExpression(ScratchScriptParser.BinaryCompareExpressionContext context)
-    {
-        // get the operator
-        if (Visit(context.compareOperators()) is not GenericValue<CompareOperators> op)
+    public override IrNode? VisitBinaryBitwiseExpression(ScratchScriptParser.BinaryBitwiseExpressionContext context)
+        => GenericBinaryExpressionHandler(operatorContext =>
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.compareOperators());
+            if (operatorContext.BitwiseAnd() != null) return IrBinaryOperator.BitwiseAnd;
+            if (operatorContext.BitwiseOr() != null) return IrBinaryOperator.BitwiseOr;
+            if (operatorContext.BitwiseXor() != null) return IrBinaryOperator.BitwiseXor;
+            if (operatorContext.leftShift() != null) return IrBinaryOperator.BitwiseLeftShift;
+            if (operatorContext.rightShift() != null) return IrBinaryOperator.BitwiseRightShift;
             return null;
-        }
+        }, context, context.bitwiseOperators(), context.expression(0), context.expression(1));
 
-        // get the left operand
-        if (Visit(context.expression(0)) is not ExpressionValue left)
+    public override IrNode? VisitBinaryCompareExpression(ScratchScriptParser.BinaryCompareExpressionContext context) =>
+        GenericBinaryExpressionHandler(operatorContext =>
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(0));
+            if (operatorContext.Equal() != null) return IrBinaryOperator.Equal;
+            if (operatorContext.NotEqual() != null) return IrBinaryOperator.NotEqual;
+            if (operatorContext.Greater() != null) return IrBinaryOperator.GreaterThan;
+            if (operatorContext.GreaterOrEqual() != null) return IrBinaryOperator.GreaterOrEqualTo;
+            if (operatorContext.Lesser() != null) return IrBinaryOperator.LessThan;
+            if (operatorContext.LesserOrEqual() != null) return IrBinaryOperator.LessOrEqualTo;
             return null;
-        }
+        }, context, context.compareOperators(), context.expression(0), context.expression(1));
 
-        // get the right operand
-        if (Visit(context.expression(1)) is not ExpressionValue right)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(1));
-            return null;
-        }
-
-        // types of operands must match
-        if (MustMatchTypeOrFail(left, right.Type, context, context.expression(0))) return null;
-        if (MustMatchTypeOrFail(right, left.Type, context, context.expression(1))) return null;
-
-        // evaluate at compile-time if possible
-        if (Settings.UseConstantEvaluation && ConstantEvaluatorHelper.IsConstant(left) &&
-            ConstantEvaluatorHelper.IsConstant(right))
-        {
-            var value = ConstantEvaluatorHelper.Evaluate($"{context.compareOperators().GetText()} left right",
-                new Dictionary<string, TypedValue> { ["left"] = left, ["right"] = right });
-            return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
-        }
-
-        Debug.Assert(_scope != null, nameof(_scope) + " != null");
-
-        if (op.Value is not (CompareOperators.Equal or CompareOperators.NotEqual))
-            return Target.Binary.GetBinaryNumberComparisonExpression(_scope, op.Value, left, right);
-
-        //TODO: this logic should be updated to handle enums and custom types in the future
-
-        var equalExpression = left.Type == ScratchType.Number
-            ? Target.Binary.GetBinaryNumberEquationExpression(_scope, left, right)
-            : Target.Binary.GetBinaryStringEquationExpression(_scope, left, right);
-
-        if (op.Value == CompareOperators.Equal) return equalExpression;
-
-        return new ExpressionValue($"! {equalExpression.Value}", equalExpression.Type, equalExpression.Dependencies,
-            equalExpression.Cleanup);
-    }
-
-    public override TypedValue? VisitBinaryMultiplyExpression(
+    public override IrNode? VisitBinaryMultiplyExpression(
         ScratchScriptParser.BinaryMultiplyExpressionContext context)
     {
-        // get the operator
-        if (Visit(context.multiplyOperators()) is not GenericValue<MultiplyOperators> op)
+        var result = GenericBinaryExpressionHandler(operatorContext =>
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.multiplyOperators());
+            if (operatorContext.Multiply() != null) return IrBinaryOperator.Multiply;
+            if (operatorContext.Divide() != null) return IrBinaryOperator.Divide;
+            if (operatorContext.Power() != null) return IrBinaryOperator.Power;
+            if (operatorContext.Modulus() != null) return IrBinaryOperator.Modulo;
             return null;
-        }
+        }, context, context.multiplyOperators(), context.expression(0), context.expression(1));
 
-        // get the left operand
-        if (Visit(context.expression(0)) is not ExpressionValue left)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(0));
-            return null;
-        }
-
-        // get the right operand
-        if (Visit(context.expression(1)) is not ExpressionValue right)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(1));
-            return null;
-        }
-
-        // left and right operands must be a number
-        if (MustMatchTypeOrFail(left, ScratchType.Number, context, context.expression(0))) return null;
-        if (MustMatchTypeOrFail(right, ScratchType.Number, context, context.expression(1))) return null;
-
-        // division by zero check
-        if (right.Value is (double)0 && op.Value == MultiplyOperators.Divide)
+        if (result is IrBinaryExpressionNode { Right: IrConstantExpressionNode { Value.Value: (double)0 } })
             DiagnosticReporter.Warning((int)ScratchScriptWarning.DivisionByZero, context, context);
-
-        // evaluate at compile-time if possible
-        if (Settings.UseConstantEvaluation && ConstantEvaluatorHelper.IsConstant(left) &&
-            ConstantEvaluatorHelper.IsConstant(right))
-        {
-            var value = ConstantEvaluatorHelper.Evaluate($"{context.multiplyOperators().GetText()} left right",
-                new Dictionary<string, TypedValue> { ["left"] = left, ["right"] = right });
-            return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
-        }
-
-        Debug.Assert(_scope != null, nameof(_scope) + " != null");
-        return Target.Binary.GetBinaryMultiplyExpression(_scope, op.Value, left, right);
+        return result;
     }
 
-    public override TypedValue? VisitBinaryBooleanExpression(ScratchScriptParser.BinaryBooleanExpressionContext context)
+    public override IrNode?
+        VisitBinaryBooleanExpression(ScratchScriptParser.BinaryBooleanExpressionContext context) =>
+        GenericBinaryExpressionHandler(operatorContext =>
+        {
+            if (operatorContext.And() != null) return IrBinaryOperator.And;
+            if (operatorContext.Or() != null) return IrBinaryOperator.Or;
+            return null;
+        }, context, context.booleanOperators(), context.expression(0), context.expression(1));
+
+
+    public override IrNode? VisitBinaryAddExpression(ScratchScriptParser.BinaryAddExpressionContext context)
     {
-        // get the operator
-        if (Visit(context.booleanOperators()) is not GenericValue<BooleanOperator>)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.booleanOperators());
-            return null;
-        }
+        var result = GenericBinaryExpressionHandler(operatorContext =>
+            {
+                if (operatorContext.Plus() != null) return IrBinaryOperator.Add;
+                if (operatorContext.Minus() != null) return IrBinaryOperator.Subtract;
+                return null;
+            }, context, context.addOperators(),
+            context.expression(0), context.expression(1));
 
-        // get the left operand
-        if (Visit(context.expression(0)) is not ExpressionValue left)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(0));
-            return null;
-        }
+        if (result is IrBinaryExpressionNode { Operator: IrBinaryOperator.Add } binaryExpressionNode &&
+            (DetermineExpressionType(binaryExpressionNode.Left) == ScratchType.String ||
+             DetermineExpressionType(binaryExpressionNode.Right) == ScratchType.String))
+            result = binaryExpressionNode with { Operator = IrBinaryOperator.Join };
 
-        // get the right operand
-        if (Visit(context.expression(1)) is not ExpressionValue right)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(1));
-            return null;
-        }
-
-        // left and right operands must be a boolean
-        if (MustMatchTypeOrFail(left, ScratchType.Boolean, context, context.expression(0))) return null;
-        if (MustMatchTypeOrFail(right, ScratchType.Boolean, context, context.expression(1))) return null;
-
-        // evaluate at compile-time if possible
-        if (Settings.UseConstantEvaluation && ConstantEvaluatorHelper.IsConstant(left) &&
-            ConstantEvaluatorHelper.IsConstant(right))
-        {
-            var value = ConstantEvaluatorHelper.Evaluate($"{context.booleanOperators().GetText()} left right",
-                new Dictionary<string, TypedValue> { ["left"] = left, ["right"] = right });
-            return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
-        }
-
-        // the operator in the IR and ScratchScript *should* match
-        var irOperator = context.booleanOperators().GetText()!;
-        return new ExpressionValue($"{irOperator} {left.Value} {right.Value}", ScratchType.Boolean,
-            left.Dependencies.ConcatNullable(right.Dependencies),
-            left.Cleanup.ConcatNullable(right.Dependencies));
-    }
-
-    public override TypedValue? VisitBinaryAddExpression(ScratchScriptParser.BinaryAddExpressionContext context)
-    {
-        // get the operator
-        if (Visit(context.addOperators()) is not GenericValue<AddOperator> op)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.addOperators());
-            return null;
-        }
-
-        // get the left operand
-        if (Visit(context.expression(0)) is not ExpressionValue left)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(0));
-            return null;
-        }
-
-        // get the right operand
-        if (Visit(context.expression(1)) is not ExpressionValue right)
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression(1));
-            return null;
-        }
-
-        // the operator in the IR and ScratchScript *should* match (except for the string join operator, "~")
-        var irOperator = context.addOperators().GetText()!;
-        var resultType = ScratchType.Number;
-
-        // this is a string join expression
-        if (op.Value == AddOperator.Plus && (left.Type == ScratchType.String || right.Type == ScratchType.String))
-        {
-            if (MustMatchTypeOrFail(left, ScratchType.String, context, context.expression(0))) return null;
-            if (MustMatchTypeOrFail(right, ScratchType.String, context, context.expression(1))) return null;
-
-            irOperator = "~";
-            resultType = ScratchType.String;
-        }
-
-        // this is a regular +/- expression
-        else
-        {
-            if (MustMatchTypeOrFail(left, ScratchType.Number, context, context.expression(0))) return null;
-            if (MustMatchTypeOrFail(right, ScratchType.Number, context, context.expression(1))) return null;
-        }
-
-        // evaluate at compile-time if possible
-        if (Settings.UseConstantEvaluation && ConstantEvaluatorHelper.IsConstant(left) &&
-            ConstantEvaluatorHelper.IsConstant(right))
-        {
-            var value = ConstantEvaluatorHelper.Evaluate($"{irOperator} left right",
-                new Dictionary<string, TypedValue> { ["left"] = left, ["right"] = right });
-            return new ExpressionValue(value.Value, value.Type, ContainsIntermediateRepresentation: false);
-        }
-
-        return new ExpressionValue($"{irOperator} {left.Value} {right.Value}", resultType,
-            left.Dependencies.ConcatNullable(right.Dependencies),
-            left.Cleanup.ConcatNullable(right.Cleanup));
+        return result;
     }
 }

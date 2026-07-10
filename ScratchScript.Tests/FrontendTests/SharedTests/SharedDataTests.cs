@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using ScratchScript.Compiler.Diagnostics;
-using ScratchScript.Compiler.Frontend.Targets;
+using ScratchScript.Compiler.Frontend.Information;
 using ScratchScript.Compiler.Types;
 using ScratchScript.Tests.Utils;
 
