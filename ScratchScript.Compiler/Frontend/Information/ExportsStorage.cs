@@ -1,5 +1,4 @@
 ﻿using ScratchScript.Compiler.Backend.Representation;
-using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Information;
 

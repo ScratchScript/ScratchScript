@@ -8,15 +8,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="CliWrap" Version="3.10.2" />
-        <PackageReference Include="DotNetZip.Original" Version="2025.2.15" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
-        <PackageReference Include="ObjectDumper.NET" Version="4.4.13-pre" />
-        <PackageReference Include="Serilog" Version="4.4.0-dev-02437" />
-        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-        <PackageReference Include="Serilog.Sinks.File" Version="8.0.0-nblumhardt-02322" />
-        <PackageReference Include="Spectre.Console" Version="0.57.2" />
-        <PackageReference Include="Spectre.Console.Cli" Version="0.55.1-alpha.0.7" />
+        <PackageReference Include="CliWrap" Version="3.10.2"/>
+        <PackageReference Include="DotNetZip.Original" Version="2025.2.15"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1"/>
+        <PackageReference Include="ObjectDumper.NET" Version="4.4.13-pre"/>
+        <PackageReference Include="Serilog" Version="4.4.0-dev-02437"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="8.0.0-nblumhardt-02322"/>
+        <PackageReference Include="Spectre.Console" Version="0.57.2"/>
+        <PackageReference Include="Spectre.Console.Cli" Version="0.55.1-alpha.0.7"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -1,6 +1,4 @@
 ﻿using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 using ScratchScript.Compiler.Backend.Representation;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
@@ -109,8 +107,11 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
 
     public override IrNode? VisitBlock(ScratchScriptParser.BlockContext context)
     {
-        var scope = new Scope();
+        return VisitBlock(new Scope(), context);
+    }
 
+    private IrBlockNode VisitBlock(Scope scope, ScratchScriptParser.BlockContext context)
+    {
         if (_scope != null)
         {
             scope.ParentScope = _scope;
@@ -142,5 +143,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
     }
 
     public override IrNode? VisitLine(ScratchScriptParser.LineContext context)
-        => context.statement() != null ? VisitStatement(context.statement()) : base.VisitLine(context);
+    {
+        return context.statement() != null ? VisitStatement(context.statement()) : base.VisitLine(context);
+    }
 }

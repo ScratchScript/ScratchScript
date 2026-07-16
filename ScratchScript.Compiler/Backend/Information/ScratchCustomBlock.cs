@@ -14,8 +14,6 @@ public enum ScratchShadowType
 
 public class ScratchCustomBlock
 {
-    public const string StackPointerName = "__sp";
-
     public ScratchCustomBlock(string name, bool warp, Func<string, string> idGenerator)
     {
         Name = name;

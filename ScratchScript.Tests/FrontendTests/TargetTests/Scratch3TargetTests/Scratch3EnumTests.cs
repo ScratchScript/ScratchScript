@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using ScratchScript.Compiler.Frontend.Targets.Scratch3;
 using ScratchScript.Tests.Utils;
 
 namespace ScratchScript.Tests.FrontendTests.TargetTests.Scratch3TargetTests;

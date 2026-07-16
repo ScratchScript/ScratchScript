@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using ScratchScript.Compiler.Backend.Emitter;
 using ScratchScript.Compiler.Backend.Representation;
+using ScratchScript.Compiler.Backend.Rewriters.LowLevel;
 using ScratchScript.Compiler.Backend.Rewriters.TargetLowering;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
@@ -15,11 +16,19 @@ using ScratchScript.Compiler.Models;
 using Spectre.Console;
 
 const string source = """
+                      function identity(z: number) {
+                        return z;
+                      }
+                      
+                      function add(x: number, y: number) {
+                        return identity(x) + identity(identity(y));
+                      }
+                      
                       on start {
-                        let c = "test";
-                        let a = 3;
-                        __raw("control_wait", {inputs: {DURATION: a}});
-                        let b = __raw_expr("operator_add", {inputs: {NUM1: 2, NUM2: a}}, "number");
+                        let a = add(1, add(2, add(3, 4)));
+                        let b = add(a, identity(2));
+                        //__raw("control_wait", {inputs: {DURATION: a}});
+                      //let b = __raw_expr("operator_add", {inputs: {NUM1: 2, NUM2: a}}, "number");
                       }
                       """;
 var id = new Guid(MD5.HashData(Encoding.UTF8.GetBytes(source))).ToString("N");
@@ -33,10 +42,19 @@ visitor.DiagnosticReporter.Reported +=
     message => AnsiConsole.MarkupLine(new ColorDiagnosticMessageFormatter().Format(message));
 var result = (IrProgramNode)visitor.Visit(parser.program());
 
-Console.WriteLine(ObjectDumper.Dump(result, DumpStyle.CSharp));
+Console.WriteLine(IrHasher.GetNodeHash(result));
+//Console.WriteLine(ObjectDumper.Dump(result, DumpStyle.CSharp));
 Console.WriteLine("running lowering pass");
 result = (IrProgramNode)new Scratch3LoweringPass().VisitProgram(result);
-Console.WriteLine(ObjectDumper.Dump(result, DumpStyle.CSharp));
+Console.WriteLine(IrHasher.GetNodeHash(result));
+result = (IrProgramNode)new Scratch3LoweringPass().VisitProgram(result);
+Console.WriteLine(IrHasher.GetNodeHash(result));
+//Console.WriteLine(ObjectDumper.Dump(result, DumpStyle.CSharp));
+Console.WriteLine("running operator unwinder");
+result = (IrProgramNode)new OperatorUnwindRewriter().VisitProgram(result);
+Console.WriteLine(IrHasher.GetNodeHash(result));
+result = (IrProgramNode)new ComplexExpressionUnwindRewriter().VisitProgram(result);
+Console.WriteLine(IrHasher.GetNodeHash(result));
 Console.WriteLine("packing into an archive");
 var emitter = new ScratchScriptProjectEmitter(id);
 emitter.VisitProgram(result);

@@ -40,7 +40,7 @@ public partial class ScratchScriptVisitor
     {
         if (expected == ScratchType.Unknown) return false;
         if (DetermineExpressionType(node) == expected) return false;
-        
+
         DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, ownContext, ownSource, expected,
             DetermineExpressionType(node));
         return true;

@@ -8,4 +8,6 @@ public static class Data
     public const string DeleteFromList = "data_deleteoflist";
     public const string DeleteAllOfList = "data_deletealloflist";
     public const string LengthOfList = "data_lengthoflist";
+    public const string SetVariableTo = "data_setvariableto";
+    public const string Variable = "data_variable";
 }

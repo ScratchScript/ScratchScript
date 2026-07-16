@@ -4,13 +4,19 @@ namespace ScratchScript.Compiler.Backend.Representation;
 
 public class IrShadowBuilder
 {
-    private readonly string _opcode;
-    private readonly Dictionary<string, IrExpressionNode> _inputs = new();
     private readonly Dictionary<string, IrExpressionNode> _fields = new();
+    private readonly Dictionary<string, IrExpressionNode> _inputs = new();
+    private readonly string _opcode;
 
-    private IrShadowBuilder(string opcode) => _opcode = opcode;
+    private IrShadowBuilder(string opcode)
+    {
+        _opcode = opcode;
+    }
 
-    public static IrShadowBuilder FromOpcode(string opcode) => new(opcode);
+    public static IrShadowBuilder FromOpcode(string opcode)
+    {
+        return new IrShadowBuilder(opcode);
+    }
 
     public IrShadowBuilder WithInput(string name, IrExpressionNode value)
     {
@@ -23,15 +29,20 @@ public class IrShadowBuilder
         _fields[name] = value;
         return this;
     }
-    
+
     public IrShadowBuilder WithField(string name, string value)
     {
         _fields[name] = new IrConstantExpressionNode(TypedValue.String(value));
         return this;
     }
 
-    public IrRawCommandNode BuildCommand() => new(_opcode, _inputs, _fields);
+    public IrRawCommandNode BuildCommand()
+    {
+        return new IrRawCommandNode(_opcode, _inputs, _fields);
+    }
 
-    public IrShadowExpressionNode BuildExpression(ScratchType? expectedType = null) =>
-        new(_opcode, _inputs, _fields, expectedType);
+    public IrShadowExpressionNode BuildExpression(ScratchType? expectedType = null)
+    {
+        return new IrShadowExpressionNode(_opcode, _inputs, _fields, expectedType);
+    }
 }

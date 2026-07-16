@@ -9,6 +9,11 @@ public static class EnumerableExtensions
         return (to ?? []).Concat(what ?? []);
     }
 
+    public static IEnumerable<T> ConcatNullable<T>(this IEnumerable<T>? to, T? what)
+    {
+        return (to ?? []).Concat(what != null ? [what] : []);
+    }
+
     public static string ToMd5Checksum(this IEnumerable<byte> array)
     {
         return BitConverter.ToString(MD5.HashData(array.ToArray())).Replace("-", "").ToLowerInvariant();

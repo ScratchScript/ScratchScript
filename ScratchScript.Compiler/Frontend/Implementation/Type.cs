@@ -1,4 +1,5 @@
 ﻿using ScratchScript.Compiler.Backend.Representation;
+using ScratchScript.Compiler.Frontend.Information;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
@@ -6,7 +7,8 @@ namespace ScratchScript.Compiler.Frontend.Implementation;
 public partial class ScratchScriptVisitor
 {
     public ScratchType DetermineExpressionType(IrExpressionNode node)
-        => node switch
+    {
+        return node switch
         {
             IrBinaryExpressionNode irBinaryExpressionNode => irBinaryExpressionNode.Operator == IrBinaryOperator.Join
                 ? ScratchType.String
@@ -14,9 +16,11 @@ public partial class ScratchScriptVisitor
                     ? ScratchType.Boolean
                     : ScratchType.Number,
             IrConstantExpressionNode irConstantExpressionNode => irConstantExpressionNode.Value.Type,
-            IrFunctionArgumentExpressionNode irFunctionArgumentExpressionNode => _scope?
-                .GetVariable(irFunctionArgumentExpressionNode.Name)?.Type ?? ScratchType.Unknown,
-            IrFunctionCallExpressionNode irFunctionCallExpressionNode => throw new NotImplementedException(),
+            IrFunctionArgumentExpressionNode irFunctionArgumentExpressionNode => _scope is FunctionScope function
+                ? function.Arguments.First(a => a.Name == irFunctionArgumentExpressionNode.Name).Type
+                : ScratchType.Unknown,
+            IrFunctionCallExpressionNode irFunctionCallExpressionNode => Exports
+                .Functions[irFunctionCallExpressionNode.Function].FunctionScope.ReturnType,
             IrGlobalListIdentifierExpressionNode irGlobalListIdentifierExpressionNode =>
                 throw new NotImplementedException(),
             IrGlobalVariableIdentifierExpressionNode irGlobalVariableIdentifierExpressionNode =>
@@ -30,4 +34,5 @@ public partial class ScratchScriptVisitor
             IrUnaryExpressionNode irUnaryExpressionNode => ScratchType.Number,
             _ => throw new ArgumentOutOfRangeException(nameof(node))
         };
+    }
 }

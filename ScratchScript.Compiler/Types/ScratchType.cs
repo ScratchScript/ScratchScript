@@ -117,9 +117,28 @@ public partial class ScratchType(ScratchTypeKind kind, ScratchType? childType = 
 
 public record TypedValue(object? Value, ScratchType Type)
 {
-    public static TypedValue String(string value) => new(value, ScratchType.String);
-    public static TypedValue Color(string value) => new(value, ScratchType.Color);
-    public static TypedValue Number(double value) => new(value, ScratchType.Number);
-    public static TypedValue Boolean(bool value) => new(value, ScratchType.Boolean);
-    public static TypedValue Object(Dictionary<string, IrExpressionNode> values) => new(values, ScratchType.Object);
+    public static TypedValue String(string value)
+    {
+        return new TypedValue(value, ScratchType.String);
+    }
+
+    public static TypedValue Color(string value)
+    {
+        return new TypedValue(value, ScratchType.Color);
+    }
+
+    public static TypedValue Number(double value)
+    {
+        return new TypedValue(value, ScratchType.Number);
+    }
+
+    public static TypedValue Boolean(bool value)
+    {
+        return new TypedValue(value, ScratchType.Boolean);
+    }
+
+    public static TypedValue Object(Dictionary<string, IrExpressionNode> values)
+    {
+        return new TypedValue(values, ScratchType.Object);
+    }
 }

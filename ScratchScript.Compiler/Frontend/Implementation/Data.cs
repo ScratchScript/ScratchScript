@@ -27,7 +27,7 @@ public partial class ScratchScriptVisitor
         if (_scope == null) throw new Exception("Cannot declare variables without a scope.");
         var node = new IrSetCommandNode(name, expression);
 
-        _scope.Variables[name] = new ScratchScriptVariable(name, DetermineExpressionType(expression), null);
+        _scope.Variables.Add(new ScratchScriptVariable(name, DetermineExpressionType(expression)));
         if (!LocationInformation.Variables.ContainsKey(_scope.Depth)) // since it's a nested dictionary
             LocationInformation.Variables[_scope.Depth] = new Dictionary<string, VariableLocationInformation>();
         LocationInformation.Variables[_scope.Depth][name] = new VariableLocationInformation

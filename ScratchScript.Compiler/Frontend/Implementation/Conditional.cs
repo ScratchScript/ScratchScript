@@ -1,7 +1,6 @@
 ﻿using ScratchScript.Compiler.Backend.Representation;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
-using ScratchScript.Compiler.Frontend.Information;
 using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Implementation;
@@ -87,7 +86,7 @@ public partial class ScratchScriptVisitor
     {
         if (context.block() != null && Visit(context.block()) is IrBlockNode blockNode) return blockNode;
         if (context.line() != null && Visit(context.line()) is IrCommandNode lineNode)
-            return new IrBlockNode(new Scope { Body = [lineNode] });
+            return new IrBlockNode([lineNode]);
         return null;
     }
 }

@@ -27,7 +27,14 @@ public partial class ScratchScriptProjectEmitter
 
     public override object? VisitUnaryExpression(IrUnaryExpressionNode node)
     {
-        throw new NotImplementedException();
+        if (node.Operator != IrUnaryOperator.Not) throw new NotImplementedException();
+        var operand = Visit(node.Operand);
+        if (operand == null) throw new Exception("The operand of VisitUnaryExpression was null.");
+        var block = new Block { Opcode = Operators.Not, Id = GenerateBlockId(Operators.Not) };
+        block.Inputs["OPERAND"] =
+            operand is Block operandBlock ? CreateInput(operandBlock, block) : CreateInput(operand);
+        Target.Blocks[block.Id] = block;
+        return block;
     }
 
     private Block CreateBinaryOperatorBlock(IrBinaryOperator op)

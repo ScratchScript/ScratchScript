@@ -1,5 +1,7 @@
 ﻿using ScratchScript.Compiler.Backend.Blocks;
+using ScratchScript.Compiler.Backend.Information;
 using ScratchScript.Compiler.Backend.Representation;
+using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.Information;
 using ScratchScript.Compiler.Models;
 
@@ -17,7 +19,6 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
 
         var blocks = new List<Block>();
         foreach (var command in scope.Body)
-        {
             switch (Visit(command))
             {
                 case null: continue;
@@ -43,7 +44,6 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
                     break;
                 }
             }
-        }
 
         _parent = lastParent;
         foreach (var block in blocks) Target.Blocks[block.Id] = block;
@@ -55,11 +55,6 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
         foreach (var blockNode in node.Blocks)
             Visit(blockNode);
         return null;
-    }
-
-    public override object? VisitFunction(IrFunctionNode node)
-    {
-        throw new NotImplementedException();
     }
 
     public override object? VisitEvent(IrEventNode node)
@@ -82,24 +77,49 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
     }
 
     public override object? VisitCommandSequence(IrCommandSequenceNode node)
-        => VisitScope(new Scope { Body = node.Commands.ToList() });
+    {
+        return VisitScope(new Scope { Body = node.Commands.ToList() });
+    }
 
     public override object? VisitSetCommand(IrSetCommandNode node)
     {
-        throw new Exception("This command is not supported by the ScratchScriptProjectEmitter");
+        if (!ReservedNames.GlobalVariables.Contains(node.Variable))
+            throw new Exception("This command is not supported by the ScratchScriptProjectEmitter");
+        var value = Visit(node.Expression);
+        if (value == null) throw new Exception("The 'value' expression in VisitSetCommand was null.");
+        var block = new Block { Opcode = Data.SetVariableTo, Id = GenerateBlockId(Data.SetVariableTo) };
+        block.Fields["VARIABLE"] = CreateField(node.Variable);
+        block.Inputs["VALUE"] = value is Block valueBlock ? CreateInput(valueBlock, block) : CreateInput(value);
+        return block;
     }
 
     public override object? VisitCallFunctionCommand(IrCallFunctionCommandNode node)
     {
-        throw new NotImplementedException();
+        var function = _functions.Values.First(f => f.Name == node.Function);
+        var call = function.Call.Clone();
+        call.Id = GenerateBlockId(Function.Call);
+        foreach (var kvp in node.Arguments)
+        {
+            var value = Visit(kvp.Value);
+            if (value == null) return null;
+            call.Inputs[function.Reporters[kvp.Key].Id] =
+                value is Block valueBlock ? CreateInput(valueBlock, call) : CreateInput(value);
+        }
+
+        return call;
     }
 
     public override object? VisitConstantExpression(IrConstantExpressionNode node)
-        => node.Value.Value;
+    {
+        return node.Value.Value;
+    }
 
     public override object? VisitGlobalVariableExpression(IrGlobalVariableIdentifierExpressionNode node)
     {
-        throw new NotImplementedException();
+        var block = new Block { Opcode = Data.Variable, Id = GenerateBlockId(Data.Variable) };
+        block.Fields["VARIABLE"] = CreateField(node.Name);
+        Target.Blocks[block.Id] = block;
+        return block;
     }
 
     public override object? VisitLocalVariableExpression(IrLocalVariableIdentifierExpressionNode node)
@@ -113,7 +133,9 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
     }
 
     public override object? VisitParenthesizedExpression(IrParenthesizedExpressionNode node)
-        => Visit(node.Expression);
+    {
+        return Visit(node.Expression);
+    }
 
     public override object? VisitComplexExpression(IrComplexExpressionNode node)
     {
@@ -121,16 +143,6 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
     }
 
     public override object? VisitObjectLiteralExpression(IrObjectLiteralExpressionNode node)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override object? VisitFunctionArgumentExpressionNode(IrFunctionArgumentExpressionNode node)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override object? VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node)
     {
         throw new NotImplementedException();
     }

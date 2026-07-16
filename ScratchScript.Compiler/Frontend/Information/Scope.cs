@@ -4,21 +4,22 @@ using ScratchScript.Compiler.Types;
 
 namespace ScratchScript.Compiler.Frontend.Information;
 
-public record ScratchScriptVariable(string Name, ScratchType Type, TypedValue? LastKnownValue);
+public record ScratchScriptVariable(string Name, ScratchType Type, TypedValue? LastKnownValue = null);
 
 public class Scope
 {
     public List<IrCommandNode> Body { get; set; } = [];
     public int Depth { get; set; }
     public Scope? ParentScope { get; set; }
-    public Dictionary<string, ScratchScriptVariable> Variables { get; set; } = new();
+    public List<ScratchScriptVariable> Variables { get; set; } = new();
 
     public ScratchScriptVariable? GetVariable(string name)
     {
         var scope = this;
         do
         {
-            if (scope.Variables.TryGetValue(name, out var variable)) return variable;
+            var variable = scope.Variables.FirstOrDefault(v => v.Name == name);
+            if (variable != null) return variable;
             scope = scope.ParentScope;
         } while (scope != null);
 
@@ -30,7 +31,7 @@ public class Scope
         var scope = this;
         do
         {
-            if (scope.Variables.ContainsKey(name)) return scope.Depth;
+            if (scope.Variables.Any(v => v.Name == name)) return scope.Depth;
             scope = scope.ParentScope;
         } while (scope != null);
 
@@ -42,7 +43,7 @@ public class Scope
         var scope = this;
         do
         {
-            if (scope.Variables.ContainsKey(name)) return scope;
+            if (scope.Variables.Any(v => v.Name == name)) return scope;
             scope = scope.ParentScope;
         } while (scope != null);
 
@@ -61,7 +62,7 @@ public class Scope
         target.Depth = Depth;
         target.ParentScope = target.ParentScope?.CloneWithTransformedBody(visitor);
         target.Body = Body.Select(n => (IrCommandNode)visitor(n)).ToList();
-        target.Variables = new Dictionary<string, ScratchScriptVariable>(Variables);
+        target.Variables = new List<ScratchScriptVariable>(Variables);
     }
 }
 
@@ -70,12 +71,14 @@ public class FunctionScope : Scope
     public string Id { get; set; }
 
     // dictionaries are not guaranteed to be ordered, so a list is used here
-    public List<ScratchScriptVariable> Arguments { get; set; }
+    public List<ScratchScriptVariable> Arguments { get; set; } = [];
     public string FunctionName { get; set; }
     public ScratchType ReturnType { get; set; }
 
     public string SignatureString =>
         StringExtensions.GetFunctionSignatureString(FunctionName, Arguments.Select(arg => arg.Type));
+
+    public bool UseArgumentReporters { get; set; }
 
     public override Scope CloneWithTransformedBody(Func<IrNode, IrNode> visitor)
     {
@@ -85,6 +88,7 @@ public class FunctionScope : Scope
         target.ReturnType = ReturnType;
         target.FunctionName = FunctionName;
         target.Arguments = new List<ScratchScriptVariable>(Arguments);
+        target.UseArgumentReporters = UseArgumentReporters;
         return target;
     }
 }

@@ -43,7 +43,8 @@ public partial class ScratchScriptVisitor
     }
 
     public override IrNode? VisitBinaryBitwiseExpression(ScratchScriptParser.BinaryBitwiseExpressionContext context)
-        => GenericBinaryExpressionHandler(operatorContext =>
+    {
+        return GenericBinaryExpressionHandler(operatorContext =>
         {
             if (operatorContext.BitwiseAnd() != null) return IrBinaryOperator.BitwiseAnd;
             if (operatorContext.BitwiseOr() != null) return IrBinaryOperator.BitwiseOr;
@@ -52,9 +53,11 @@ public partial class ScratchScriptVisitor
             if (operatorContext.rightShift() != null) return IrBinaryOperator.BitwiseRightShift;
             return null;
         }, context, context.bitwiseOperators(), context.expression(0), context.expression(1));
+    }
 
-    public override IrNode? VisitBinaryCompareExpression(ScratchScriptParser.BinaryCompareExpressionContext context) =>
-        GenericBinaryExpressionHandler(operatorContext =>
+    public override IrNode? VisitBinaryCompareExpression(ScratchScriptParser.BinaryCompareExpressionContext context)
+    {
+        return GenericBinaryExpressionHandler(operatorContext =>
         {
             if (operatorContext.Equal() != null) return IrBinaryOperator.Equal;
             if (operatorContext.NotEqual() != null) return IrBinaryOperator.NotEqual;
@@ -64,6 +67,7 @@ public partial class ScratchScriptVisitor
             if (operatorContext.LesserOrEqual() != null) return IrBinaryOperator.LessOrEqualTo;
             return null;
         }, context, context.compareOperators(), context.expression(0), context.expression(1));
+    }
 
     public override IrNode? VisitBinaryMultiplyExpression(
         ScratchScriptParser.BinaryMultiplyExpressionContext context)
@@ -83,13 +87,15 @@ public partial class ScratchScriptVisitor
     }
 
     public override IrNode?
-        VisitBinaryBooleanExpression(ScratchScriptParser.BinaryBooleanExpressionContext context) =>
-        GenericBinaryExpressionHandler(operatorContext =>
+        VisitBinaryBooleanExpression(ScratchScriptParser.BinaryBooleanExpressionContext context)
+    {
+        return GenericBinaryExpressionHandler(operatorContext =>
         {
             if (operatorContext.And() != null) return IrBinaryOperator.And;
             if (operatorContext.Or() != null) return IrBinaryOperator.Or;
             return null;
         }, context, context.booleanOperators(), context.expression(0), context.expression(1));
+    }
 
 
     public override IrNode? VisitBinaryAddExpression(ScratchScriptParser.BinaryAddExpressionContext context)
