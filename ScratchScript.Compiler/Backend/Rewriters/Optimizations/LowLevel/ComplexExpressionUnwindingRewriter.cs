@@ -1,10 +1,49 @@
 ﻿using ScratchScript.Compiler.Backend.Representation;
 using ScratchScript.Compiler.Extensions;
+using ScratchScript.Compiler.Types;
 
-namespace ScratchScript.Compiler.Backend.Rewriters.LowLevel;
+namespace ScratchScript.Compiler.Backend.Rewriters.Optimizations.LowLevel;
 
-public class ComplexExpressionUnwindRewriter : IrRewriter
+public class ComplexExpressionUnwindingRewriter : IrRewriter
 {
+    private static IrExpressionNode ShiftStackOffset(IrExpressionNode node, int shift)
+    {
+        if (shift == 0) return node;
+        return node switch
+        {
+            IrStackPointerExpressionNode stp => new IrStackPointerExpressionNode(stp.Offset + shift),
+            IrBinaryExpressionNode bin => new IrBinaryExpressionNode(bin.Operator, ShiftStackOffset(bin.Left, shift),
+                ShiftStackOffset(bin.Right, shift)),
+            IrUnaryExpressionNode un => new IrUnaryExpressionNode(un.Operator, ShiftStackOffset(un.Operand, shift)),
+            IrComplexExpressionNode complex => complex with
+            {
+                Expression = ShiftStackOffset(complex.Expression, shift)
+            },
+            _ => node
+        };
+    }
+
+    private static int GetStackWeight(IrExpressionNode node) => node switch
+    {
+        IrStackPointerExpressionNode stp => stp.Offset + 1,
+        IrBinaryExpressionNode bin => Math.Max(GetStackWeight(bin.Left), GetStackWeight(bin.Right)),
+        IrUnaryExpressionNode un => GetStackWeight(un.Operand),
+        IrComplexExpressionNode complex => GetStackWeight(complex.Expression),
+        _ => 0
+    };
+
+    private static IrCommandNode? ShiftPopTarget(IrCommandNode? cleanup) => cleanup switch
+    {
+        IrPopAtCommand popAt => popAt with
+        {
+            Where = new IrBinaryExpressionNode(IrBinaryOperator.Subtract, popAt.Where,
+                new IrConstantExpressionNode(TypedValue.Number(1)))
+        },
+        IrCommandSequenceNode seq => new IrCommandSequenceNode(
+            seq.Commands.Select(ShiftPopTarget).Where(c => c != null)!),
+        _ => cleanup
+    };
+
     public override IrNode VisitWhileCommand(IrWhileCommandNode node)
     {
         /*
@@ -19,7 +58,7 @@ public class ComplexExpressionUnwindRewriter : IrRewriter
          *  {condition cleanup} <- if the loop exits, the leftover data is still there,
          *                         so it needs to be cleaned
          */
-        if (node.Condition is not IrComplexExpressionNode complexCondition) return node;
+        if (Visit(node.Condition) is not IrComplexExpressionNode complexCondition) return node;
         var commands = new List<IrCommandNode>();
         var scope = node.Body.Scope.CloneWithTransformedBody(Visit);
         scope.Body = scope.Body.ConcatNullable(complexCondition.Cleanup).ConcatNullable(complexCondition.Dependencies)
@@ -62,10 +101,20 @@ public class ComplexExpressionUnwindRewriter : IrRewriter
 
         var dependencies = new List<IrCommandNode>();
         var cleanup = new List<IrCommandNode>();
+        var isComplex = false;
+
+        void ShiftPreviousProperties(IrComplexExpressionNode instigator)
+        {
+            var weight = GetStackWeight(instigator.Expression);
+            foreach (var key in inputs.Keys) inputs[key] = ShiftStackOffset(inputs[key], weight);
+            foreach (var key in fields.Keys) fields[key] = ShiftStackOffset(fields[key], weight);
+        }
 
         foreach (var kvp in node.Fields)
         {
             if (Visit(kvp.Value) is not IrComplexExpressionNode complexValue) continue;
+            ShiftPreviousProperties(complexValue);
+            isComplex = true;
             if (complexValue.Dependencies != null) dependencies.Add(complexValue.Dependencies);
             if (complexValue.Cleanup != null) cleanup.Add(complexValue.Cleanup);
             fields[kvp.Key] = complexValue.Expression;
@@ -74,10 +123,14 @@ public class ComplexExpressionUnwindRewriter : IrRewriter
         foreach (var kvp in node.Inputs)
         {
             if (Visit(kvp.Value) is not IrComplexExpressionNode complexValue) continue;
+            ShiftPreviousProperties(complexValue);
+            isComplex = true;
             if (complexValue.Dependencies != null) dependencies.Add(complexValue.Dependencies);
             if (complexValue.Cleanup != null) cleanup.Add(complexValue.Cleanup);
             inputs[kvp.Key] = complexValue.Expression;
         }
+
+        if (!isComplex) return node;
 
         return new IrCommandSequenceNode(dependencies.ConcatNullable(new IrRawCommandNode(node.Opcode, inputs, fields))
             .ConcatNullable(cleanup));
@@ -85,11 +138,12 @@ public class ComplexExpressionUnwindRewriter : IrRewriter
 
     public override IrNode VisitPushCommand(IrPushCommand node)
     {
-        if (node.Expression is not IrComplexExpressionNode complexExpression) return node;
+        if (Visit(node.Expression) is not IrComplexExpressionNode complexExpression) return node;
+
         var commands = new List<IrCommandNode>()
             .ConcatNullable(complexExpression.Dependencies)
             .ConcatNullable(new IrPushCommand(node.List, complexExpression.Expression))
-            .ConcatNullable(complexExpression.Cleanup);
+            .ConcatNullable(ShiftPopTarget(complexExpression.Cleanup));
         return new IrCommandSequenceNode(commands);
     }
 
@@ -105,6 +159,30 @@ public class ComplexExpressionUnwindRewriter : IrRewriter
 
     public override IrNode VisitBinaryExpression(IrBinaryExpressionNode node)
     {
-        return base.VisitBinaryExpression(node);
+        var left = (IrExpressionNode)Visit(node.Left);
+        var right = (IrExpressionNode)Visit(node.Right);
+        if (left is not IrComplexExpressionNode && right is not IrComplexExpressionNode) return node;
+
+        var dependencies = new List<IrCommandNode>();
+        var cleanup = new List<IrCommandNode>();
+
+        if (left is IrComplexExpressionNode complexLeft)
+        {
+            if (complexLeft.Dependencies != null) dependencies.Add(complexLeft.Dependencies);
+            if (complexLeft.Cleanup != null) cleanup.Add(complexLeft.Cleanup);
+            left = complexLeft.Expression;
+        }
+
+        if (right is IrComplexExpressionNode complexRight)
+        {
+            left = ShiftStackOffset(left, GetStackWeight(complexRight.Expression));
+            if (complexRight.Dependencies != null) dependencies.Add(complexRight.Dependencies);
+            if (complexRight.Cleanup != null) cleanup.Add(complexRight.Cleanup);
+            right = complexRight.Expression;
+        }
+
+        return new IrComplexExpressionNode(new IrBinaryExpressionNode(node.Operator, left, right),
+            new IrCommandSequenceNode(dependencies),
+            new IrCommandSequenceNode(cleanup));
     }
 }

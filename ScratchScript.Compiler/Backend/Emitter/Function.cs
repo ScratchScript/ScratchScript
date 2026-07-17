@@ -18,7 +18,7 @@ public partial class ScratchScriptProjectEmitter
         var function = new ScratchCustomBlock(node.FunctionScope.FunctionName, node.Warp, GenerateBlockId);
         if (node.FunctionScope.UseArgumentReporters)
             foreach (var arg in node.FunctionScope.Arguments)
-                function.AddReporter(arg.Name);
+                function.AddStringNumberReporter(arg.Name);
 
         _functions[node.FunctionScope.Id] = function;
         _currentFunction = node.FunctionScope.Id;

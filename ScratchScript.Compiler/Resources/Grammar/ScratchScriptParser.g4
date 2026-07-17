@@ -23,7 +23,7 @@ enumEntry: Identifier (Assignment constant)?;
 irBlockStatement: Ir LeftBrace (irStatement)*? RightBrace;
 irStatement: Return? interpolatedString Semicolon;
 
-ifStatement: If LeftParen expression RightParen block (Else lineOrBlock)?;
+ifStatement: If LeftParen expression RightParen lineOrBlock (Else lineOrBlock)?;
 whileStatement: While LeftParen expression RightParen lineOrBlock;
 forStatement: For LeftParen statement? Semicolon expression? Semicolon statement? RightParen lineOrBlock;
 repeatStatement: Repeat LeftParen expression RightParen lineOrBlock;

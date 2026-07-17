@@ -70,8 +70,8 @@ public partial class ScratchScriptVisitor
         Debug.Assert(_scope != null, nameof(_scope) + " != null");
         if (_scope.GetVariable(identifier) is { } variable)
             return new IrLocalVariableIdentifierExpressionNode(variable.Name);
-        if (_scope is FunctionScope functionScope && functionScope.Arguments.Any(arg => arg.Name == identifier))
-            return new IrFunctionArgumentExpressionNode(identifier);
+        if (_scope.GetArgument(identifier) is { } argument)
+            return new IrFunctionArgumentExpressionNode(argument.Name);
         /*if (Exports.Enums.TryGetValue(identifier, out var type))
             return new TypeDeclarationValue(type);*/
 

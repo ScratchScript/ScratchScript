@@ -6,26 +6,17 @@ enum StopTarget {
     OtherScripts = "other scripts"
 }
 
-const function wait(seconds: number)
+@inline function wait(seconds: number)
 {
-    ir
-    {
-        `raw control_wait i:DURATION:${seconds}`;
-    }
+    return __raw("control_wait", {inputs: {DURATION: number}});
 }
 
-const function waitUntil(condition: boolean)
+@inline function waitUntil(condition: boolean)
 {
-    ir
-    {
-        `raw control_wait_until i:CONDITION:${condition}`;
-    }
+    return __raw("control_wait_until", {inputs: {CONDITION: condition}});
 }
 
-const function stop(target: StopTarget)
+@inline function stop(target: StopTarget)
 {
-    ir
-    {
-        `raw control_stop f:STOP_OPTION:${target.value}`;
-    }
+    return __raw("control_stop", {fields: {STOP_OPTION: target.value}});
 }

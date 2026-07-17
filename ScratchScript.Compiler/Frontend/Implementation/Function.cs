@@ -1,4 +1,5 @@
-﻿using ScratchScript.Compiler.Backend.Representation;
+﻿using ScratchScript.Compiler.Backend.Information;
+using ScratchScript.Compiler.Backend.Representation;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
@@ -18,21 +19,55 @@ public partial class ScratchScriptVisitor
             func.FunctionScope.Arguments.Select(arg => arg.Type).SequenceEqual(signature));
     }
 
+    /* TODO: perhaps change this into a reflection-based automated thing?
+     like [NativeFunction] public IrNode RawStatement(string opcode, JsonObject data) => {...}
+     i guess it's ok if there are only two functions like this...
+     */
+    private IrNode? HandleSpecialFunctionCall(string name, List<IrExpressionNode> arguments)
+    {
+        switch (name)
+        {
+            // __raw(opcode, data)
+            case ReservedNames.RawStatementFunction:
+            {
+                if (arguments.Count != 2) throw new Exception();
+                if (DetermineExpressionType(arguments[0]) != ScratchType.String) throw new Exception();
+                if (DetermineExpressionType(arguments[1]) != ScratchType.Object) throw new Exception();
+                return new IrCallFunctionCommandNode(ReservedNames.RawStatementFunction,
+                    new Dictionary<string, IrExpressionNode>
+                    {
+                        { "opcode", arguments[0] },
+                        { "data", arguments[1] }
+                    });
+            }
+            // __raw_expr(opcode, data, type)
+            case ReservedNames.RawExpressionFunction:
+            {
+                if (arguments.Count != 3) throw new Exception();
+                if (DetermineExpressionType(arguments[0]) != ScratchType.String) throw new Exception();
+                if (DetermineExpressionType(arguments[1]) != ScratchType.Object) throw new Exception();
+                // type must be known at compile time
+                if (arguments[2] is not IrConstantExpressionNode type ||
+                    DetermineExpressionType(type) != ScratchType.String) throw new Exception();
+                if (ScratchType.FromString((string)type.Value.Value!) == null) throw new Exception();
+                return new IrCallFunctionCommandNode(ReservedNames.RawExpressionFunction,
+                    new Dictionary<string, IrExpressionNode>
+                    {
+                        { "opcode", arguments[0] },
+                        { "data", arguments[1] },
+                        { "type", arguments[2] }
+                    });
+            }
+            default: return null;
+        }
+    }
+
     private IrNode? HandleFunctionCall(
         ScratchScriptParser.FunctionCallStatementContext context)
     {
         if (_scope is null) return null;
 
         var name = context.Identifier().GetText();
-
-        // strict name check (without signature)
-        if (!Exports.Functions.ContainsKey(name))
-        {
-            DiagnosticReporter.Error((int)ScratchScriptError.NoFunctionsWithNameAreDefined, context,
-                context.Identifier(), name);
-            return null;
-        }
-
         var arguments = new List<IrExpressionNode>();
         foreach (var arg in context.functionArgument())
         {
@@ -43,6 +78,15 @@ public partial class ScratchScriptVisitor
             }
 
             arguments.Add(expression);
+        }
+
+        // strict name check (without signature)
+        if (ReservedNames.GlobalCallableFunctions.Contains(name)) return HandleSpecialFunctionCall(name, arguments);
+        if (!Exports.Functions.ContainsKey(name))
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.NoFunctionsWithNameAreDefined, context,
+                context.Identifier(), name);
+            return null;
         }
 
         var signature = arguments.Select(DetermineExpressionType).ToList();
@@ -99,6 +143,15 @@ public partial class ScratchScriptVisitor
             ArgumentInformation = []
         };
 
+        if (context.type() != null)
+        {
+            locationInformation.ReturnTypeSetter = context.type();
+            var type = ScratchType.FromString(context.type().GetText());
+            // TODO: "expected type" diagnostic
+            if (type == null) throw new Exception();
+            scope.ReturnType = type;
+        }
+
         // register the arguments before parsing the block
         foreach (var identifier in context.typedIdentifier())
         {
@@ -119,6 +172,7 @@ public partial class ScratchScriptVisitor
 
         // set the LocationInformation before visiting the scope as any identifier checks
         // will fail to point the location of the acquirer otherwise.
+        Exports.Functions[name] = new IrFunctionNode(false, scope);
         LocationInformation.Functions[name] = locationInformation;
 
         // process function attributes
@@ -165,7 +219,10 @@ public partial class ScratchScriptVisitor
     public override IrNode? VisitReturnStatement(ScratchScriptParser.ReturnStatementContext context)
     {
         // return must be used in a function context
-        if (_scope is not FunctionScope function)
+        var closestFunctionScope = _scope;
+        while (closestFunctionScope != null && closestFunctionScope is not FunctionScope)
+            closestFunctionScope = closestFunctionScope.ParentScope;
+        if (closestFunctionScope is not FunctionScope function)
         {
             DiagnosticReporter.Error((int)ScratchScriptError.ReturnUsedInNonFunctionContext, context, context);
             return null;

@@ -50,12 +50,28 @@ public class ScratchCustomBlock
 
     private Func<string, string> IdGenerator { get; }
 
-    public void AddReporter(string name)
+    public void AddStringNumberReporter(string name)
     {
         Reporters[name] = new Block
         {
             Opcode = Function.ReporterStringNumber,
             Id = IdGenerator(Function.ReporterStringNumber),
+            Shadow = true,
+            Parent = Prototype.Id,
+            Fields =
+            {
+                ["VALUE"] = [name, 0]
+            }
+        };
+        RebuildMutation();
+    }
+
+    public void AddBooleanReporter(string name)
+    {
+        Reporters[name] = new Block
+        {
+            Opcode = Function.ReporterBoolean,
+            Id = IdGenerator(Function.ReporterBoolean),
             Shadow = true,
             Parent = Prototype.Id,
             Fields =

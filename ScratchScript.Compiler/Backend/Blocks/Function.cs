@@ -6,4 +6,5 @@ public static class Function
     public const string Prototype = "procedures_prototype";
     public const string Call = "procedures_call";
     public const string ReporterStringNumber = "argument_reporter_string_number";
+    public const string ReporterBoolean = "argument_reporter_boolean";
 }

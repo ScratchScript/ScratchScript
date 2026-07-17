@@ -70,12 +70,12 @@ public partial class ScratchScriptVisitor
             return null;
         }
 
-        var block = (IrBlockNode)VisitBlock(context.block())!;
-        if (context.lineOrBlock() == null) return new IrIfCommandNode(condition, block, null);
+        var block = (IrBlockNode)Visit(context.lineOrBlock(0))!;
+        if (context.lineOrBlock(1) == null) return new IrIfCommandNode(condition, block, null);
 
-        if (Visit(context.lineOrBlock()) is not IrBlockNode alternate)
+        if (Visit(context.lineOrBlock(1)) is not IrBlockNode alternate)
         {
-            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.lineOrBlock());
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.lineOrBlock(1));
             return null;
         }
 

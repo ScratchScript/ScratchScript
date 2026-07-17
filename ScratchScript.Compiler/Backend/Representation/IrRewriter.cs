@@ -174,7 +174,22 @@ public class IrRewriter : IrBaseVisitor<IrNode>
         };
     }
 
+    public override IrNode VisitTernaryExpression(IrTernaryExpressionNode node)
+    {
+        return node with
+        {
+            Condition = (IrExpressionNode)Visit(node.Condition),
+            TrueValue = (IrExpressionNode)Visit(node.TrueValue),
+            FalseValue = (IrExpressionNode)Visit(node.FalseValue),
+        };
+    }
+
     public override IrNode VisitFunctionArgumentExpressionNode(IrFunctionArgumentExpressionNode node)
+    {
+        return node;
+    }
+
+    public override IrNode VisitStackPointerExpressionNode(IrStackPointerExpressionNode node)
     {
         return node;
     }

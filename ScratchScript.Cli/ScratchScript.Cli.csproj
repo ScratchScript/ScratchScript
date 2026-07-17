@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AnyDiff" Version="1.0.99" />
         <PackageReference Include="CliWrap" Version="3.10.2"/>
         <PackageReference Include="DotNetZip.Original" Version="2025.2.15"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1"/>

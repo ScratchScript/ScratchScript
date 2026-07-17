@@ -121,6 +121,7 @@ internal static class Scratch3CommandHelper
 public class Scratch3LoweringPass : IrRewriter
 {
     private const string EventAllocationPerformedFlag = "SCRATCH3_EVENT_ALLOCATION_PERFORMED";
+    private const string TernaryFunctionAddedFlag = "SCRATCH3_TERNARY_FUNCTION_ADDED";
 
     private Scope? _scope;
     private IEnumerable<IrFunctionNode> _functions => _program.Blocks.OfType<IrFunctionNode>();
@@ -216,6 +217,15 @@ public class Scratch3LoweringPass : IrRewriter
         );
     }
 
+    public override IrNode VisitTernaryExpression(IrTernaryExpressionNode node)
+    {
+        return new IrComplexExpressionNode(new IrStackPointerExpressionNode(0),
+            new IrIfCommandNode(node.Condition,
+                new IrBlockNode([new IrPushCommand(ReservedNames.Stack, node.TrueValue)]),
+                new IrBlockNode([new IrPushCommand(ReservedNames.Stack, node.FalseValue)])),
+            new IrPopAtCommand(ReservedNames.Stack, LengthOf(ReservedNames.Stack)));
+    }
+
     public override IrNode VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node)
     {
         var function = _functions.FirstOrDefault(f => f.FunctionScope.FunctionName == node.Function);
@@ -241,8 +251,7 @@ public class Scratch3LoweringPass : IrRewriter
             }));
         commands.Add(new IrCallFunctionCommandNode(node.Function, []));
         return new IrComplexExpressionNode(
-            ItemAt(ReservedNames.Stack,
-                LengthOf(ReservedNames.Stack)),
+            new IrStackPointerExpressionNode(0),
             new IrCommandSequenceNode(commands),
             new IrPopAtCommand(ReservedNames.Stack, LengthOf(ReservedNames.Stack)));
     }

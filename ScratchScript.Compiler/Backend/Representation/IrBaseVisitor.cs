@@ -61,6 +61,8 @@ public abstract class IrBaseVisitor<T>
             IrFunctionCallExpressionNode fcall => VisitFunctionCallExpressionNode(fcall),
             IrComplexExpressionNode complex => VisitComplexExpression(complex),
             IrObjectLiteralExpressionNode obj => VisitObjectLiteralExpression(obj),
+            IrStackPointerExpressionNode stp => VisitStackPointerExpressionNode(stp),
+            IrTernaryExpressionNode ternary => VisitTernaryExpression(ternary),
             _ => throw new NotImplementedException($"No visitor mapping for expression {node.GetType().Name}")
         };
     }
@@ -90,7 +92,9 @@ public abstract class IrBaseVisitor<T>
     public abstract T VisitShadowExpression(IrShadowExpressionNode node);
     public abstract T VisitComplexExpression(IrComplexExpressionNode node);
     public abstract T VisitObjectLiteralExpression(IrObjectLiteralExpressionNode node);
+    public abstract T VisitTernaryExpression(IrTernaryExpressionNode node);
     public abstract T VisitFunctionArgumentExpressionNode(IrFunctionArgumentExpressionNode node);
+    public abstract T VisitStackPointerExpressionNode(IrStackPointerExpressionNode node);
     public abstract T VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node);
     public abstract T VisitFunctionReturnCommandNode(IrFunctionReturnCommandNode node);
 }

@@ -26,6 +26,23 @@ public class Scope
         return null;
     }
 
+    public ScratchScriptVariable? GetArgument(string name)
+    {
+        var scope = this;
+        do
+        {
+            if (scope is FunctionScope functionScope)
+            {
+                var argument = functionScope.Arguments.FirstOrDefault(a => a.Name == name);
+                if (argument != null) return argument;
+            }
+
+            scope = scope.ParentScope;
+        } while (scope != null);
+
+        return null;
+    }
+
     public int? GetVariableDepth(string name)
     {
         var scope = this;

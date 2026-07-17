@@ -1,4 +1,5 @@
-﻿using ScratchScript.Compiler.Backend.Representation;
+﻿using ScratchScript.Compiler.Backend.Information;
+using ScratchScript.Compiler.Backend.Representation;
 using ScratchScript.Compiler.Frontend.Information;
 using ScratchScript.Compiler.Types;
 
@@ -16,11 +17,10 @@ public partial class ScratchScriptVisitor
                     ? ScratchType.Boolean
                     : ScratchType.Number,
             IrConstantExpressionNode irConstantExpressionNode => irConstantExpressionNode.Value.Type,
-            IrFunctionArgumentExpressionNode irFunctionArgumentExpressionNode => _scope is FunctionScope function
-                ? function.Arguments.First(a => a.Name == irFunctionArgumentExpressionNode.Name).Type
-                : ScratchType.Unknown,
-            IrFunctionCallExpressionNode irFunctionCallExpressionNode => Exports
-                .Functions[irFunctionCallExpressionNode.Function].FunctionScope.ReturnType,
+            IrFunctionArgumentExpressionNode irFunctionArgumentExpressionNode => _scope?
+                .GetArgument(irFunctionArgumentExpressionNode.Name)?.Type ?? ScratchType.Unknown,
+            IrFunctionCallExpressionNode irFunctionCallExpressionNode => DetermineFunctionCallExpressionType(
+                irFunctionCallExpressionNode),
             IrGlobalListIdentifierExpressionNode irGlobalListIdentifierExpressionNode =>
                 throw new NotImplementedException(),
             IrGlobalVariableIdentifierExpressionNode irGlobalVariableIdentifierExpressionNode =>
@@ -32,7 +32,21 @@ public partial class ScratchScriptVisitor
                 irParenthesizedExpressionNode.Expression),
             IrShadowExpressionNode irShadowExpressionNode => irShadowExpressionNode.ExpectedType ?? ScratchType.Unknown,
             IrUnaryExpressionNode irUnaryExpressionNode => ScratchType.Number,
+            IrTernaryExpressionNode irTernaryExpressionNode => DetermineExpressionType(
+                irTernaryExpressionNode.TrueValue),
             _ => throw new ArgumentOutOfRangeException(nameof(node))
         };
+    }
+
+    private ScratchType DetermineFunctionCallExpressionType(IrFunctionCallExpressionNode node)
+    {
+        if (node.Function == ReservedNames.RawExpressionFunction)
+        {
+            var type = (string)((IrConstantExpressionNode)node.Arguments["type"]).Value.Value!;
+            return ScratchType.FromString(type) ?? ScratchType.Unknown;
+        }
+
+        return Exports
+            .Functions[node.Function].FunctionScope.ReturnType;
     }
 }

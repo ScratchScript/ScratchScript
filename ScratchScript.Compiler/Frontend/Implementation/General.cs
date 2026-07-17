@@ -146,4 +146,41 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
     {
         return context.statement() != null ? VisitStatement(context.statement()) : base.VisitLine(context);
     }
+
+    public override IrNode? VisitTernaryExpression(ScratchScriptParser.TernaryExpressionContext context)
+    {
+        if (Visit(context.expression(0)) is not IrExpressionNode condition)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(0));
+            return null;
+        }
+
+        if (Visit(context.expression(1)) is not IrExpressionNode trueValue)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(1));
+            return null;
+        }
+
+        if (Visit(context.expression(2)) is not IrExpressionNode falseValue)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.ExpectedNonNull, context, context.expression(2));
+            return null;
+        }
+
+        if (DetermineExpressionType(condition) != ScratchType.Boolean)
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(0),
+                ScratchType.Boolean, DetermineExpressionType(condition));
+            return null;
+        }
+
+        if (DetermineExpressionType(falseValue) != DetermineExpressionType(trueValue))
+        {
+            DiagnosticReporter.Error((int)ScratchScriptError.TypeMismatch, context, context.expression(2),
+                DetermineExpressionType(trueValue), DetermineExpressionType(falseValue));
+            return null;
+        }
+
+        return new IrTernaryExpressionNode(condition, trueValue, falseValue);
+    }
 }

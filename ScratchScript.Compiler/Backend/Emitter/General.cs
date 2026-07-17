@@ -146,4 +146,14 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
     {
         throw new NotImplementedException();
     }
+
+    public override object? VisitTernaryExpression(IrTernaryExpressionNode node)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override object? VisitStackPointerExpressionNode(IrStackPointerExpressionNode node)
+    {
+        throw new NotImplementedException();
+    }
 }
