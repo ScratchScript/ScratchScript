@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json;
-using ScratchScript.Compiler.Models;
+using ScratchScript.Compiler.ProjectEmitter.Models;
 
 namespace ScratchScript.Compiler.Extensions;
 

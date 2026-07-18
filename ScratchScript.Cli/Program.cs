@@ -4,68 +4,74 @@ using Antlr4.Runtime;
 using Ionic.Zip;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using ScratchScript.Compiler.Backend.Emitter;
-using ScratchScript.Compiler.Backend.Representation;
-using ScratchScript.Compiler.Backend.Rewriters.Optimizations.HighLevel;
-using ScratchScript.Compiler.Backend.Rewriters.Optimizations.LowLevel;
-using ScratchScript.Compiler.Backend.Rewriters.TargetLowering;
+using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Frontend.GeneratedVisitor;
-using ScratchScript.Compiler.Frontend.Implementation;
 using ScratchScript.Compiler.Helpers;
-using ScratchScript.Compiler.Models;
+using ScratchScript.Compiler.ProjectEmitter;
+using ScratchScript.Compiler.ProjectEmitter.Models;
+using ScratchScript.Compiler.Rewriters.Optimizations.HighLevel;
+using ScratchScript.Compiler.Rewriters.Optimizations.LowLevel;
+using ScratchScript.Compiler.Rewriters.TargetLowering;
+using ScratchScript.Compiler.TypeChecker;
 using Spectre.Console;
+using ScratchScriptVisitor = ScratchScript.Compiler.AST.Builder.ScratchScriptVisitor;
 
 const string source = """
-                      function factorial(n: number): number {
-                        return n <= 1 ? 1: n * factorial(n - 1);
-                      }
-
                       on start {
-                        //let a = 3;
-                        __raw("looks_sayforsecs", {inputs: {MESSAGE: factorial(5) + factorial(2), SECS: factorial(3)}});
-                        //let b = __raw_expr("operator_add", {inputs: {NUM1: 2, NUM2: a}}, "number");
+                        let a = 1;
+                        a = 2;
                       }
                       """;
 var id = new Guid(MD5.HashData(Encoding.UTF8.GetBytes(source))).ToString("N");
+
+Console.WriteLine("constructing AST");
 
 var inputStream = new AntlrInputStream(source);
 var lexer = new ScratchScriptLexer(inputStream);
 var tokenStream = new CommonTokenStream(lexer);
 var parser = new ScratchScriptParser(tokenStream);
 var visitor = new ScratchScriptVisitor();
-visitor.DiagnosticReporter.Reported +=
+DiagnosticReporter.Instance.Reported +=
     message => AnsiConsole.MarkupLine(new ColorDiagnosticMessageFormatter().Format(message));
+
 var result = (IrProgramNode)visitor.Visit(parser.program());
+if (!visitor.Success) return 1;
 
 void RunUntilNoChanges(Type rewriter)
 {
+    Console.Write($"-> {rewriter.Name}");
     if (!rewriter.IsSubclassOf(typeof(IrRewriter))) throw new Exception();
     var hash = IrHasher.GetNodeHash(result);
+    var count = 0;
     while (true)
     {
+        count++;
         var nextResult = (IrProgramNode)((IrRewriter)Activator.CreateInstance(rewriter)!).VisitProgram(result);
         var nextHash = IrHasher.GetNodeHash(nextResult);
         if (nextHash == hash) break;
         hash = nextHash;
         result = nextResult;
     }
+
+    Console.WriteLine($" ({count})");
 }
 
+Console.WriteLine("running type checker");
+var typeChecker = new ScratchScriptTypeChecker();
+result = (IrProgramNode)typeChecker.VisitProgram(result);
+if (!typeChecker.Success) return 1;
 
-Console.WriteLine(IrHasher.GetNodeHash(result));
+Console.WriteLine("running high-level optimizations");
 RunUntilNoChanges(typeof(RawFunctionsExpansionRewriter));
-Console.WriteLine(IrHasher.GetNodeHash(result));
-//Console.WriteLine(ObjectDumper.Dump(result, DumpStyle.CSharp));
+
 Console.WriteLine("running lowering pass");
 RunUntilNoChanges(typeof(Scratch3LoweringPass));
-//Console.WriteLine(ObjectDumper.Dump(result, DumpStyle.CSharp));
-Console.WriteLine("running operator unwinder");
-Console.WriteLine(IrHasher.GetNodeHash(result));
-RunUntilNoChanges(typeof(ComplexExpressionUnwindingRewriter));
 
+Console.WriteLine("running low-level optimizations");
+RunUntilNoChanges(typeof(ComplexExpressionUnwindingRewriter));
 result = (IrProgramNode)new OperatorUnwindingRewriter().VisitProgram(result);
-Console.WriteLine(IrHasher.GetNodeHash(result));
+
 Console.WriteLine("packing into an archive");
 var emitter = new ScratchScriptProjectEmitter(id);
 emitter.VisitProgram(result);
@@ -104,3 +110,4 @@ archive.Save("output.sb3");
 archive.Dispose();
 
 Console.WriteLine("done");
+return 0;

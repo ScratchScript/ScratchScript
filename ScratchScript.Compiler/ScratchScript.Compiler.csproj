@@ -15,12 +15,11 @@
         <PackageReference Include="Serilog.Sinks.File" Version="8.0.0-nblumhardt-02322"/>
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12"/>
 
-        <None Update="std\**\*.*">
+        <None Update="Resources\std\**\*.*">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
 
         <None Remove="Resources\Syntax\gen\**"/>
-
         <None Remove="Resources\Grammar\gen\**"/>
     </ItemGroup>
 
@@ -68,10 +67,6 @@
         </Compile>
         <Compile Remove="Resources\Syntax\gen\**"/>
         <Compile Remove="Resources\Grammar\gen\**"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Backend\Rewriters\Informational\" />
     </ItemGroup>
 
 </Project>

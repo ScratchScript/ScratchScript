@@ -1,4 +1,4 @@
-﻿using ScratchScript.Compiler.Types;
+﻿using ScratchType = ScratchScript.Compiler.TypeChecker.ScratchType;
 
 namespace ScratchScript.Compiler.Extensions;
 
