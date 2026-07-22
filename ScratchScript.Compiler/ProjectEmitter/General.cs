@@ -49,9 +49,15 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
         return blocks;
     }
 
+    public override object? VisitTargetSpecificNode(ITargetSpecificNode node) => throw new NotImplementedException();
+
     public override object? VisitProgram(IrProgramNode node)
     {
-        foreach (var blockNode in node.Blocks)
+        foreach (var blockNode in node.Functions)
+            Visit(blockNode);
+        foreach (var revisitNodes in _revisitFunctions)
+            RevisitFunction(revisitNodes);
+        foreach (var blockNode in node.Events)
             Visit(blockNode);
         return null;
     }
@@ -75,10 +81,16 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
         return block;
     }
 
-    public override object? VisitCommandSequence(IrCommandSequenceNode node)
-    {
-        return VisitScope(new Scope { Body = node.Commands.ToList() });
-    }
+    public override object? VisitRawBlock(IrBlockNode node) => VisitScope(node.Scope);
+
+    // TODO: implement if the project emitter will ever need attributes
+    public override object? VisitAttribute(IrAttributeNode node)
+        => null;
+
+    public override object? VisitNoOpCommand(IrNoOpCommandNode node) => null;
+
+    public override object? VisitCommandSequence(IrCommandSequenceNode node) =>
+        VisitScope(new Scope { Body = node.Commands.ToList() });
 
     public override object? VisitSetCommand(IrSetCommandNode node)
     {
@@ -92,28 +104,13 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
         return block;
     }
 
-    public override object? VisitCallFunctionCommand(IrCallFunctionCommandNode node)
-    {
-        var function = _functions.Values.First(f => f.Name == node.Function);
-        var call = function.Call.Clone();
-        call.Id = GenerateBlockId(Function.Call);
-        foreach (var kvp in node.Arguments)
-        {
-            var value = Visit(kvp.Item2);
-            if (value == null) return null;
-            call.Inputs[function.Reporters[kvp.Item1 ?? throw new Exception()].Id] =
-                value is Block valueBlock ? CreateInput(valueBlock, call) : CreateInput(value);
-        }
+    public override object? VisitBreakCommand(IrBreakCommandNode node) => throw new NotImplementedException();
 
-        return call;
-    }
+    public override object? VisitContinueCommand(IrContinueCommandNode node) => throw new NotImplementedException();
 
-    public override object? VisitConstantExpression(IrConstantExpressionNode node)
-    {
-        return node.Value.Value;
-    }
+    public override object? VisitConstantExpression(IrConstantExpressionNode node) => node.Value.Value;
 
-    public override object? VisitGlobalVariableExpression(IrGlobalVariableIdentifierExpressionNode node)
+    public override object? VisitGlobalVariableIdentifierExpression(IrGlobalVariableIdentifierExpressionNode node)
     {
         var block = new Block { Opcode = Data.Variable, Id = GenerateBlockId(Data.Variable) };
         block.Fields["VARIABLE"] = CreateField(node.Name);
@@ -121,38 +118,21 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
         return block;
     }
 
-    public override object? VisitLocalVariableExpression(IrLocalVariableIdentifierExpressionNode node)
-    {
+    public override object? VisitLocalVariableIdentifierExpression(IrLocalVariableIdentifierExpressionNode node) =>
         throw new NotImplementedException();
-    }
 
-    public override object? VisitGlobalListExpression(IrGlobalListIdentifierExpressionNode node)
-    {
+    public override object? VisitGlobalListIdentifierExpression(IrGlobalListIdentifierExpressionNode node) =>
         throw new NotImplementedException();
-    }
 
-    public override object? VisitParenthesizedExpression(IrParenthesizedExpressionNode node)
-    {
-        return Visit(node.Expression);
-    }
+    public override object? VisitParenthesizedExpression(IrParenthesizedExpressionNode node) => Visit(node.Expression);
 
-    public override object? VisitComplexExpression(IrComplexExpressionNode node)
-    {
+    public override object? VisitComplexExpression(IrComplexExpressionNode node) => throw new NotImplementedException();
+
+    public override object? VisitObjectLiteralExpression(IrObjectLiteralExpressionNode node) =>
         throw new NotImplementedException();
-    }
 
-    public override object? VisitObjectLiteralExpression(IrObjectLiteralExpressionNode node)
-    {
-        throw new NotImplementedException();
-    }
+    public override object? VisitTernaryExpression(IrTernaryExpressionNode node) => throw new NotImplementedException();
 
-    public override object? VisitTernaryExpression(IrTernaryExpressionNode node)
-    {
+    public override object? VisitStackPointerExpressionNode(IrStackPointerExpressionNode node) =>
         throw new NotImplementedException();
-    }
-
-    public override object? VisitStackPointerExpressionNode(IrStackPointerExpressionNode node)
-    {
-        throw new NotImplementedException();
-    }
 }

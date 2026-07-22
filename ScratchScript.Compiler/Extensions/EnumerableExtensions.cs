@@ -4,18 +4,13 @@ namespace ScratchScript.Compiler.Extensions;
 
 public static class EnumerableExtensions
 {
-    public static IEnumerable<T> ConcatNullable<T>(this IEnumerable<T>? to, IEnumerable<T>? what)
-    {
-        return (to ?? []).Concat(what ?? []);
-    }
+    public static string ToMd5Checksum(this IEnumerable<byte> array) =>
+        Convert.ToHexStringLower(MD5.HashData(array.ToArray()));
 
-    public static IEnumerable<T> ConcatNullable<T>(this IEnumerable<T>? to, T? what)
+    extension<T>(IEnumerable<T>? to)
     {
-        return (to ?? []).Concat(what != null ? [what] : []);
-    }
+        public IEnumerable<T> ConcatNullable(IEnumerable<T>? what) => (to ?? []).Concat(what ?? []);
 
-    public static string ToMd5Checksum(this IEnumerable<byte> array)
-    {
-        return BitConverter.ToString(MD5.HashData(array.ToArray())).Replace("-", "").ToLowerInvariant();
+        public IEnumerable<T> ConcatNullable(T? what) => (to ?? []).Concat(what != null ? [what] : []);
     }
 }

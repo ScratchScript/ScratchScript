@@ -18,14 +18,18 @@ public static class ReservedNames
     public const string RawStatementFunction = "__raw";
     public const string RawExpressionFunction = "__raw_expr";
 
+    public const string WhileBreak = "__B";
+    public const string WhileMainFunction = "__while_main";
+    public const string WhileBodyFunction = "__while_body";
+
     // TODO: reserve all identifiers starting with "__" for the compiler? (toggleable?)
     public static readonly List<string> DisallowedIdentifiers =
     [
         Stack, FramePointer, OldFramePointer, TemporaryReturnValue, AllocateFrameFunction,
         CollapseFrameFunction, DispatchFunction, ArgumentsCount, LocalsCount, RawStatementFunction,
-        RawExpressionFunction
+        RawExpressionFunction, WhileMainFunction, WhileBodyFunction
     ];
 
     public static readonly List<string> GlobalCallableFunctions = [RawStatementFunction, RawExpressionFunction];
-    public static readonly List<string> GlobalVariables = [FramePointer, OldFramePointer, TemporaryReturnValue];
+    public static readonly List<string> GlobalVariables = [FramePointer, OldFramePointer, TemporaryReturnValue, WhileBreak];
 }

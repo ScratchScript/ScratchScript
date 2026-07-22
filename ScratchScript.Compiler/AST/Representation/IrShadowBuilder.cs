@@ -9,15 +9,9 @@ public class IrShadowBuilder
     private readonly Dictionary<string, IrExpressionNode> _inputs = new();
     private readonly string _opcode;
 
-    private IrShadowBuilder(string opcode)
-    {
-        _opcode = opcode;
-    }
+    private IrShadowBuilder(string opcode) => _opcode = opcode;
 
-    public static IrShadowBuilder FromOpcode(string opcode)
-    {
-        return new IrShadowBuilder(opcode);
-    }
+    public static IrShadowBuilder FromOpcode(string opcode) => new(opcode);
 
     public IrShadowBuilder WithInput(string name, IrExpressionNode value)
     {
@@ -37,13 +31,8 @@ public class IrShadowBuilder
         return this;
     }
 
-    public IrRawCommandNode BuildCommand()
-    {
-        return new IrRawCommandNode(_opcode, _inputs, _fields);
-    }
+    public IrRawCommandNode BuildCommand() => new(_opcode, _inputs, _fields);
 
-    public IrShadowExpressionNode BuildExpression(ScratchType? expectedType = null)
-    {
-        return new IrShadowExpressionNode(_opcode, _inputs, _fields, expectedType);
-    }
+    public IrShadowExpressionNode BuildExpression(ScratchType? expectedType = null) =>
+        new(_opcode, _inputs, _fields, expectedType);
 }

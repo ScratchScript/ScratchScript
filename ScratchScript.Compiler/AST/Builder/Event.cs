@@ -1,8 +1,8 @@
-﻿using ScratchScript.Compiler.AST.Information;
+﻿using ScratchScript.Compiler.AST.GeneratedVisitor;
+using ScratchScript.Compiler.AST.Information;
 using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
-using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 
 namespace ScratchScript.Compiler.AST.Builder;
 
@@ -16,7 +16,8 @@ public partial class ScratchScriptVisitor
         // NOTE: there can't be multiple events of the same type declared because that would cause race conditions
         if (Exports.Events.ContainsKey(eventName))
         {
-            DiagnosticReporter.Instance.Error((int)ScratchScriptError.EventAlreadyDeclared, context, context.Identifier(),
+            DiagnosticReporter.Instance.Error((int)ScratchScriptError.EventAlreadyDeclared, context,
+                context.Identifier(),
                 eventName);
             DiagnosticReporter.Instance.Note((int)ScratchScriptNote.EventDeclaredAt,
                 LocationInformation.Events[eventName].Context, LocationInformation.Events[eventName].Identifier);
@@ -36,7 +37,8 @@ public partial class ScratchScriptVisitor
         // in case of an ICE
         if (VisitBlock(context.block()) is not IrBlockNode blockNode)
         {
-            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedNonNull, context.block(), context.block());
+            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedNonNull, context.block(),
+                context.block());
             return null;
         }
 

@@ -91,6 +91,7 @@ Else: 'else';
 True: 'true';
 False: 'false';
 Break: 'break';
+Continue: 'continue';
 Default: 'default';
 Debugger: 'debugger';
 

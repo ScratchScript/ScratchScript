@@ -1,7 +1,8 @@
-﻿using ScratchScript.Compiler.AST.Representation;
+﻿using ScratchScript.Compiler.AST.GeneratedVisitor;
+using ScratchScript.Compiler.AST.Information;
+using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
-using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 
 namespace ScratchScript.Compiler.AST.Builder;
 
@@ -11,7 +12,8 @@ public partial class ScratchScriptVisitor
     {
         if (Visit(context.expression()) is not IrExpressionNode condition)
         {
-            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
+            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context,
+                context.expression());
             return null;
         }
 
@@ -22,7 +24,7 @@ public partial class ScratchScriptVisitor
             return null;
         }*/
 
-        if (Visit(context.lineOrBlock()) is not IrBlockNode body)
+        if (VisitLineOrBlock(context.lineOrBlock(), new LoopScope()) is not { } body)
         {
             DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedNonNull, context, context.lineOrBlock());
             return null;
@@ -35,7 +37,8 @@ public partial class ScratchScriptVisitor
     {
         if (Visit(context.expression()) is not IrExpressionNode times)
         {
-            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
+            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context,
+                context.expression());
             return null;
         }
 
@@ -46,7 +49,7 @@ public partial class ScratchScriptVisitor
             return null;
         }*/
 
-        if (Visit(context.lineOrBlock()) is not IrBlockNode body)
+        if (VisitLineOrBlock(context.lineOrBlock(), new LoopScope()) is not { } body)
         {
             DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedNonNull, context, context.lineOrBlock());
             return null;
@@ -59,7 +62,8 @@ public partial class ScratchScriptVisitor
     {
         if (Visit(context.expression()) is not IrExpressionNode condition)
         {
-            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
+            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context,
+                context.expression());
             return null;
         }
 
@@ -82,11 +86,33 @@ public partial class ScratchScriptVisitor
         return new IrIfCommandNode(condition, block, alternate).WithContext(context);
     }
 
-    public override IrNode? VisitLineOrBlock(ScratchScriptParser.LineOrBlockContext context)
+    public override IrNode? VisitLineOrBlock(ScratchScriptParser.LineOrBlockContext context) =>
+        VisitLineOrBlock(context);
+
+    private IrBlockNode? VisitLineOrBlock(ScratchScriptParser.LineOrBlockContext context, Scope? intoScope = null)
     {
-        if (context.block() != null && Visit(context.block()) is IrBlockNode blockNode) return blockNode;
+        var scope = intoScope ?? new Scope();
+        if (context.block() != null && VisitBlock(scope, context.block()) is { } blockNode)
+            return blockNode;
         if (context.line() != null && Visit(context.line()) is IrCommandNode lineNode)
-            return new IrBlockNode([lineNode]).WithContext(context.line());
+        {
+            scope.ParentScope = _scope;
+            scope.Body.Add(lineNode);
+            return new IrBlockNode(scope).WithContext(context.line());
+        }
+
         return null;
+    }
+
+    public override IrNode? VisitBreakStatement(ScratchScriptParser.BreakStatementContext context)
+    {
+        if (_scope is LoopScope loop) loop.HasBreak = true;
+        return new IrBreakCommandNode().WithContext(context);
+    }
+
+    public override IrNode? VisitContinueStatement(ScratchScriptParser.ContinueStatementContext context)
+    {
+        if (_scope is LoopScope loop) loop.HasContinue = true;
+        return new IrContinueCommandNode().WithContext(context);
     }
 }

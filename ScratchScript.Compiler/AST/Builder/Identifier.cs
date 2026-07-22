@@ -1,10 +1,11 @@
 ﻿using System.Diagnostics;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
+using ScratchScript.Compiler.AST.GeneratedVisitor;
 using ScratchScript.Compiler.AST.Information;
 using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Diagnostics;
-using ScratchScript.Compiler.Frontend.GeneratedVisitor;
+using ScratchScript.Compiler.Extensions;
 
 namespace ScratchScript.Compiler.AST.Builder;
 
@@ -50,7 +51,7 @@ public partial class ScratchScriptVisitor
     public override IrNode? VisitIdentifierExpression(ScratchScriptParser.IdentifierExpressionContext context)
     {
         var identifier = context.Identifier().GetText();
-        return VisitIdentifier(identifier);
+        return VisitIdentifier(identifier).WithContext(context);
     }
 
     private IrNode? VisitIdentifier(string identifier)

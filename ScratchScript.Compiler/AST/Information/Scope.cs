@@ -6,18 +6,19 @@ namespace ScratchScript.Compiler.AST.Information;
 
 public record ScratchScriptVariable
 {
-    public string Name { get; init; }
-    public ScratchType Type { get; set; }
-
     public ScratchScriptVariable(string name, ScratchType? type = null)
     {
         Name = name;
         Type = type ?? ScratchType.Unknown;
     }
+
+    public string Name { get; init; }
+    public ScratchType Type { get; set; }
 }
 
 public class Scope
 {
+    public Guid Id { get; private set; } = Guid.NewGuid();
     public List<IrCommandNode> Body { get; set; } = [];
     public int Depth { get; set; }
     public Scope? ParentScope { get; set; }
@@ -77,6 +78,19 @@ public class Scope
         return null;
     }
 
+    public List<Scope> GetPathToTopmostParent()
+    {
+        var result = new List<Scope>();
+        var scope = this;
+        do
+        {
+            result.Add(scope);
+            scope = scope.ParentScope;
+        } while (scope != null);
+
+        return result;
+    }
+
     public FunctionScope? GetClosestFunctionScope()
     {
         var scope = this;
@@ -98,17 +112,31 @@ public class Scope
 
     protected void PopulateClone(Scope target, Func<IrNode, IrNode> visitor)
     {
+        target.Id = Id;
         target.Depth = Depth;
-        target.ParentScope = target.ParentScope?.CloneWithTransformedBody(visitor);
+        target.ParentScope = ParentScope;
         target.Body = Body.Select(n => (IrCommandNode)visitor(n)).ToList();
         target.Variables = new List<ScratchScriptVariable>(Variables);
     }
 }
 
+public class LoopScope : Scope
+{
+    public bool HasBreak { get; set; }
+    public bool HasContinue { get; set; }
+
+    public override Scope CloneWithTransformedBody(Func<IrNode, IrNode> visitor)
+    {
+        var target = new LoopScope();
+        PopulateClone(target, visitor);
+        target.HasBreak = HasBreak;
+        target.HasContinue = HasContinue;
+        return target;
+    }
+}
+
 public class FunctionScope : Scope
 {
-    public string Id { get; set; }
-
     // dictionaries are not guaranteed to be ordered, so a list is used here
     public List<ScratchScriptVariable> Arguments { get; set; } = [];
     public string FunctionName { get; set; }
@@ -123,7 +151,6 @@ public class FunctionScope : Scope
     {
         var target = new FunctionScope();
         PopulateClone(target, visitor);
-        target.Id = Id;
         target.ReturnType = ReturnType;
         target.FunctionName = FunctionName;
         target.Arguments = new List<ScratchScriptVariable>(Arguments);

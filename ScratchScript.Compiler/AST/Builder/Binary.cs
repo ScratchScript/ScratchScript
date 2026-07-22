@@ -1,8 +1,8 @@
 ﻿using Antlr4.Runtime;
+using ScratchScript.Compiler.AST.GeneratedVisitor;
 using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
-using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 
 namespace ScratchScript.Compiler.AST.Builder;
 

@@ -6,7 +6,7 @@ options {
 
 program: topLevelStatement* EOF;
 topLevelStatement: functionDeclarationStatement | enumDeclarationStatement | attributeStatement | eventStatement | importStatement | namespaceStatement;
-line: ((statement Semicolon) | ifStatement | whileStatement | repeatStatement | forStatement | switchStatement | irBlockStatement | returnStatement | breakStatement | debuggerStatement | throwStatement | comment);
+line: ((statement Semicolon) | ifStatement | whileStatement | repeatStatement | forStatement | switchStatement | irBlockStatement | returnStatement | breakStatement | continueStatement | debuggerStatement | throwStatement | comment);
 statement: assignmentStatement | listAssignmentStatement | functionCallStatement | memberFunctionCallStatement | variableDeclarationStatement | postIncrementStatement;
 
 eventStatement: Event Identifier (LeftParen (expression (Comma expression)*?) RightParen)? block;
@@ -14,8 +14,8 @@ assignmentStatement: Identifier assignmentOperators expression;
 listAssignmentStatement: Identifier LeftBracket expression RightBracket;
 variableDeclarationStatement: VariableDeclare Identifier Assignment expression;
 memberFunctionCallStatement: expression Dot functionCallStatement;
-functionCallStatement: Identifier LeftParen (functionArgument (Comma functionArgument)*?)? RightParen; 
-functionDeclarationStatement: attributeStatement*? FunctionDeclare Identifier LeftParen (typedIdentifier (Comma typedIdentifier)*?)? RightParen (Colon type)? block;
+functionCallStatement: Identifier LeftParen (expression (Comma expression)*?)? RightParen; 
+functionDeclarationStatement: attributeStatement*? FunctionDeclare Identifier LeftParen (functionDeclarationArgument (Comma functionDeclarationArgument)*?)? RightParen (Colon type)? block;
 
 enumDeclarationStatement: EnumDeclare Identifier LeftBrace (enumEntry (Comma enumEntry)*?)? RightBrace;
 enumEntry: Identifier (Assignment constant)?;
@@ -35,10 +35,10 @@ attributeStatement: At Identifier (LeftParen (constant (Comma constant)*?)? Righ
 returnStatement: Return expression? Semicolon;
 throwStatement: Throw String Semicolon;
 breakStatement: Break Semicolon;
+continueStatement: Continue Semicolon;
 namespaceStatement: Namespace String Semicolon;
 switchStatement: Switch LeftParen expression RightParen switchBlock;
-typedIdentifier: Identifier (Colon type)?;
-functionArgument: (Identifier Colon)? expression;
+functionDeclarationArgument: attributeStatement*? Identifier (Colon type)?;
 debuggerStatement: Debugger Semicolon;
 
 expression

@@ -1,4 +1,6 @@
-﻿using ScratchScript.Compiler.AST.Representation;
+﻿using ScratchScript.Compiler.AST.Information;
+using ScratchScript.Compiler.AST.Representation;
+using ScratchScript.Compiler.AST.Representation.TargetSpecific;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.TypeChecker;
 
@@ -44,44 +46,20 @@ public class ComplexExpressionUnwindingRewriter : IrRewriter
         _ => cleanup
     };
 
-    public override IrNode VisitWhileCommand(IrWhileCommandNode node)
-    {
-        /*
-         *  while loop structure:
-         *
-         *  {condition dependencies}
-         *  while(condition) {
-         *       {body}
-         *       {condition cleanup}
-         *       {condition dependencies} <- because it needs to be recalculated
-         *  }
-         *  {condition cleanup} <- if the loop exits, the leftover data is still there,
-         *                         so it needs to be cleaned
-         */
-        if (Visit(node.Condition) is not IrComplexExpressionNode complexCondition) return node;
-        var commands = new List<IrCommandNode>();
-        var scope = node.Body.Scope.CloneWithTransformedBody(Visit);
-        scope.Body = scope.Body.ConcatNullable(complexCondition.Cleanup).ConcatNullable(complexCondition.Dependencies)
-            .ToList();
-        commands = commands.ConcatNullable(complexCondition.Dependencies)
-            .ConcatNullable(new IrWhileCommandNode(complexCondition.Expression,
-                new IrBlockNode(scope))).ConcatNullable(complexCondition.Cleanup).ToList();
-        return new IrCommandSequenceNode(commands);
-    }
+    public override IrNode VisitRepeatCommand(IrRepeatCommandNode node) => base.VisitRepeatCommand(node);
 
-    public override IrNode VisitRepeatCommand(IrRepeatCommandNode node)
-    {
-        return base.VisitRepeatCommand(node);
-    }
-
-    public override IrNode VisitCallFunctionCommand(IrCallFunctionCommandNode node)
-    {
-        return base.VisitCallFunctionCommand(node);
-    }
+    public override IrNode VisitCallFunctionCommand(IrCallFunctionCommandNode node) =>
+        base.VisitCallFunctionCommand(node);
 
     public override IrNode VisitIfCommand(IrIfCommandNode node)
     {
-        return base.VisitIfCommand(node);
+        if (Visit(node.Condition) is not IrComplexExpressionNode complexCondition) return node;
+        var body = (IrBlockNode)Visit(node.Body);
+        var alternate = node.Alternate != null ? (IrBlockNode)Visit(node.Alternate) : null;
+
+        return new IrCommandSequenceNode(new List<IrCommandNode>().ConcatNullable(complexCondition.Dependencies)
+            .ConcatNullable(new IrIfCommandNode(complexCondition.Expression, body, alternate))
+            .ConcatNullable(complexCondition.Cleanup));
     }
 
     public override IrNode VisitSetCommand(IrSetCommandNode node)
@@ -147,15 +125,9 @@ public class ComplexExpressionUnwindingRewriter : IrRewriter
         return new IrCommandSequenceNode(commands);
     }
 
-    public override IrNode VisitPushAtCommand(IrPushAtCommand node)
-    {
-        return base.VisitPushAtCommand(node);
-    }
+    public override IrNode VisitPushAtCommand(IrPushAtCommand node) => base.VisitPushAtCommand(node);
 
-    public override IrNode VisitPopAtCommand(IrPopAtCommand node)
-    {
-        return base.VisitPopAtCommand(node);
-    }
+    public override IrNode VisitPopAtCommand(IrPopAtCommand node) => base.VisitPopAtCommand(node);
 
     public override IrNode VisitBinaryExpression(IrBinaryExpressionNode node)
     {
@@ -184,5 +156,11 @@ public class ComplexExpressionUnwindingRewriter : IrRewriter
         return new IrComplexExpressionNode(new IrBinaryExpressionNode(node.Operator, left, right),
             new IrCommandSequenceNode(dependencies),
             new IrCommandSequenceNode(cleanup));
+    }
+
+    public override IrNode VisitComplexExpression(IrComplexExpressionNode node)
+    {
+        var result = (IrComplexExpressionNode)base.VisitComplexExpression(node);
+        return result.Cleanup == null && result.Dependencies == null ? result.Expression : result;
     }
 }

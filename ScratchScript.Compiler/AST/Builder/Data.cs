@@ -1,9 +1,8 @@
-﻿using ScratchScript.Compiler.AST.Information;
+﻿using ScratchScript.Compiler.AST.GeneratedVisitor;
+using ScratchScript.Compiler.AST.Information;
 using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
-using ScratchScript.Compiler.Frontend.GeneratedVisitor;
-using ScratchScript.Compiler.TypeChecker;
 
 namespace ScratchScript.Compiler.AST.Builder;
 
@@ -21,7 +20,8 @@ public partial class ScratchScriptVisitor
         // in case of an ICE
         if (Visit(context.expression()) is not IrExpressionNode expression)
         {
-            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
+            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context,
+                context.expression());
             return null;
         }
 
@@ -54,14 +54,16 @@ public partial class ScratchScriptVisitor
         // in case of an ICE
         if (Visit(context.expression()) is not IrExpressionNode expression)
         {
-            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context, context.expression());
+            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context,
+                context.expression());
             return null;
         }
 
         var assignmentOperator = context.assignmentOperators().GetText();
         if (assignmentOperator == null)
         {
-            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedNonNull, context, context.assignmentOperators());
+            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedNonNull, context,
+                context.assignmentOperators());
             return null;
         }
 
@@ -90,7 +92,8 @@ public partial class ScratchScriptVisitor
 
         if (_scope?.GetVariable(name) is not { } variable)
         {
-            DiagnosticReporter.Instance.Error((int)ScratchScriptError.VariableNotDefined, context, context.Identifier(), name);
+            DiagnosticReporter.Instance.Error((int)ScratchScriptError.VariableNotDefined, context, context.Identifier(),
+                name);
             return null;
         }
 

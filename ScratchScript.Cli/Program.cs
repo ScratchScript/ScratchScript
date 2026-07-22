@@ -4,9 +4,9 @@ using Antlr4.Runtime;
 using Ionic.Zip;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using ScratchScript.Compiler.AST.GeneratedVisitor;
 using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Diagnostics;
-using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Helpers;
 using ScratchScript.Compiler.ProjectEmitter;
 using ScratchScript.Compiler.ProjectEmitter.Models;
@@ -18,9 +18,21 @@ using Spectre.Console;
 using ScratchScriptVisitor = ScratchScript.Compiler.AST.Builder.ScratchScriptVisitor;
 
 const string source = """
-                      on start {
-                        let a = 1;
-                        a = 2;
+                      function id(x: number) { return x; }
+                      
+                      on start { 
+                        let count = 0;
+                        while(id(count) < 100) {
+                            count += 1;
+                            if(count % 2 == 0) continue;
+                            if(count == 97) break;
+                            let secs = 0.5;
+                            while(secs >= 0.1) {
+                                if(secs <= 0.21) break;
+                                __raw("looks_sayforsecs", {inputs: {MESSAGE: count + secs, SECS: secs}});
+                                secs -= 0.1;
+                            }
+                        }
                       }
                       """;
 var id = new Guid(MD5.HashData(Encoding.UTF8.GetBytes(source))).ToString("N");
@@ -49,6 +61,7 @@ void RunUntilNoChanges(Type rewriter)
         count++;
         var nextResult = (IrProgramNode)((IrRewriter)Activator.CreateInstance(rewriter)!).VisitProgram(result);
         var nextHash = IrHasher.GetNodeHash(nextResult);
+        Console.WriteLine($"{hash}, {nextHash}");
         if (nextHash == hash) break;
         hash = nextHash;
         result = nextResult;
@@ -64,12 +77,14 @@ if (!typeChecker.Success) return 1;
 
 Console.WriteLine("running high-level optimizations");
 RunUntilNoChanges(typeof(RawFunctionsExpansionRewriter));
+RunUntilNoChanges(typeof(LoopSynthesisRewriter));
 
 Console.WriteLine("running lowering pass");
 RunUntilNoChanges(typeof(Scratch3LoweringPass));
 
 Console.WriteLine("running low-level optimizations");
 RunUntilNoChanges(typeof(ComplexExpressionUnwindingRewriter));
+RunUntilNoChanges(typeof(SyntheticLoopUnwindingRewriter));
 result = (IrProgramNode)new OperatorUnwindingRewriter().VisitProgram(result);
 
 Console.WriteLine("packing into an archive");

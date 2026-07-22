@@ -1,9 +1,9 @@
 ﻿using System.Globalization;
+using ScratchScript.Compiler.AST.GeneratedVisitor;
 using ScratchScript.Compiler.AST.Information;
 using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
-using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.TypeChecker;
 
 namespace ScratchScript.Compiler.AST.Builder;
@@ -27,7 +27,8 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
     public override IrNode? VisitProgram(ScratchScriptParser.ProgramContext context)
     {
         var blocks = context.topLevelStatement().Select(Visit).Cast<IrBlockNode>().ToList();
-        return new IrProgramNode(blocks, []).WithContext(context);
+        return new IrProgramNode(blocks.OfType<IrFunctionNode>(), blocks.OfType<IrEventNode>(), [])
+            .WithContext(context);
     }
 
     public override IrNode? VisitConstant(ScratchScriptParser.ConstantContext context)
@@ -53,7 +54,8 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
                       property.propertyKey().String()!.GetText()![1..^1];
             if (Visit(property.expression()) is not IrExpressionNode value)
             {
-                DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context, property.expression());
+                DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context,
+                    property.expression());
                 return null;
             }
 
@@ -108,10 +110,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
         return result.WithContext(context);
     }
 
-    public override IrNode? VisitBlock(ScratchScriptParser.BlockContext context)
-    {
-        return VisitBlock(new Scope(), context);
-    }
+    public override IrNode? VisitBlock(ScratchScriptParser.BlockContext context) => VisitBlock(new Scope(), context);
 
     private IrBlockNode VisitBlock(Scope scope, ScratchScriptParser.BlockContext context)
     {
@@ -145,12 +144,10 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
         return new IrBlockNode(scope).WithContext(context);
     }
 
-    public override IrNode? VisitLine(ScratchScriptParser.LineContext context)
-    {
-        return context.statement() != null
-            ? VisitStatement(context.statement()).WithContext(context.statement())
-            : base.VisitLine(context).WithContext(context);
-    }
+    public override IrNode? VisitLine(ScratchScriptParser.LineContext context) =>
+        context.statement() != null
+            ? VisitStatement(context.statement()).OverrideIfNoContext(context.statement())
+            : base.VisitLine(context).OverrideIfNoContext(context);
 
     public override IrNode? VisitTernaryExpression(ScratchScriptParser.TernaryExpressionContext context)
     {

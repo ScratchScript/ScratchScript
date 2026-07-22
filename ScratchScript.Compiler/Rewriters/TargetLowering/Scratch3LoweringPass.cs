@@ -1,5 +1,10 @@
 ﻿using ScratchScript.Compiler.AST.Information;
 using ScratchScript.Compiler.AST.Representation;
+using ScratchScript.Compiler.AST.Representation.TargetSpecific;
+using ScratchScript.Compiler.Extensions;
+using ScratchScript.Compiler.Rewriters.Informational;
+using ScratchScript.Compiler.Rewriters.Optimizations.HighLevel;
+using ScratchScript.Compiler.Rewriters.Optimizations.LowLevel;
 using ScratchScript.Compiler.TypeChecker;
 using static ScratchScript.Compiler.Rewriters.TargetLowering.Scratch3CommandHelper;
 
@@ -9,7 +14,6 @@ internal static class Scratch3CommandHelper
 {
     public static readonly IrFunctionNode AllocateFrameFunction = new(true, new FunctionScope
     {
-        Id = ReservedNames.AllocateFrameFunction,
         FunctionName = ReservedNames.AllocateFrameFunction,
         ReturnType = ScratchType.Void,
         Arguments =
@@ -37,7 +41,6 @@ internal static class Scratch3CommandHelper
 
     public static readonly IrFunctionNode CollapseFrameFunction = new(true, new FunctionScope
     {
-        Id = ReservedNames.CollapseFrameFunction,
         FunctionName = ReservedNames.CollapseFrameFunction,
         Arguments =
         [
@@ -58,12 +61,12 @@ internal static class Scratch3CommandHelper
                 ItemAt(ReservedNames.Stack,
                     new IrGlobalVariableIdentifierExpressionNode(ReservedNames.FramePointer))),
             new IrWhileCommandNode(new IrBinaryExpressionNode(IrBinaryOperator.NotEqual,
-                LengthOf(ReservedNames.Stack),
-                new IrBinaryExpressionNode(IrBinaryOperator.Subtract,
-                    new IrGlobalVariableIdentifierExpressionNode(ReservedNames.FramePointer),
-                    new IrConstantExpressionNode(TypedValue.Number(1)))), new IrBlockNode([
-                new IrPopAtCommand(ReservedNames.Stack, LengthOf(ReservedNames.Stack))
-            ])),
+                    LengthOf(ReservedNames.Stack),
+                    new IrBinaryExpressionNode(IrBinaryOperator.Subtract,
+                        new IrGlobalVariableIdentifierExpressionNode(ReservedNames.FramePointer),
+                        new IrConstantExpressionNode(TypedValue.Number(1)))),
+                new IrBlockNode(new LoopScope
+                    { Body = [new IrPopAtCommand(ReservedNames.Stack, LengthOf(ReservedNames.Stack))] })),
             new IrSetCommandNode(ReservedNames.FramePointer,
                 new IrGlobalVariableIdentifierExpressionNode(ReservedNames.OldFramePointer)),
             new IrIfCommandNode(new IrBinaryExpressionNode(IrBinaryOperator.Equal,
@@ -75,120 +78,86 @@ internal static class Scratch3CommandHelper
         ]
     });
 
-    public static IrShadowExpressionNode IndexOf(string list, IrExpressionNode item)
-    {
-        return IrShadowBuilder
+    public static IrShadowExpressionNode IndexOf(string list, IrExpressionNode item) =>
+        IrShadowBuilder
             .FromOpcode("data_itemnumoflist")
             .WithField("LIST", list)
             .WithInput("ITEM", item)
             .BuildExpression(ScratchType.Number);
-    }
 
-    public static IrShadowExpressionNode ItemAt(string list, IrExpressionNode index)
-    {
-        return IrShadowBuilder
+    public static IrShadowExpressionNode ItemAt(string list, IrExpressionNode index) =>
+        IrShadowBuilder
             .FromOpcode("data_itemoflist")
             .WithField("LIST", list)
             .WithInput("INDEX", index)
             .BuildExpression();
-    }
 
-    public static IrShadowExpressionNode LengthOf(string list)
-    {
-        return IrShadowBuilder
+    public static IrShadowExpressionNode LengthOf(string list) =>
+        IrShadowBuilder
             .FromOpcode("data_lengthoflist")
             .WithField("LIST", list)
             .BuildExpression(ScratchType.Number);
-    }
 
-    public static IrRawCommandNode Replace(string list, IrExpressionNode index, IrExpressionNode value)
-    {
-        return IrShadowBuilder
+    public static IrRawCommandNode Replace(string list, IrExpressionNode index, IrExpressionNode value) =>
+        IrShadowBuilder
             .FromOpcode("data_replaceitemoflist")
             .WithField("LIST", list)
             .WithInput("INDEX", index)
             .WithInput("ITEM", value)
             .BuildCommand();
-    }
 
-    public static IrRawCommandNode StopThisScript()
-    {
-        return IrShadowBuilder.FromOpcode("control_stop").WithField("STOP_OPTION", "this script").BuildCommand();
-    }
+    public static IrRawCommandNode StopThisScript() => IrShadowBuilder.FromOpcode("control_stop")
+        .WithField("STOP_OPTION", "this script").BuildCommand();
 }
 
 public class Scratch3LoweringPass : IrRewriter
 {
     private const string EventAllocationPerformedFlag = "SCRATCH3_EVENT_ALLOCATION_PERFORMED";
-    private const string TernaryFunctionAddedFlag = "SCRATCH3_TERNARY_FUNCTION_ADDED";
-
-    private IEnumerable<IrFunctionNode> Functions => _program.Blocks.OfType<IrFunctionNode>();
-    private Scope? _scope;
-    private IrProgramNode _program;
+    private readonly List<IrFunctionNode> _pendingFunctions = [];
 
     public override IrNode VisitProgram(IrProgramNode node)
     {
-        _program = node;
         var program = (IrProgramNode)base.VisitProgram(node);
 
-        if (!program.Blocks.Any(b =>
-                b is IrFunctionNode { FunctionScope.Id: ReservedNames.AllocateFrameFunction }))
-            program = program with
-            {
-                Blocks = new List<IrBlockNode>([
-                    AllocateFrameFunction, CollapseFrameFunction
-                ]).Concat(program.Blocks).ToList()
-            };
+        if (!program.Functions.Any(b =>
+                b is { FunctionScope.FunctionName: ReservedNames.AllocateFrameFunction }))
+            _pendingFunctions.InsertRange(0, [
+                AllocateFrameFunction, CollapseFrameFunction
+            ]);
 
-        program.Flags[EventAllocationPerformedFlag] = true;
-        return program;
-    }
-
-    public override IrNode VisitBlock(IrBlockNode node)
-    {
-        var previousScope = _scope;
-        _scope = node.Scope;
-
-        var result = (IrBlockNode)base.VisitBlock(node);
-        _scope = previousScope;
-        return result;
+        return (program with { Functions = _pendingFunctions.Concat(program.Functions) }).WithFlag(
+            EventAllocationPerformedFlag);
     }
 
     public override IrNode VisitEvent(IrEventNode node)
     {
         var result = (IrEventNode)base.VisitEvent(node);
-        if (_program.Flags.ContainsKey(EventAllocationPerformedFlag)) return result;
+        if (ProgramNode.Flags.Contains(EventAllocationPerformedFlag)) return result;
+
+        var variableCountCalculator = new ScopeTotalVariableCountCalculationRewriter();
+        variableCountCalculator.VisitBlock(result);
 
         var allocation = new IrCommandSequenceNode([
             new IrPushCommand(ReservedNames.Stack,
                 new IrGlobalVariableIdentifierExpressionNode(ReservedNames.FramePointer)),
             new IrCallFunctionCommandNode(ReservedNames.AllocateFrameFunction,
             [
-                (
-                    ReservedNames.ArgumentsCount,
-                    new IrConstantExpressionNode(TypedValue.Number(0))
-                ),
-                (
-                    ReservedNames.LocalsCount,
-                    new IrConstantExpressionNode(TypedValue.Number(node.Scope.Variables.Count))
-                )
+                new IrConstantExpressionNode(TypedValue.Number(0)),
+                new IrConstantExpressionNode(TypedValue.Number(variableCountCalculator.TotalVariableCount))
             ])
         ]);
         result.Scope.Body.Insert(0, allocation);
         result.Scope.Body.Add(new IrCallFunctionCommandNode(ReservedNames.CollapseFrameFunction,
         [
-            (
-                ReservedNames.HasReturnValue,
-                new IrConstantExpressionNode(TypedValue.Number(0))
-            )
+            new IrConstantExpressionNode(TypedValue.Number(0))
         ]));
 
         return result;
     }
 
-    public override IrNode VisitLocalVariableExpression(IrLocalVariableIdentifierExpressionNode node)
+    public override IrNode VisitLocalVariableIdentifierExpression(IrLocalVariableIdentifierExpressionNode node)
     {
-        if (_scope == null) throw new Exception("This node cannot be processed without a scope");
+        if (CurrentScope == null) throw new Exception("This node cannot be processed without a scope");
         return ItemAt(ReservedNames.Stack,
             GetLocalVariableExpression(node.Name)
         );
@@ -198,14 +167,14 @@ public class Scratch3LoweringPass : IrRewriter
     {
         if (ReservedNames.GlobalVariables.Contains(node.Variable))
             return node with { Expression = (IrExpressionNode)Visit(node.Expression) };
-        if (_scope == null) throw new Exception("This node cannot be processed without a scope");
+        if (CurrentScope == null) throw new Exception("This node cannot be processed without a scope");
         return Replace(ReservedNames.Stack,
             GetLocalVariableExpression(node.Variable), (IrExpressionNode)Visit(node.Expression));
     }
 
     public override IrNode VisitFunctionArgumentExpressionNode(IrFunctionArgumentExpressionNode node)
     {
-        if (_scope is not FunctionScope functionScope)
+        if (CurrentScope is not FunctionScope functionScope)
             throw new Exception("This node cannot be processed without a scope");
         if (functionScope.UseArgumentReporters) return node;
 
@@ -214,36 +183,28 @@ public class Scratch3LoweringPass : IrRewriter
         );
     }
 
-    public override IrNode VisitTernaryExpression(IrTernaryExpressionNode node)
-    {
-        return new IrComplexExpressionNode(new IrStackPointerExpressionNode(0),
+    public override IrNode VisitTernaryExpression(IrTernaryExpressionNode node) =>
+        new IrComplexExpressionNode(new IrStackPointerExpressionNode(0),
             new IrIfCommandNode(node.Condition,
                 new IrBlockNode([new IrPushCommand(ReservedNames.Stack, node.TrueValue)]),
                 new IrBlockNode([new IrPushCommand(ReservedNames.Stack, node.FalseValue)])),
             new IrPopAtCommand(ReservedNames.Stack, LengthOf(ReservedNames.Stack)));
-    }
 
     public override IrNode VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node)
     {
-        var function = Functions.FirstOrDefault(f => f.FunctionScope.FunctionName == node.Function);
+        var function = ProgramNode.Functions.FirstOrDefault(f => f.FunctionScope.FunctionName == node.Function);
         if (function == null) throw new Exception();
         var visitedArguments =
-            node.Arguments.Select(kvp => (kvp.Item1, (IrExpressionNode)Visit(kvp.Item2)));
+            node.Arguments.Select(Visit).OfType<IrExpressionNode>();
 
         var commands = new List<IrCommandNode>();
         commands.Add(new IrPushCommand(ReservedNames.Stack,
             new IrGlobalVariableIdentifierExpressionNode(ReservedNames.FramePointer)));
-        commands.AddRange(visitedArguments.Select(kvp => new IrPushCommand(ReservedNames.Stack, kvp.Item2)));
+        commands.AddRange(visitedArguments.Select(arg => new IrPushCommand(ReservedNames.Stack, arg)));
         commands.Add(new IrCallFunctionCommandNode(ReservedNames.AllocateFrameFunction,
         [
-            (
-                ReservedNames.ArgumentsCount,
-                new IrConstantExpressionNode(TypedValue.Number(function.FunctionScope.Arguments.Count))
-            ),
-            (
-                ReservedNames.LocalsCount,
-                new IrConstantExpressionNode(TypedValue.Number(function.FunctionScope.Variables.Count))
-            )
+            new IrConstantExpressionNode(TypedValue.Number(function.FunctionScope.Arguments.Count)),
+            new IrConstantExpressionNode(TypedValue.Number(function.FunctionScope.Variables.Count))
         ]));
         commands.Add(new IrCallFunctionCommandNode(node.Function, []));
         return new IrComplexExpressionNode(
@@ -252,7 +213,7 @@ public class Scratch3LoweringPass : IrRewriter
             new IrPopAtCommand(ReservedNames.Stack, LengthOf(ReservedNames.Stack)));
     }
 
-    public override IrNode VisitFunctionReturnCommandNode(IrFunctionReturnCommandNode node)
+    public override IrNode VisitFunctionReturnCommandNode(IrReturnCommandNode node)
     {
         var commands = new List<IrCommandNode>();
         if (node.ReturnValue != null)
@@ -260,10 +221,7 @@ public class Scratch3LoweringPass : IrRewriter
         commands.AddRange([
             new IrCallFunctionCommandNode(ReservedNames.CollapseFrameFunction,
             [
-                (
-                    ReservedNames.HasReturnValue,
-                    new IrConstantExpressionNode(TypedValue.Number(node.ReturnValue != null ? 1 : 0))
-                )
+                new IrConstantExpressionNode(TypedValue.Number(node.ReturnValue != null ? 1 : 0))
             ]),
             StopThisScript()
         ]);
@@ -272,9 +230,18 @@ public class Scratch3LoweringPass : IrRewriter
 
     private IrBinaryExpressionNode GetLocalVariableExpression(string name)
     {
-        if (_scope == null) throw new Exception();
-        var index = _scope.Variables.FindIndex(v => v.Name == name) + 1;
-        var offset = _scope is FunctionScope functionScope ? functionScope.Arguments.Count : 0;
+        if (CurrentScope == null) throw new Exception();
+
+        var path = CurrentScope.GetPathToTopmostParent();
+        var index = 0;
+        foreach (var scope in path.AsEnumerable().Reverse())
+        {
+            var localIndex = scope.Variables.FindIndex(v => v.Name == name);
+            index += localIndex == -1 ? scope.Variables.Count : localIndex + 1;
+            if (localIndex != -1) break;
+        }
+
+        var offset = CurrentScope is FunctionScope functionScope ? functionScope.Arguments.Count : 0;
         return new IrBinaryExpressionNode(IrBinaryOperator.Add,
             new IrGlobalVariableIdentifierExpressionNode(ReservedNames.FramePointer),
             new IrConstantExpressionNode(TypedValue.Number(offset + index)));
@@ -282,7 +249,7 @@ public class Scratch3LoweringPass : IrRewriter
 
     private IrBinaryExpressionNode GetFunctionArgumentExpression(string name)
     {
-        if (_scope is not FunctionScope functionScope) throw new Exception();
+        if (CurrentScope is not FunctionScope functionScope) throw new Exception();
         var index = functionScope.Arguments.FindIndex(v => v.Name == name) + 1;
         return new IrBinaryExpressionNode(IrBinaryOperator.Add,
             new IrGlobalVariableIdentifierExpressionNode(ReservedNames.FramePointer),

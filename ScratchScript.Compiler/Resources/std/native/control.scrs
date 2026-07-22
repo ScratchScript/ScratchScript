@@ -6,17 +6,14 @@ enum StopTarget {
     OtherScripts = "other scripts"
 }
 
-@inline function wait(seconds: number)
-{
+@inline function wait(seconds: number) {
     return __raw("control_wait", {inputs: {DURATION: number}});
 }
 
-@inline function waitUntil(condition: boolean)
-{
+@inline function waitUntil(condition: boolean) {
     return __raw("control_wait_until", {inputs: {CONDITION: condition}});
 }
 
-@inline function stop(target: StopTarget)
-{
+@inline function stop(target: StopTarget) {
     return __raw("control_stop", {fields: {STOP_OPTION: target.value}});
 }

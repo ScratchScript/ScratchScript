@@ -5,7 +5,7 @@ namespace ScratchScript.Compiler.Diagnostics;
 
 public class DiagnosticReporter
 {
-    public static DiagnosticReporter Instance = new();
+    public static readonly DiagnosticReporter Instance = new();
     public event Action<DiagnosticMessage> Reported;
 
     public void Error(int code, ParserRuleContext start, ParserRuleContext conflicting, params object[] data)

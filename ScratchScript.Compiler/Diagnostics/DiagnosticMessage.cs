@@ -1,8 +1,8 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 using Antlr4.Runtime.Tree;
+using ScratchScript.Compiler.AST.GeneratedVisitor;
 using ScratchScript.Compiler.Extensions;
-using ScratchScript.Compiler.Frontend.GeneratedVisitor;
 using ScratchScript.Compiler.Resources.Messages;
 
 namespace ScratchScript.Compiler.Diagnostics;
@@ -95,10 +95,8 @@ public record DiagnosticMessage(
     string Message
 )
 {
-    public static DiagnosticMessage FromCode(DiagnosticMessageKind kind, int code, object[] data)
-    {
-        return new DiagnosticMessage(kind, code, GetDiagnosticMessage(kind, code, data));
-    }
+    public static DiagnosticMessage FromCode(DiagnosticMessageKind kind, int code, object[] data) =>
+        new(kind, code, GetDiagnosticMessage(kind, code, data));
 
     protected static string GetDiagnosticMessage(DiagnosticMessageKind kind, int code, object[] data)
     {

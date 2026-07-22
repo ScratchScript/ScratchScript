@@ -85,15 +85,10 @@ public partial class ScratchType(ScratchTypeKind kind, ScratchType? childType = 
         return type;
     }
 
-    public override string ToString()
-    {
-        return $"{Kind.ToString().ToLowerInvariant()}{(ChildType is not null ? $"<{ChildType}>" : "")}";
-    }
+    public override string ToString() =>
+        $"{Kind.ToString().ToLowerInvariant()}{(ChildType is not null ? $"<{ChildType}>" : "")}";
 
-    public override bool Equals(object? obj)
-    {
-        return Equals(obj as ScratchType);
-    }
+    public override bool Equals(object? obj) => Equals(obj as ScratchType);
 
     public static bool operator ==(ScratchType? first, ScratchType? second)
     {
@@ -101,15 +96,9 @@ public partial class ScratchType(ScratchTypeKind kind, ScratchType? childType = 
         return first.Equals(second);
     }
 
-    public static bool operator !=(ScratchType? first, ScratchType? second)
-    {
-        return !(first == second);
-    }
+    public static bool operator !=(ScratchType? first, ScratchType? second) => !(first == second);
 
-    public override int GetHashCode()
-    {
-        return ToString().GetHashCode();
-    }
+    public override int GetHashCode() => ToString().GetHashCode();
 
     [GeneratedRegex(@"(?<parent>[\w\-$@#]+)(?:<(?<child>.*)>)?")]
     private static partial Regex TypeRegex();
@@ -117,28 +106,13 @@ public partial class ScratchType(ScratchTypeKind kind, ScratchType? childType = 
 
 public record TypedValue(object? Value, ScratchType Type)
 {
-    public static TypedValue String(string value)
-    {
-        return new TypedValue(value, ScratchType.String);
-    }
+    public static TypedValue String(string value) => new(value, ScratchType.String);
 
-    public static TypedValue Color(string value)
-    {
-        return new TypedValue(value, ScratchType.Color);
-    }
+    public static TypedValue Color(string value) => new(value, ScratchType.Color);
 
-    public static TypedValue Number(double value)
-    {
-        return new TypedValue(value, ScratchType.Number);
-    }
+    public static TypedValue Number(double value) => new(value, ScratchType.Number);
 
-    public static TypedValue Boolean(bool value)
-    {
-        return new TypedValue(value, ScratchType.Boolean);
-    }
+    public static TypedValue Boolean(bool value) => new(value, ScratchType.Boolean);
 
-    public static TypedValue Object(Dictionary<string, IrExpressionNode> values)
-    {
-        return new TypedValue(values, ScratchType.Object);
-    }
+    public static TypedValue Object(Dictionary<string, IrExpressionNode> values) => new(values, ScratchType.Object);
 }

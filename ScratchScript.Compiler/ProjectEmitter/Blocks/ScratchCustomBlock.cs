@@ -44,7 +44,7 @@ public class ScratchCustomBlock
     public Block Definition { get; }
     public Block Prototype { get; }
     public Block Call { get; }
-    public Dictionary<string, Block> Reporters { get; } = [];
+    public OrderedDictionary<string, Block> Reporters { get; } = [];
     public Mutation Mutation { get; private set; }
 
     private Func<string, string> IdGenerator { get; }

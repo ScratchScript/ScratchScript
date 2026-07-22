@@ -72,10 +72,7 @@ public partial class ScratchScriptProjectEmitter
     }
 
     // TODO: handle argument & variable reporters
-    private List<object> CreateField(object obj)
-    {
-        return [obj, obj];
-    }
+    private List<object> CreateField(object obj) => [obj, obj];
 
     public override object? VisitRawCommand(IrRawCommandNode node)
     {

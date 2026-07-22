@@ -50,9 +50,8 @@ public partial class ScratchScriptProjectEmitter
         return block;
     }
 
-    public override object? VisitPopAllCommand(IrPopAllCommand node)
-    {
-        return new Block
+    public override object? VisitPopAllCommand(IrPopAllCommand node) =>
+        new Block
         {
             Opcode = Data.DeleteAllOfList, Id = GenerateBlockId(Data.DeleteAllOfList),
             Fields =
@@ -60,5 +59,4 @@ public partial class ScratchScriptProjectEmitter
                 ["LIST"] = CreateField(node.List)
             }
         };
-    }
 }

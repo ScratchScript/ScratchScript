@@ -11,14 +11,6 @@ public class OperatorUnwindingRewriter : IrRewriter
     {
         var result = (IrBinaryExpressionNode)base.VisitBinaryExpression(node);
 
-        IrBinaryOperator SeparateOperator(IrBinaryOperator op) => op switch
-        {
-            IrBinaryOperator.NotEqual => IrBinaryOperator.Equal,
-            IrBinaryOperator.LessOrEqualTo => IrBinaryOperator.LessThan,
-            IrBinaryOperator.GreaterOrEqualTo => IrBinaryOperator.GreaterThan,
-            _ => op
-        };
-
         return node.Operator switch
         {
             IrBinaryOperator.LessOrEqualTo or IrBinaryOperator.GreaterOrEqualTo => new IrBinaryExpressionNode(
@@ -28,13 +20,19 @@ public class OperatorUnwindingRewriter : IrRewriter
                 new IrBinaryExpressionNode(IrBinaryOperator.Equal, result.Left, result.Right)),
             _ => result
         };
+
+        IrBinaryOperator SeparateOperator(IrBinaryOperator op) => op switch
+        {
+            IrBinaryOperator.NotEqual => IrBinaryOperator.Equal,
+            IrBinaryOperator.LessOrEqualTo => IrBinaryOperator.LessThan,
+            IrBinaryOperator.GreaterOrEqualTo => IrBinaryOperator.GreaterThan,
+            _ => op
+        };
     }
 
-    public override IrNode VisitStackPointerExpressionNode(IrStackPointerExpressionNode node)
-    {
-        return Scratch3CommandHelper.ItemAt(ReservedNames.Stack, node.Offset == 0
+    public override IrNode VisitStackPointerExpressionNode(IrStackPointerExpressionNode node) =>
+        Scratch3CommandHelper.ItemAt(ReservedNames.Stack, node.Offset == 0
             ? Scratch3CommandHelper.LengthOf(ReservedNames.Stack)
             : new IrBinaryExpressionNode(IrBinaryOperator.Subtract, Scratch3CommandHelper.LengthOf(ReservedNames.Stack),
                 new IrConstantExpressionNode(TypedValue.Number(node.Offset))));
-    }
 }
