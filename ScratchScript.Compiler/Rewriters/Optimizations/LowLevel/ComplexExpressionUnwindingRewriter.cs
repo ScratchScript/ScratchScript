@@ -51,13 +51,15 @@ public class ComplexExpressionUnwindingRewriter : IrRewriter
 
     public override IrNode VisitIfCommand(IrIfCommandNode node)
     {
-        if (Visit(node.Condition) is not IrComplexExpressionNode complexCondition) return node;
+        if (Visit(node.Condition) is not IrExpressionNode condition) return node;
         var body = (IrBlockNode)Visit(node.Body);
         var alternate = node.Alternate != null ? (IrBlockNode)Visit(node.Alternate) : null;
 
-        return new IrCommandSequenceNode(new List<IrCommandNode>().ConcatNullable(complexCondition.Dependencies)
-            .ConcatNullable(new IrIfCommandNode(complexCondition.Expression, body, alternate))
-            .ConcatNullable(complexCondition.Cleanup));
+        return condition is IrComplexExpressionNode complexCondition
+            ? new IrCommandSequenceNode(new List<IrCommandNode>().ConcatNullable(complexCondition.Dependencies)
+                .ConcatNullable(new IrIfCommandNode(complexCondition.Expression, body, alternate))
+                .ConcatNullable(complexCondition.Cleanup))
+            : new IrIfCommandNode(condition, body, alternate);
     }
 
     public override IrNode VisitSetCommand(IrSetCommandNode node)

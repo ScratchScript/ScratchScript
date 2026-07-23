@@ -29,10 +29,10 @@ public enum IrBinaryOperator
     And,
     Or,
     Xor,
-    
+
     Equal,
     NotEqual,
-    
+
     LessThan,
     LessOrEqualTo,
     GreaterThan,
@@ -70,7 +70,8 @@ public abstract record IrExpressionNode : IrNode
 // blocks
 public record IrBlockNode(Scope Scope) : IrNode
 {
-    public IrBlockNode(IEnumerable<IrCommandNode> commands) : this(new Scope { Body = commands.ToList() })
+    public IrBlockNode(IEnumerable<IrCommandNode> commands, Scope? parent = null) : this(new Scope
+        { Body = commands.ToList(), ParentScope = parent })
     {
     }
 }

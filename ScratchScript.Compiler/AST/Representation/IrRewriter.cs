@@ -7,6 +7,15 @@ public class IrRewriter : IrBaseVisitor<IrNode>
     protected IrProgramNode ProgramNode { get; set; }
     protected Scope? CurrentScope { get; set; }
 
+    protected Scope CloneScope(Scope which)
+    {
+        var previousScope = CurrentScope;
+        CurrentScope = which;
+        var result = which.CloneWithTransformedBody(Visit);
+        CurrentScope = previousScope;
+        return result;
+    }
+
     public override IrNode VisitTargetSpecificNode(ITargetSpecificNode node) => node.Rewrite(Visit);
 
     public override IrNode VisitProgram(IrProgramNode node)
@@ -31,15 +40,16 @@ public class IrRewriter : IrBaseVisitor<IrNode>
     public override IrNode VisitFunction(IrFunctionNode node) =>
         node with
         {
-            FunctionScope = (FunctionScope)node.FunctionScope.CloneWithTransformedBody(Visit),
+            FunctionScope = (FunctionScope)CloneScope(node.FunctionScope),
+            Scope = CloneScope(node.FunctionScope),
             Attributes = node.Attributes?.Select(Visit).OfType<IrAttributeNode>()
         };
 
     public override IrNode VisitEvent(IrEventNode node) =>
-        node with { Scope = node.Scope.CloneWithTransformedBody(Visit) };
+        node with { Scope = CloneScope(node.Scope) };
 
     public override IrNode VisitRawBlock(IrBlockNode node) =>
-        node with { Scope = node.Scope.CloneWithTransformedBody(Visit) };
+        node with { Scope = CloneScope(node.Scope) };
 
     public override IrNode VisitAttribute(IrAttributeNode node) => node with
     {

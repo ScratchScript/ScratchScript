@@ -2,14 +2,14 @@
 using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.AST.Representation.TargetSpecific;
 using ScratchScript.Compiler.Extensions;
-using ScratchScript.Compiler.Rewriters.Optimizations.HighLevel;
 using ScratchScript.Compiler.Rewriters.TargetLowering;
 using ScratchScript.Compiler.TypeChecker;
 
 namespace ScratchScript.Compiler.Rewriters.Optimizations.LowLevel;
 
-public class SyntheticLoopUnwindingRewriter : IrRewriter, IScratch3ExtensionRewriter
+public class LoopSynthesisRewriter : IrRewriter, IScratch3ExtensionRewriter
 {
+    public const string SyntheticWhileFlag = "SYNTHETIC_WHILE";
     private readonly List<IrFunctionNode> _pendingFunctions = [];
 
     private int SyntheticWhileLoopCount =>
@@ -23,19 +23,39 @@ public class SyntheticLoopUnwindingRewriter : IrRewriter, IScratch3ExtensionRewr
             : program;
     }
 
-    public override IrNode VisitTargetSpecificNode(ITargetSpecificNode node) =>
-        ((IScratch3ExtensionRewriter)this).VisitScratch3SpecificNode(node, Visit);
-
-    public IrNode VisitSynthesizedWhileLoop(IrScratch3SynthesizedWhileLoopNode node, Func<IrNode, IrNode> visitor)
+    public override IrNode VisitWhileCommand(IrWhileCommandNode node)
     {
+        /*
+         *  while loop structure:
+         *
+         *  {condition dependencies}
+         *  while(condition) {
+         *       {body}
+         *       {condition cleanup}
+         *       {condition dependencies} <- because it needs to be recalculated
+         *  }
+         *  {condition cleanup} <- if the loop exits, the leftover data is still there,
+         *                         so it needs to be cleaned
+         */
+        if (node.Flags.Contains(SyntheticWhileFlag)) return node;
+
         if (CurrentScope == null) throw new Exception();
         if (node.Body.Scope is not LoopScope loopScope) throw new Exception();
 
+        // ideal case where we don't need to do anything
+        if (Visit(node.Condition) is not IrComplexExpressionNode &&
+            loopScope is { HasBreak: false, HasContinue: false })
+        {
+            if (loopScope.NextIterationPrerequisite != null) loopScope.Body.Add(loopScope.NextIterationPrerequisite);
+            return node.WithFlag(SyntheticWhileFlag);
+        }
+
+        var complexCondition = ((IrExpressionNode)Visit(node.Condition)).ToComplex();
         var newCondition = IrRewriterUtils.RewriteUntilNoChanges<IrExpressionNode>(
             new ComplexExpressionUnwindingRewriter(),
-            node.Condition with
+            complexCondition with
             {
-                Expression = new IrBinaryExpressionNode(IrBinaryOperator.And, node.Condition.Expression,
+                Expression = new IrBinaryExpressionNode(IrBinaryOperator.And, complexCondition.Expression,
                     new IrBinaryExpressionNode(IrBinaryOperator.Equal,
                         new IrGlobalVariableIdentifierExpressionNode(ReservedNames.ControlFlowBreak),
                         new IrConstantExpressionNode(TypedValue.Number(0))))
@@ -62,8 +82,8 @@ public class SyntheticLoopUnwindingRewriter : IrRewriter, IScratch3ExtensionRewr
             new IrSetCommandNode(ReservedNames.ControlFlowBreak, new IrConstantExpressionNode(TypedValue.Number(0))),
             new IrWhileCommandNode(newCondition.Expression, new IrBlockNode(new LoopScope
             {
-                HasBreak = node.HasBreak,
-                HasContinue = node.HasContinue,
+                HasBreak = loopScope.HasBreak,
+                HasContinue = loopScope.HasContinue,
                 Body =
                 [
                     new IrCallFunctionCommandNode(bodyFunction.FunctionScope.FunctionName, []),
@@ -72,7 +92,7 @@ public class SyntheticLoopUnwindingRewriter : IrRewriter, IScratch3ExtensionRewr
                     newCondition.Dependencies ?? new IrNoOpCommandNode()
                 ],
                 ParentScope = mainFunction.FunctionScope
-            })).WithFlag(LoopSynthesisRewriter.SyntheticWhileFlag),
+            })).WithFlag(SyntheticWhileFlag),
             newCondition.Cleanup ?? new IrNoOpCommandNode(),
             new IrSetCommandNode(ReservedNames.ControlFlowBreak, new IrConstantExpressionNode(TypedValue.Number(0))),
         ];

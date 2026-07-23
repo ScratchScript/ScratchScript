@@ -174,9 +174,10 @@ public class Scratch3LoweringPass : IrRewriter
 
     public override IrNode VisitFunctionArgumentExpressionNode(IrFunctionArgumentExpressionNode node)
     {
-        if (CurrentScope is not FunctionScope functionScope)
+        var closestFunctionScope = CurrentScope?.GetClosestFunctionScope();
+        if (closestFunctionScope == null)
             throw new Exception("This node cannot be processed without a scope");
-        if (functionScope.UseArgumentReporters) return node;
+        if (closestFunctionScope.UseArgumentReporters) return node;
 
         return ItemAt(ReservedNames.Stack,
             GetFunctionArgumentExpression(node.Name)
@@ -185,9 +186,11 @@ public class Scratch3LoweringPass : IrRewriter
 
     public override IrNode VisitTernaryExpression(IrTernaryExpressionNode node) =>
         new IrComplexExpressionNode(new IrStackPointerExpressionNode(0),
-            new IrIfCommandNode(node.Condition,
-                new IrBlockNode([new IrPushCommand(ReservedNames.Stack, node.TrueValue)]),
-                new IrBlockNode([new IrPushCommand(ReservedNames.Stack, node.FalseValue)])),
+            new IrIfCommandNode((IrExpressionNode)Visit(node.Condition),
+                new IrBlockNode([new IrPushCommand(ReservedNames.Stack, (IrExpressionNode)Visit(node.TrueValue))],
+                    CurrentScope),
+                new IrBlockNode([new IrPushCommand(ReservedNames.Stack, (IrExpressionNode)Visit(node.FalseValue))],
+                    CurrentScope)),
             new IrPopAtCommand(ReservedNames.Stack, LengthOf(ReservedNames.Stack)));
 
     public override IrNode VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node)
@@ -217,7 +220,8 @@ public class Scratch3LoweringPass : IrRewriter
     {
         var commands = new List<IrCommandNode>();
         if (node.ReturnValue != null)
-            commands.Add(new IrSetCommandNode(ReservedNames.TemporaryReturnValue, node.ReturnValue));
+            commands.Add(
+                new IrSetCommandNode(ReservedNames.TemporaryReturnValue, (IrExpressionNode)Visit(node.ReturnValue)));
         commands.AddRange([
             new IrCallFunctionCommandNode(ReservedNames.CollapseFrameFunction,
             [
@@ -249,8 +253,9 @@ public class Scratch3LoweringPass : IrRewriter
 
     private IrBinaryExpressionNode GetFunctionArgumentExpression(string name)
     {
-        if (CurrentScope is not FunctionScope functionScope) throw new Exception();
-        var index = functionScope.Arguments.FindIndex(v => v.Name == name) + 1;
+        var closestFunctionScope = CurrentScope?.GetClosestFunctionScope();
+        if (closestFunctionScope == null) throw new Exception();
+        var index = closestFunctionScope.Arguments.FindIndex(v => v.Name == name) + 1;
         return new IrBinaryExpressionNode(IrBinaryOperator.Add,
             new IrGlobalVariableIdentifierExpressionNode(ReservedNames.FramePointer),
             new IrConstantExpressionNode(TypedValue.Number(index)));

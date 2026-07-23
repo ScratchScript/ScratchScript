@@ -18,20 +18,13 @@ using Spectre.Console;
 using ScratchScriptVisitor = ScratchScript.Compiler.AST.Builder.ScratchScriptVisitor;
 
 const string source = """
-                      function id(x: number) { return x; }
-                      
+                      function fibonacci(x: number): number {
+                        return x < 2 ? x: fibonacci(x - 1) + fibonacci(x - 2);
+                      }
+
                       on start { 
-                        let count = 0;
-                        while(id(count) < 100) {
-                            count += 1;
-                            if(count % 2 == 0) continue;
-                            if(count == 97) break;
-                            let secs = 0.5;
-                            while(secs >= 0.1) {
-                                if(secs <= 0.21) break;
-                                __raw("looks_sayforsecs", {inputs: {MESSAGE: count + secs, SECS: secs}});
-                                secs -= 0.1;
-                            }
+                        for(let i = fibonacci(5); i < 100; i += 1) {
+                            __raw("looks_sayforsecs", {inputs: {MESSAGE: `fibonacci(${i}) = ${fibonacci(i)}`, SECS: 2}});
                         }
                       }
                       """;
@@ -84,7 +77,6 @@ RunUntilNoChanges(typeof(Scratch3LoweringPass));
 Console.WriteLine("running low-level optimizations");
 RunUntilNoChanges(typeof(ComplexExpressionUnwindingRewriter));
 RunUntilNoChanges(typeof(LoopSynthesisRewriter));
-RunUntilNoChanges(typeof(SyntheticLoopUnwindingRewriter));
 result = (IrProgramNode)new OperatorUnwindingRewriter().VisitProgram(result);
 
 Console.WriteLine("packing into an archive");
