@@ -77,13 +77,13 @@ if (!typeChecker.Success) return 1;
 
 Console.WriteLine("running high-level optimizations");
 RunUntilNoChanges(typeof(RawFunctionsExpansionRewriter));
-RunUntilNoChanges(typeof(LoopSynthesisRewriter));
 
 Console.WriteLine("running lowering pass");
 RunUntilNoChanges(typeof(Scratch3LoweringPass));
 
 Console.WriteLine("running low-level optimizations");
 RunUntilNoChanges(typeof(ComplexExpressionUnwindingRewriter));
+RunUntilNoChanges(typeof(LoopSynthesisRewriter));
 RunUntilNoChanges(typeof(SyntheticLoopUnwindingRewriter));
 result = (IrProgramNode)new OperatorUnwindingRewriter().VisitProgram(result);
 

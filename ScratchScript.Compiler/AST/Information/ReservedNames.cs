@@ -18,7 +18,7 @@ public static class ReservedNames
     public const string RawStatementFunction = "__raw";
     public const string RawExpressionFunction = "__raw_expr";
 
-    public const string WhileBreak = "__B";
+    public const string ControlFlowBreak = "__CFB";
     public const string WhileMainFunction = "__while_main";
     public const string WhileBodyFunction = "__while_body";
 
@@ -31,5 +31,7 @@ public static class ReservedNames
     ];
 
     public static readonly List<string> GlobalCallableFunctions = [RawStatementFunction, RawExpressionFunction];
-    public static readonly List<string> GlobalVariables = [FramePointer, OldFramePointer, TemporaryReturnValue, WhileBreak];
+
+    public static readonly List<string> GlobalVariables =
+        [FramePointer, OldFramePointer, TemporaryReturnValue, ControlFlowBreak];
 }

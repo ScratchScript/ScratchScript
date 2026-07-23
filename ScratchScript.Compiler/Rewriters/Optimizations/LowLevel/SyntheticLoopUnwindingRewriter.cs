@@ -29,6 +29,7 @@ public class SyntheticLoopUnwindingRewriter : IrRewriter, IScratch3ExtensionRewr
     public IrNode VisitSynthesizedWhileLoop(IrScratch3SynthesizedWhileLoopNode node, Func<IrNode, IrNode> visitor)
     {
         if (CurrentScope == null) throw new Exception();
+        if (node.Body.Scope is not LoopScope loopScope) throw new Exception();
 
         var newCondition = IrRewriterUtils.RewriteUntilNoChanges<IrExpressionNode>(
             new ComplexExpressionUnwindingRewriter(),
@@ -36,7 +37,7 @@ public class SyntheticLoopUnwindingRewriter : IrRewriter, IScratch3ExtensionRewr
             {
                 Expression = new IrBinaryExpressionNode(IrBinaryOperator.And, node.Condition.Expression,
                     new IrBinaryExpressionNode(IrBinaryOperator.Equal,
-                        new IrGlobalVariableIdentifierExpressionNode(ReservedNames.WhileBreak),
+                        new IrGlobalVariableIdentifierExpressionNode(ReservedNames.ControlFlowBreak),
                         new IrConstantExpressionNode(TypedValue.Number(0))))
             }).ToComplex();
 
@@ -58,7 +59,7 @@ public class SyntheticLoopUnwindingRewriter : IrRewriter, IScratch3ExtensionRewr
         mainFunction.FunctionScope.Body =
         [
             newCondition.Dependencies ?? new IrNoOpCommandNode(),
-            new IrSetCommandNode(ReservedNames.WhileBreak, new IrConstantExpressionNode(TypedValue.Number(0))),
+            new IrSetCommandNode(ReservedNames.ControlFlowBreak, new IrConstantExpressionNode(TypedValue.Number(0))),
             new IrWhileCommandNode(newCondition.Expression, new IrBlockNode(new LoopScope
             {
                 HasBreak = node.HasBreak,
@@ -66,12 +67,14 @@ public class SyntheticLoopUnwindingRewriter : IrRewriter, IScratch3ExtensionRewr
                 Body =
                 [
                     new IrCallFunctionCommandNode(bodyFunction.FunctionScope.FunctionName, []),
+                    loopScope.NextIterationPrerequisite ?? new IrNoOpCommandNode(),
                     newCondition.Cleanup ?? new IrNoOpCommandNode(),
                     newCondition.Dependencies ?? new IrNoOpCommandNode()
                 ],
                 ParentScope = mainFunction.FunctionScope
             })).WithFlag(LoopSynthesisRewriter.SyntheticWhileFlag),
-            new IrSetCommandNode(ReservedNames.WhileBreak, new IrConstantExpressionNode(TypedValue.Number(0))),
+            newCondition.Cleanup ?? new IrNoOpCommandNode(),
+            new IrSetCommandNode(ReservedNames.ControlFlowBreak, new IrConstantExpressionNode(TypedValue.Number(0))),
         ];
 
         _pendingFunctions.Add(bodyFunction);
@@ -80,7 +83,7 @@ public class SyntheticLoopUnwindingRewriter : IrRewriter, IScratch3ExtensionRewr
     }
 
     public override IrNode VisitBreakCommand(IrBreakCommandNode node) => new IrCommandSequenceNode([
-        new IrSetCommandNode(ReservedNames.WhileBreak, new IrConstantExpressionNode(TypedValue.Number(1))),
+        new IrSetCommandNode(ReservedNames.ControlFlowBreak, new IrConstantExpressionNode(TypedValue.Number(1))),
         Scratch3CommandHelper.StopThisScript()
     ]);
 

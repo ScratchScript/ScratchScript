@@ -111,7 +111,6 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
     }
 
     public override IrNode? VisitBlock(ScratchScriptParser.BlockContext context) => VisitBlock(new Scope(), context);
-
     private IrBlockNode VisitBlock(Scope scope, ScratchScriptParser.BlockContext context)
     {
         if (_scope != null)

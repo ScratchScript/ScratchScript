@@ -1,6 +1,4 @@
-﻿using ScratchScript.Compiler.AST.Information;
-using ScratchScript.Compiler.AST.Representation;
-using ScratchScript.Compiler.AST.Representation.TargetSpecific;
+﻿using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.TypeChecker;
 

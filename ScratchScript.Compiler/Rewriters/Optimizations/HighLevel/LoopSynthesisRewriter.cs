@@ -5,6 +5,7 @@ using ScratchScript.Compiler.Extensions;
 
 namespace ScratchScript.Compiler.Rewriters.Optimizations.HighLevel;
 
+// TODO: apparently this might not even be needed???
 public class LoopSynthesisRewriter : IrRewriter
 {
     public const string SyntheticWhileFlag = "SYNTHETIC_WHILE";
@@ -27,8 +28,11 @@ public class LoopSynthesisRewriter : IrRewriter
 
         // ideal case where we don't need to do anything
         if (Visit(node.Condition) is not IrComplexExpressionNode &&
-            node.Body.Scope is LoopScope { HasBreak: false, HasContinue: false })
+            node.Body.Scope is LoopScope { HasBreak: false, HasContinue: false } loopScope)
+        {
+            if (loopScope.NextIterationPrerequisite != null) loopScope.Body.Add(loopScope.NextIterationPrerequisite);
             return node.WithFlag(SyntheticWhileFlag);
+        }
 
         var condition = ((IrExpressionNode)Visit(node.Condition)).ToComplex();
         return new IrScratch3SynthesizedWhileLoopNode(condition, node.Body);

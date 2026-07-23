@@ -166,12 +166,6 @@ public record IrWhileCommandNode(IrExpressionNode Condition, IrBlockNode Body) :
 
 public record IrRepeatCommandNode(IrExpressionNode Times, IrBlockNode Body) : IrCommandNode;
 
-public record IrForCommandNode(
-    IrCommandNode Initialization,
-    IrExpressionNode Condition,
-    IrCommandNode Change,
-    IrBlockNode Body) : IrCommandNode;
-
 public record IrBreakCommandNode : IrCommandNode;
 
 public record IrContinueCommandNode : IrCommandNode;
@@ -249,10 +243,8 @@ public static class IrHasher
                 HashCode.Combine(31, GetNodeHash(loop.Condition), GetNodeHash(loop.Body)),
             IrRepeatCommandNode repeat => HashCode.Combine(32, GetNodeHash(repeat.Times),
                 GetNodeHash(repeat.Body)),
-            IrForCommandNode fr => HashCode.Combine(33, GetNodeHash(fr.Initialization), GetNodeHash(fr.Condition),
-                GetNodeHash(fr.Change), GetNodeHash(fr.Body)),
-            IrBreakCommandNode => HashCode.Combine(34),
-            IrContinueCommandNode => HashCode.Combine(35),
+            IrBreakCommandNode => HashCode.Combine(33),
+            IrContinueCommandNode => HashCode.Combine(34),
 
             _ => throw new ArgumentOutOfRangeException(nameof(node), $"Unhandled node type: {node.GetType().Name}")
         };

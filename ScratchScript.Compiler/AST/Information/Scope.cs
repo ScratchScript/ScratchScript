@@ -22,7 +22,7 @@ public class Scope
     public List<IrCommandNode> Body { get; set; } = [];
     public int Depth { get; set; }
     public Scope? ParentScope { get; set; }
-    public List<ScratchScriptVariable> Variables { get; set; } = new();
+    public List<ScratchScriptVariable> Variables { get; set; } = [];
 
     public ScratchScriptVariable? GetVariable(string name)
     {
@@ -120,15 +120,28 @@ public class Scope
     }
 }
 
+public enum LoopScopeKind
+{
+    While,
+    For,
+    Repeat
+}
+
 public class LoopScope : Scope
 {
+    public LoopScopeKind Kind { get; set; }
     public bool HasBreak { get; set; }
     public bool HasContinue { get; set; }
+    public IrCommandNode? NextIterationPrerequisite { get; set; }
 
     public override Scope CloneWithTransformedBody(Func<IrNode, IrNode> visitor)
     {
         var target = new LoopScope();
         PopulateClone(target, visitor);
+        target.NextIterationPrerequisite = NextIterationPrerequisite == null
+            ? null
+            : (IrCommandNode)visitor(NextIterationPrerequisite);
+        target.Kind = Kind;
         target.HasBreak = HasBreak;
         target.HasContinue = HasContinue;
         return target;
