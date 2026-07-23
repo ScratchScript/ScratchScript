@@ -5,7 +5,7 @@ using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Rewriters.TargetLowering;
 using ScratchScript.Compiler.TypeChecker;
 
-namespace ScratchScript.Compiler.Rewriters.Optimizations.LowLevel;
+namespace ScratchScript.Compiler.Rewriters.Codegen.LowLevel;
 
 public class LoopSynthesisRewriter : IrRewriter, IScratch3ExtensionRewriter
 {
@@ -40,14 +40,15 @@ public class LoopSynthesisRewriter : IrRewriter, IScratch3ExtensionRewriter
         if (node.Flags.Contains(SyntheticWhileFlag)) return node;
 
         if (CurrentScope == null) throw new Exception();
-        if (node.Body.Scope is not LoopScope loopScope) throw new Exception();
+        if (Visit(node.Body) is not IrBlockNode { Scope: LoopScope loopScope } body) throw new Exception();
+        if (Visit(node.Condition) is not IrExpressionNode condition) throw new Exception();
 
         // ideal case where we don't need to do anything
-        if (Visit(node.Condition) is not IrComplexExpressionNode &&
+        if (condition is not IrComplexExpressionNode &&
             loopScope is { HasBreak: false, HasContinue: false })
         {
             if (loopScope.NextIterationPrerequisite != null) loopScope.Body.Add(loopScope.NextIterationPrerequisite);
-            return node.WithFlag(SyntheticWhileFlag);
+            return new IrWhileCommandNode(condition, body).WithFlag(SyntheticWhileFlag);
         }
 
         var complexCondition = ((IrExpressionNode)Visit(node.Condition)).ToComplex();
@@ -65,7 +66,7 @@ public class LoopSynthesisRewriter : IrRewriter, IScratch3ExtensionRewriter
         {
             FunctionName = $"{ReservedNames.WhileBodyFunction}_{SyntheticWhileLoopCount}",
             ReturnType = ScratchType.Void,
-            Body = node.Body.Scope.Body,
+            Body = loopScope.Body,
             ParentScope = CurrentScope
         });
 

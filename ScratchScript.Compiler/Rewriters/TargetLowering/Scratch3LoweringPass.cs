@@ -3,8 +3,6 @@ using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.AST.Representation.TargetSpecific;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Rewriters.Informational;
-using ScratchScript.Compiler.Rewriters.Optimizations.HighLevel;
-using ScratchScript.Compiler.Rewriters.Optimizations.LowLevel;
 using ScratchScript.Compiler.TypeChecker;
 using static ScratchScript.Compiler.Rewriters.TargetLowering.Scratch3CommandHelper;
 

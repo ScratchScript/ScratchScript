@@ -2,7 +2,7 @@
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.TypeChecker;
 
-namespace ScratchScript.Compiler.Rewriters.Optimizations.LowLevel;
+namespace ScratchScript.Compiler.Rewriters.Codegen.LowLevel;
 
 public class ComplexExpressionUnwindingRewriter : IrRewriter
 {

@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text;
 using ScratchScript.Compiler.AST.GeneratedVisitor;
 using ScratchScript.Compiler.AST.Information;
 using ScratchScript.Compiler.AST.Representation;
@@ -37,12 +38,39 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
             return new IrConstantExpressionNode(TypedValue.Number(double.Parse(n.GetText(),
                 CultureInfo.InvariantCulture)));
         if (context.String() is { } s)
-            return new IrConstantExpressionNode(TypedValue.String(s.GetText()[1..^1]));
+            return new IrConstantExpressionNode(TypedValue.String(UnescapeString(s.GetText()[1..^1])));
         if (context.boolean() is { } b)
             return new IrConstantExpressionNode(TypedValue.Boolean(b.GetText() == "true"));
         if (context.Color() is { } c)
             return new IrConstantExpressionNode(TypedValue.Color(c.GetText()[1..]));
         return null;
+    }
+
+    private static string UnescapeString(string str)
+    {
+        if (string.IsNullOrEmpty(str) || !str.Contains('\\')) return str;
+
+        var sb = new StringBuilder(str.Length);
+        for (var i = 0; i < str.Length; i++)
+        {
+            if (str[i] != '\\' || i + 1 > str.Length)
+            {
+                sb.Append(str[i]);
+                continue;
+            }
+
+            i++;
+            switch (str[i])
+            {
+                case 'n': sb.Append('\n'); break;
+                case 't': sb.Append('\t'); break;
+                case '"': sb.Append('"'); break;
+                case '\'': sb.Append('\''); break;
+                case '\\': sb.Append('\\'); break;
+            }
+        }
+
+        return sb.ToString();
     }
 
     public override IrNode? VisitObjectLiteralExpression(ScratchScriptParser.ObjectLiteralExpressionContext context)
@@ -96,6 +124,14 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
                     ? value
                     : new IrBinaryExpressionNode(IrBinaryOperator.Join, result, value);
             }
+            else if (part.EscapeSequence() != null)
+            {
+                var value = new IrConstantExpressionNode(new TypedValue(UnescapeString(part.EscapeSequence().GetText()),
+                    ScratchType.String));
+                result = result == null
+                    ? value
+                    : new IrBinaryExpressionNode(IrBinaryOperator.Join, result, value);
+            }
             else if (part.expression() != null)
             {
                 if (Visit(part.expression()) is IrExpressionNode partValue)
@@ -111,6 +147,7 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
     }
 
     public override IrNode? VisitBlock(ScratchScriptParser.BlockContext context) => VisitBlock(new Scope(), context);
+
     private IrBlockNode VisitBlock(Scope scope, ScratchScriptParser.BlockContext context)
     {
         if (_scope != null)

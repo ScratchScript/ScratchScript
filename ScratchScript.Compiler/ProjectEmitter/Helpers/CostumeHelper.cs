@@ -4,7 +4,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace ScratchScript.Compiler.Helpers;
+namespace ScratchScript.Compiler.ProjectEmitter.Helpers;
 
 public static class CostumeHelper
 {

@@ -2,7 +2,7 @@
 using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.TypeChecker;
 
-namespace ScratchScript.Compiler.Rewriters.Optimizations.HighLevel;
+namespace ScratchScript.Compiler.Rewriters.Codegen.HighLevel;
 
 public class RawFunctionsExpansionRewriter : IrRewriter
 {

@@ -119,13 +119,20 @@ List: 'list';
 */
 Number: Digit+ ([.] Digit+)?; 
 Identifier: [a-zA-Z_][a-zA-Z0-9_]*;
-String: ('"' (~["\\\r\n] | '\\' ('"' | '\\'))* '"') | ('\'' (~['\\\r\n] | '\\' ('\'' | '\\'))* '\'');
+
+fragment StringEscape
+    : '\\' [tn"'\\]
+    | '\\' ~[\r\n];
+String
+    : '"'  (~["\\\r\n] | StringEscape)* '"'
+    | '\'' (~['\\\r\n] | StringEscape)* '\'';
+    
 Color: Hashtag HexDigit HexDigit HexDigit HexDigit HexDigit HexDigit;
 
 mode STRING_MODE;
 
 EnterInterpolatedExpression: '${' -> pushMode(DEFAULT_MODE);
-EscapeSequence: '\\' .;
+EscapeSequence: StringEscape;
 Text: ~[\\`$]+;
 
 CloseInterpolatedString: '`' -> popMode;

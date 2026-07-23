@@ -3,7 +3,7 @@ using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Rewriters.TargetLowering;
 using ScratchScript.Compiler.TypeChecker;
 
-namespace ScratchScript.Compiler.Rewriters.Optimizations.LowLevel;
+namespace ScratchScript.Compiler.Rewriters.Codegen.LowLevel;
 
 public class OperatorUnwindingRewriter : IrRewriter
 {

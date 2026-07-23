@@ -7,11 +7,11 @@ using Newtonsoft.Json.Serialization;
 using ScratchScript.Compiler.AST.GeneratedVisitor;
 using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Diagnostics;
-using ScratchScript.Compiler.Helpers;
 using ScratchScript.Compiler.ProjectEmitter;
+using ScratchScript.Compiler.ProjectEmitter.Helpers;
 using ScratchScript.Compiler.ProjectEmitter.Models;
-using ScratchScript.Compiler.Rewriters.Optimizations.HighLevel;
-using ScratchScript.Compiler.Rewriters.Optimizations.LowLevel;
+using ScratchScript.Compiler.Rewriters.Codegen.HighLevel;
+using ScratchScript.Compiler.Rewriters.Codegen.LowLevel;
 using ScratchScript.Compiler.Rewriters.TargetLowering;
 using ScratchScript.Compiler.TypeChecker;
 using Spectre.Console;
@@ -23,8 +23,18 @@ const string source = """
                       }
 
                       on start { 
-                        for(let i = fibonacci(5); i < 100; i += 1) {
-                            __raw("looks_sayforsecs", {inputs: {MESSAGE: `fibonacci(${i}) = ${fibonacci(i)}`, SECS: 2}});
+                        for(let i = fibonacci(8); i < 100; i += 1) {
+                            let count = 5;
+                            while(count > 0) {
+                                count -= 1;
+                                __raw("looks_sayforsecs", {
+                                    inputs: {
+                                        MESSAGE: `fibonacci(${i}) = ${fibonacci(i)}\ncount = ${count / 10}`,
+                                        SECS: count / 10
+                                    }
+                                });
+                                if(count <= 1) break;
+                            }
                         }
                       }
                       """;
