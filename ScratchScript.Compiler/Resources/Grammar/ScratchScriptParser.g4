@@ -31,7 +31,7 @@ lineOrBlock: line | block;
 
 postIncrementStatement: Identifier postIncrementOperators;
 importStatement: Import ((LeftBrace Identifier (Comma Identifier)*? RightBrace) | importAll) From String Semicolon;
-attributeStatement: At Identifier (LeftParen (constant (Comma constant)*?)? RightParen)?;
+attributeStatement: At Identifier (LeftParen (expression (Comma expression)*?)? RightParen)?;
 returnStatement: Return expression? Semicolon;
 throwStatement: Throw String Semicolon;
 breakStatement: Break Semicolon;

@@ -17,12 +17,7 @@ public class ScopeTotalVariableCountCalculationRewriter : IrRewriter
     {
         _target ??= node.Scope;
         var isTarget = _target == node.Scope;
-
-        var previousScope = CurrentScope;
-        CurrentScope = node.Scope;
-
         var result = (IrBlockNode)base.VisitBlock(node);
-        CurrentScope = previousScope;
 
         var parentKey = result.Scope.ParentScope?.Id ?? Guid.Empty;
         if (!_children.ContainsKey(parentKey)) _children.Add(parentKey, []);

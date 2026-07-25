@@ -18,23 +18,23 @@ using Spectre.Console;
 using ScratchScriptVisitor = ScratchScript.Compiler.AST.Builder.ScratchScriptVisitor;
 
 const string source = """
-                      function fibonacci(x: number): number {
-                        return x < 2 ? x: fibonacci(x - 1) + fibonacci(x - 2);
+                      @inline function sayTimed(message: string, duration: number) {
+                        __raw("looks_sayforsecs", {
+                          inputs: {
+                              MESSAGE: message,
+                              SECS: duration
+                          }
+                        });
+                      }
+                      
+                      @inline function size() {
+                        return __raw_expr("looks_size", {}, "number");
                       }
 
-                      on start { 
-                        for(let i = fibonacci(8); i < 100; i += 1) {
-                            let count = 5;
-                            while(count > 0) {
-                                count -= 1;
-                                __raw("looks_sayforsecs", {
-                                    inputs: {
-                                        MESSAGE: `fibonacci(${i}) = ${fibonacci(i)}\ncount = ${count / 10}`,
-                                        SECS: count / 10
-                                    }
-                                });
-                                if(count <= 1) break;
-                            }
+                      on start {
+                        repeat(5) {
+                            sayTimed(size(), 2);
+                            break;
                         }
                       }
                       """;
@@ -80,6 +80,8 @@ if (!typeChecker.Success) return 1;
 
 Console.WriteLine("running high-level optimizations");
 RunUntilNoChanges(typeof(RawFunctionsExpansionRewriter));
+RunUntilNoChanges(typeof(ControlFlowDesugarizationRewriter));
+RunUntilNoChanges(typeof(FunctionInlineRewriter));
 
 Console.WriteLine("running lowering pass");
 RunUntilNoChanges(typeof(Scratch3LoweringPass));

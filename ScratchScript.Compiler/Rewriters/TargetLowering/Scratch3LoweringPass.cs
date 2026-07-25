@@ -35,7 +35,7 @@ internal static class Scratch3CommandHelper
                     new IrPushCommand(ReservedNames.Stack, new IrConstantExpressionNode(TypedValue.Number(0)))
                 ]))
         ]
-    });
+    }, []);
 
     public static readonly IrFunctionNode CollapseFrameFunction = new(true, new FunctionScope
     {
@@ -74,7 +74,7 @@ internal static class Scratch3CommandHelper
                     new IrGlobalVariableIdentifierExpressionNode(ReservedNames.TemporaryReturnValue))
             ]), null)
         ]
-    });
+    }, []);
 
     public static IrShadowExpressionNode IndexOf(string list, IrExpressionNode item) =>
         IrShadowBuilder
@@ -111,6 +111,8 @@ internal static class Scratch3CommandHelper
 public class Scratch3LoweringPass : IrRewriter
 {
     private const string EventAllocationPerformedFlag = "SCRATCH3_EVENT_ALLOCATION_PERFORMED";
+    private const string FunctionAllocationPerformedFlag = "SCRATCH3_FUNCTION_ALLOCATION_PERFORMED";
+    private const string NativeFunctionCallFlag = "SCRATCH3_NATIVE_FUNCTION_CALL";
     private readonly List<IrFunctionNode> _pendingFunctions = [];
 
     public override IrNode VisitProgram(IrProgramNode node)
@@ -142,15 +144,39 @@ public class Scratch3LoweringPass : IrRewriter
             [
                 new IrConstantExpressionNode(TypedValue.Number(0)),
                 new IrConstantExpressionNode(TypedValue.Number(variableCountCalculator.TotalVariableCount))
-            ])
+            ]).WithFlag(NativeFunctionCallFlag)
         ]);
         result.Scope.Body.Insert(0, allocation);
         result.Scope.Body.Add(new IrCallFunctionCommandNode(ReservedNames.CollapseFrameFunction,
         [
             new IrConstantExpressionNode(TypedValue.Number(0))
-        ]));
+        ]).WithFlag(NativeFunctionCallFlag));
 
         return result;
+    }
+
+    public override IrNode VisitFunction(IrFunctionNode node)
+    {
+        var result = (IrFunctionNode)base.VisitFunction(node);
+        if (result.Flags.Contains(FunctionAllocationPerformedFlag)) return result;
+        // native stuff we don't touch
+        if (result.FunctionScope.UseArgumentReporters) return result.WithFlag(FunctionAllocationPerformedFlag);
+
+        var variableCountCalculator = new ScopeTotalVariableCountCalculationRewriter();
+        variableCountCalculator.VisitBlock(result);
+
+        result.FunctionScope.Body.Insert(0, new IrCallFunctionCommandNode(ReservedNames.AllocateFrameFunction,
+        [
+            new IrConstantExpressionNode(TypedValue.Number(result.FunctionScope.Arguments.Count)),
+            new IrConstantExpressionNode(TypedValue.Number(variableCountCalculator.TotalVariableCount))
+        ]).WithFlag(NativeFunctionCallFlag));
+        if (!result.FunctionScope.HasReturn)
+            result.FunctionScope.Body.Add(new IrCallFunctionCommandNode(ReservedNames.CollapseFrameFunction,
+            [
+                new IrConstantExpressionNode(TypedValue.Number(0))
+            ]).WithFlag(NativeFunctionCallFlag));
+
+        return result.WithFlag(FunctionAllocationPerformedFlag);
     }
 
     public override IrNode VisitLocalVariableIdentifierExpression(IrLocalVariableIdentifierExpressionNode node)
@@ -202,16 +228,30 @@ public class Scratch3LoweringPass : IrRewriter
         commands.Add(new IrPushCommand(ReservedNames.Stack,
             new IrGlobalVariableIdentifierExpressionNode(ReservedNames.FramePointer)));
         commands.AddRange(visitedArguments.Select(arg => new IrPushCommand(ReservedNames.Stack, arg)));
-        commands.Add(new IrCallFunctionCommandNode(ReservedNames.AllocateFrameFunction,
-        [
-            new IrConstantExpressionNode(TypedValue.Number(function.FunctionScope.Arguments.Count)),
-            new IrConstantExpressionNode(TypedValue.Number(function.FunctionScope.Variables.Count))
-        ]));
-        commands.Add(new IrCallFunctionCommandNode(node.Function, []));
+        commands.Add(new IrCallFunctionCommandNode(node.Function, []).WithFlag(NativeFunctionCallFlag));
         return new IrComplexExpressionNode(
             new IrStackPointerExpressionNode(0),
             new IrCommandSequenceNode(commands),
             new IrPopAtCommand(ReservedNames.Stack, LengthOf(ReservedNames.Stack)));
+    }
+
+    public override IrNode VisitCallFunctionCommand(IrCallFunctionCommandNode node)
+    {
+        var visitedArguments =
+            node.Arguments.Select(Visit).OfType<IrExpressionNode>();
+        if (node.Flags.Contains(NativeFunctionCallFlag)) return node with { Arguments = visitedArguments };
+
+        var function = ProgramNode.Functions.FirstOrDefault(f => f.FunctionScope.FunctionName == node.Function);
+        if (function == null) throw new Exception();
+        if (function.FunctionScope.UseArgumentReporters)
+            return node with { Arguments = visitedArguments };
+
+        var commands = new List<IrCommandNode>();
+        commands.Add(new IrPushCommand(ReservedNames.Stack,
+            new IrGlobalVariableIdentifierExpressionNode(ReservedNames.FramePointer)));
+        commands.AddRange(visitedArguments.Select(arg => new IrPushCommand(ReservedNames.Stack, arg)));
+        commands.Add(new IrCallFunctionCommandNode(node.Function, []).WithFlag(NativeFunctionCallFlag));
+        return new IrCommandSequenceNode(commands);
     }
 
     public override IrNode VisitFunctionReturnCommandNode(IrReturnCommandNode node)
@@ -224,7 +264,7 @@ public class Scratch3LoweringPass : IrRewriter
             new IrCallFunctionCommandNode(ReservedNames.CollapseFrameFunction,
             [
                 new IrConstantExpressionNode(TypedValue.Number(node.ReturnValue != null ? 1 : 0))
-            ]),
+            ]).WithFlag(NativeFunctionCallFlag),
             StopThisScript()
         ]);
         return new IrCommandSequenceNode(commands);

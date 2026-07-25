@@ -154,6 +154,7 @@ public class FunctionScope : Scope
     public List<ScratchScriptVariable> Arguments { get; set; } = [];
     public string FunctionName { get; set; }
     public ScratchType ReturnType { get; set; }
+    public bool HasReturn { get; set; }
 
     public string SignatureString =>
         StringExtensions.GetFunctionSignatureString(FunctionName, Arguments.Select(arg => arg.Type));
@@ -165,6 +166,7 @@ public class FunctionScope : Scope
         var target = new FunctionScope();
         PopulateClone(target, visitor);
         target.ReturnType = ReturnType;
+        target.HasReturn = HasReturn;
         target.FunctionName = FunctionName;
         target.Arguments = new List<ScratchScriptVariable>(Arguments);
         target.UseArgumentReporters = UseArgumentReporters;

@@ -104,6 +104,8 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
         return block;
     }
 
+    public override object? VisitForCommand(IrForCommandNode node) => throw new NotImplementedException();
+
     public override object? VisitBreakCommand(IrBreakCommandNode node) => throw new NotImplementedException();
 
     public override object? VisitContinueCommand(IrContinueCommandNode node) => throw new NotImplementedException();

@@ -62,7 +62,7 @@ public partial class ScratchScriptProjectEmitter
         var function = _functions.Values.First(f => f.Name == node.Function);
         var call = function.Call.Clone();
         call.Id = GenerateBlockId(Function.Call);
-
+        
         for (var idx = 0; idx < arguments.Count; idx++)
         {
             var value = Visit(arguments[idx]);

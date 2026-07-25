@@ -33,6 +33,8 @@ public class IrRewriter : IrBaseVisitor<IrNode>
         var previousScope = CurrentScope;
         CurrentScope = node.Scope;
         var result = base.VisitBlock(node);
+        if (result is IrBlockNode { Scope: { } blockScope })
+            blockScope.ParentScope = previousScope;
         CurrentScope = previousScope;
         return result;
     }
@@ -70,6 +72,14 @@ public class IrRewriter : IrBaseVisitor<IrNode>
             Condition = (IrExpressionNode)Visit(node.Condition),
             Body = (IrBlockNode)VisitBlock(node.Body)
         };
+
+    public override IrNode VisitForCommand(IrForCommandNode node) => node with
+    {
+        Init = node.Init != null ? (IrCommandNode)Visit(node.Init) : null,
+        Condition = (IrExpressionNode)Visit(node.Condition),
+        Update = node.Update != null ? (IrCommandNode)Visit(node.Update) : null,
+        Body = (IrBlockNode)VisitBlock(node.Body)
+    };
 
     public override IrNode VisitRepeatCommand(IrRepeatCommandNode node) =>
         node with

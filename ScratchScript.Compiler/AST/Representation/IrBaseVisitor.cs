@@ -34,6 +34,7 @@ public abstract class IrBaseVisitor<T>
             IrCommandSequenceNode seq => VisitCommandSequence(seq),
             IrSetCommandNode set => VisitSetCommand(set),
             IrWhileCommandNode wh => VisitWhileCommand(wh),
+            IrForCommandNode fr => VisitForCommand(fr),
             IrRepeatCommandNode rep => VisitRepeatCommand(rep),
             IrCallFunctionCommandNode c => VisitCallFunctionCommand(c),
             IrRawCommandNode raw => VisitRawCommand(raw),
@@ -82,6 +83,7 @@ public abstract class IrBaseVisitor<T>
     public abstract T VisitCommandSequence(IrCommandSequenceNode node);
     public abstract T VisitSetCommand(IrSetCommandNode node);
     public abstract T VisitWhileCommand(IrWhileCommandNode node);
+    public abstract T VisitForCommand(IrForCommandNode node);
     public abstract T VisitRepeatCommand(IrRepeatCommandNode node);
     public abstract T VisitCallFunctionCommand(IrCallFunctionCommandNode node);
     public abstract T VisitRawCommand(IrRawCommandNode node);

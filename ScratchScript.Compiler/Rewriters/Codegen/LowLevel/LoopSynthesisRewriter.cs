@@ -68,14 +68,14 @@ public class LoopSynthesisRewriter : IrRewriter, IScratch3ExtensionRewriter
             ReturnType = ScratchType.Void,
             Body = loopScope.Body,
             ParentScope = CurrentScope
-        });
+        }, []);
 
         var mainFunction = new IrFunctionNode(true, new FunctionScope
         {
             FunctionName = $"{ReservedNames.WhileMainFunction}_{SyntheticWhileLoopCount}",
             ReturnType = ScratchType.Void,
             ParentScope = CurrentScope
-        });
+        }, []);
 
         mainFunction.FunctionScope.Body =
         [

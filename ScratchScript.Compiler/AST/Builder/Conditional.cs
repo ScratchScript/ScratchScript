@@ -86,11 +86,7 @@ public partial class ScratchScriptVisitor
             update = rawUpdate;
         }
 
-        if (body.Scope is LoopScope loopScope) loopScope.NextIterationPrerequisite = update;
-        return new IrCommandSequenceNode([
-            init ?? new IrNoOpCommandNode(),
-            new IrWhileCommandNode(condition, body)
-        ]);
+        return new IrForCommandNode(init, condition, update, body);
     }
 
     public override IrNode? VisitRepeatStatement(ScratchScriptParser.RepeatStatementContext context)

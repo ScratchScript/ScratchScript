@@ -207,4 +207,22 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
 
         return new IrTernaryExpressionNode(condition, trueValue, falseValue).WithContext(context);
     }
+
+    public override IrNode? VisitAttributeStatement(ScratchScriptParser.AttributeStatementContext context)
+    {
+        var name = context.Identifier().GetText();
+        var arguments = new List<IrExpressionNode>();
+        foreach (var arg in context.expression())
+        {
+            if (Visit(arg) is not IrExpressionNode attributeArgument)
+            {
+                DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedExpression, context, arg);
+                return null;
+            }
+
+            arguments.Add(attributeArgument);
+        }
+
+        return new IrAttributeNode(name, arguments);
+    }
 }

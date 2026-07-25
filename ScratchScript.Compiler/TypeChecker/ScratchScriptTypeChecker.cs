@@ -260,9 +260,9 @@ public class ScratchScriptTypeChecker : IrRewriter
             return name switch
             {
                 ReservedNames.RawStatementFunction => new IrFunctionNode(true,
-                    new FunctionScope { ReturnType = ScratchType.Void }),
+                    new FunctionScope { ReturnType = ScratchType.Void }, []),
                 ReservedNames.RawExpressionFunction => new IrFunctionNode(true,
-                    new FunctionScope { ReturnType = arguments.ElementAt(2).InferredType }),
+                    new FunctionScope { ReturnType = arguments.ElementAt(2).InferredType }, []),
                 _ => throw new ArgumentOutOfRangeException(nameof(name))
             };
         }

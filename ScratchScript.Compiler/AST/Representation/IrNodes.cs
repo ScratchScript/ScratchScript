@@ -60,7 +60,7 @@ public interface ITargetSpecificNode
 
 public abstract record IrCommandNode : IrNode;
 
-public abstract record IrAttributeNode(string Name, IEnumerable<IrExpressionNode> Arguments) : IrNode;
+public record IrAttributeNode(string Name, IEnumerable<IrExpressionNode> Arguments) : IrNode;
 
 public abstract record IrExpressionNode : IrNode
 {
@@ -81,7 +81,7 @@ public record IrProgramNode(
     IEnumerable<IrEventNode> Events,
     Dictionary<string, TypedValue> Defines) : IrNode;
 
-public record IrFunctionNode(bool Warp, FunctionScope FunctionScope, IEnumerable<IrAttributeNode>? Attributes = null)
+public record IrFunctionNode(bool Warp, FunctionScope FunctionScope, IEnumerable<IrAttributeNode> Attributes)
     : IrBlockNode(FunctionScope);
 
 public record IrEventNode(string Type, Scope Scope) : IrBlockNode(Scope);
@@ -165,6 +165,12 @@ public record IrIfCommandNode(
 
 public record IrWhileCommandNode(IrExpressionNode Condition, IrBlockNode Body) : IrCommandNode;
 
+public record IrForCommandNode(
+    IrCommandNode? Init,
+    IrExpressionNode Condition,
+    IrCommandNode? Update,
+    IrBlockNode Body) : IrCommandNode;
+
 public record IrRepeatCommandNode(IrExpressionNode Times, IrBlockNode Body) : IrCommandNode;
 
 public record IrBreakCommandNode : IrCommandNode;
@@ -242,10 +248,12 @@ public static class IrHasher
                 GetNodeHash(cond.Alternate)),
             IrWhileCommandNode loop =>
                 HashCode.Combine(31, GetNodeHash(loop.Condition), GetNodeHash(loop.Body)),
-            IrRepeatCommandNode repeat => HashCode.Combine(32, GetNodeHash(repeat.Times),
+            IrForCommandNode fr => HashCode.Combine(32, GetNodeHash(fr.Init), GetNodeHash(fr.Condition),
+                GetNodeHash(fr.Update), GetNodeHash(fr.Body)),
+            IrRepeatCommandNode repeat => HashCode.Combine(33, GetNodeHash(repeat.Times),
                 GetNodeHash(repeat.Body)),
-            IrBreakCommandNode => HashCode.Combine(33),
-            IrContinueCommandNode => HashCode.Combine(34),
+            IrBreakCommandNode => HashCode.Combine(34),
+            IrContinueCommandNode => HashCode.Combine(35),
 
             _ => throw new ArgumentOutOfRangeException(nameof(node), $"Unhandled node type: {node.GetType().Name}")
         };
