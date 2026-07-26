@@ -11,16 +11,10 @@ public class FunctionInlineRewriter : IrRewriter
     // TODO: refactor to a stack of pushable state
     private InliningInfo? _info;
 
-    public override IrNode VisitProgram(IrProgramNode node)
-    {
-        var result = (IrProgramNode)base.VisitProgram(node);
-        return result with { Functions = result.Functions.Where(f => f.Attributes.All(a => a.Name != "inline")) };
-    }
-
     public override IrNode VisitCallFunctionCommand(IrCallFunctionCommandNode node)
     {
         var visitedArguments =
-            node.Arguments.Select(Visit).OfType<IrExpressionNode>();
+            node.Arguments.Select(Visit).OfType<IrExpressionNode>().ToList();
 
         var function = ProgramNode.Functions.FirstOrDefault(f => f.FunctionScope.FunctionName == node.Function);
         if (function == null) throw new Exception();
@@ -41,7 +35,7 @@ public class FunctionInlineRewriter : IrRewriter
     public override IrNode VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node)
     {
         var visitedArguments =
-            node.Arguments.Select(Visit).OfType<IrExpressionNode>();
+            node.Arguments.Select(Visit).OfType<IrExpressionNode>().ToList();
 
         var function = ProgramNode.Functions.FirstOrDefault(f => f.FunctionScope.FunctionName == node.Function);
         if (function == null) throw new Exception();

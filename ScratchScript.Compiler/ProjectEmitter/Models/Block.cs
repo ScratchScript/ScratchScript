@@ -1,18 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ScratchScript.Compiler.ProjectEmitter.Models;
 
 public record Block
 {
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Comment;
 
     public Dictionary<string, List<object>> Fields = [];
 
-    [NonSerialized] public string Id;
+    [JsonIgnore] public string Id;
     public Dictionary<string, List<object>> Inputs = [];
 
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Mutation? Mutation;
 
     public string Next;

@@ -6,7 +6,7 @@ options {
 
 program: topLevelStatement* EOF;
 topLevelStatement: functionDeclarationStatement | enumDeclarationStatement | attributeStatement | eventStatement | importStatement | namespaceStatement;
-line: ((statement Semicolon) | ifStatement | whileStatement | repeatStatement | forStatement | switchStatement | irBlockStatement | returnStatement | breakStatement | continueStatement | debuggerStatement | throwStatement | comment);
+line: ((statement Semicolon) | ifStatement | whileStatement | repeatStatement | forStatement | switchStatement | returnStatement | breakStatement | continueStatement | debuggerStatement | throwStatement | comment);
 statement: assignmentStatement | listAssignmentStatement | functionCallStatement | memberFunctionCallStatement | variableDeclarationStatement | postIncrementStatement;
 
 eventStatement: Event Identifier (LeftParen (expression (Comma expression)*?) RightParen)? block;
@@ -20,9 +20,6 @@ functionDeclarationStatement: attributeStatement*? FunctionDeclare Identifier Le
 enumDeclarationStatement: EnumDeclare Identifier LeftBrace (enumEntry (Comma enumEntry)*?)? RightBrace;
 enumEntry: Identifier (Assignment constant)?;
 
-irBlockStatement: Ir LeftBrace (irStatement)*? RightBrace;
-irStatement: Return? interpolatedString Semicolon;
-
 ifStatement: If LeftParen expression RightParen lineOrBlock (Else lineOrBlock)?;
 whileStatement: While LeftParen expression RightParen lineOrBlock;
 forStatement: For LeftParen statement? Semicolon expression? Semicolon statement? RightParen lineOrBlock;
@@ -30,7 +27,8 @@ repeatStatement: Repeat LeftParen expression RightParen lineOrBlock;
 lineOrBlock: line | block;
 
 postIncrementStatement: Identifier postIncrementOperators;
-importStatement: Import ((LeftBrace Identifier (Comma Identifier)*? RightBrace) | importAll) From String Semicolon;
+importStatement: Import ((LeftBrace importMember (Comma importMember)*? RightBrace) | importAll) From String Semicolon;
+importMember: Identifier (As Identifier)?;
 attributeStatement: At Identifier (LeftParen (expression (Comma expression)*?)? RightParen)?;
 returnStatement: Return expression? Semicolon;
 throwStatement: Throw String Semicolon;

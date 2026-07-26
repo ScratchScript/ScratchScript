@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ScratchScript.Compiler.ProjectEmitter.Models;
 
@@ -9,7 +9,7 @@ public record Monitor
     public bool IsDiscrete;
     public string Mode;
     public string Opcode;
-    [JsonProperty("params")] public Dictionary<string, string> Parameters = [];
+    [JsonPropertyName("params")] public Dictionary<string, string> Parameters = [];
     public float SliderMax;
     public float SliderMin;
     public string SpriteName;

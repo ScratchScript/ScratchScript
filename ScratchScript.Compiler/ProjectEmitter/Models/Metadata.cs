@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace ScratchScript.Compiler.ProjectEmitter.Models;
 
 public class Metadata
 {
-    [JsonProperty("semver")] public string ScratchVersion = "3.0.0";
-    [JsonProperty("agent")] public string UserAgent = "";
-    [JsonProperty("vm")] public string VmVersion = "0.2.0";
+    [JsonPropertyName("semver")] public string ScratchVersion = "3.0.0";
+    [JsonPropertyName("agent")] public string UserAgent = "";
+    [JsonPropertyName("vm")] public string VmVersion = "0.2.0";
 }

@@ -129,11 +129,10 @@ public partial class ScratchScriptVisitor
             locationInformation.ArgumentInformation[argumentName] = (identifier.Identifier(), identifier.type());
         }
 
-        var attributes = context.attributeStatement().Select(Visit).OfType<IrAttributeNode>();
+        var attributes = context.attributeStatement().Select(Visit).OfType<IrAttributeNode>().ToList();
         // set the LocationInformation before visiting the scope as any identifier checks
         // will fail to point the location of the acquirer otherwise.
-        Exports.Functions[name] = new IrFunctionNode(false, scope,
-            attributes);
+        Symbols[Namespace].Functions[name] = [];
         LocationInformation.Functions[name] = locationInformation;
 
         // process function attributes
@@ -159,8 +158,7 @@ public partial class ScratchScriptVisitor
         if (scope == null) throw new Exception("The scope returned from VisitBlock() was null.");
 
         // TODO: handle warp attribute
-        Exports.Functions[name] = new IrFunctionNode(false, scope, attributes).WithContext(context);
-        return Exports.Functions[name];
+        return new IrFunctionNode(false, scope, attributes).WithContext(context);
     }
 
     public override IrNode? VisitReturnStatement(ScratchScriptParser.ReturnStatementContext context)

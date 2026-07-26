@@ -23,7 +23,7 @@ public partial class ScratchScriptProjectEmitter
         return $"_{SourceHash[..5]}_{opcode}_{_blockNameUsage[opcode]}";
     }
 
-    private void AttachStackToBlock(Block? parent, IEnumerable<Block> stack)
+    private static void AttachStackToBlock(Block? parent, IEnumerable<Block> stack)
     {
         var list = stack.ToList();
 
@@ -36,7 +36,7 @@ public partial class ScratchScriptProjectEmitter
         parent.Next = first.Id;
     }
 
-    private void AttachStackToBlock(Block? parent, IEnumerable<Block> stack, string to)
+    private static void AttachStackToBlock(Block? parent, IEnumerable<Block> stack, string to)
     {
         var list = stack.ToList();
 
@@ -49,7 +49,7 @@ public partial class ScratchScriptProjectEmitter
         parent.Inputs[to] = CreateInput(first, parent);
     }
 
-    private List<object> CreateInput(Block shadow, Block? parent)
+    private static List<object> CreateInput(Block shadow, Block? parent)
     {
         if (string.IsNullOrEmpty(shadow.Id) || (parent != null && string.IsNullOrEmpty(parent.Id)))
             throw new Exception("Blocks passed to CreateInput didn't have ids assigned to them.");
@@ -59,7 +59,7 @@ public partial class ScratchScriptProjectEmitter
         return [(int)ScratchShadowType.Shadow, shadow.Id];
     }
 
-    private List<object> CreateInput(object obj)
+    private static List<object> CreateInput(object obj)
     {
         var type = obj switch
         {
@@ -72,7 +72,7 @@ public partial class ScratchScriptProjectEmitter
     }
 
     // TODO: handle argument & variable reporters
-    private List<object> CreateField(object obj) => [obj, obj];
+    private static List<object> CreateField(object obj) => [obj, obj];
 
     public override object? VisitRawCommand(IrRawCommandNode node)
     {

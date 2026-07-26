@@ -8,13 +8,15 @@ namespace ScratchScript.Compiler.AST.Builder;
 
 public partial class ScratchScriptVisitor
 {
+    private readonly HashSet<string> _usedEvents = [];
+
     public override IrNode? VisitEventStatement(ScratchScriptParser.EventStatementContext context)
     {
         var eventName = context.Identifier().GetText();
 
         // check for duplicate event declarations
         // NOTE: there can't be multiple events of the same type declared because that would cause race conditions
-        if (Exports.Events.ContainsKey(eventName))
+        if (_usedEvents.Contains(eventName))
         {
             DiagnosticReporter.Instance.Error((int)ScratchScriptError.EventAlreadyDeclared, context,
                 context.Identifier(),
@@ -44,7 +46,7 @@ public partial class ScratchScriptVisitor
 
         LocationInformation.Events[eventName] = locationInformation;
         var node = new IrEventNode(eventName, blockNode.Scope).WithContext(context);
-        Exports.Events[eventName] = node;
+        _usedEvents.Add(eventName);
         return node;
     }
 }

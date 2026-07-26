@@ -97,7 +97,6 @@ Debugger: 'debugger';
 
 As: 'as' Whitespace+;
 For: 'for';
-Ir: 'ir';
 Case: 'case' Whitespace+;
 Switch: 'switch';
 While: 'while';
@@ -110,7 +109,7 @@ Throw: 'throw' Whitespace+;
 Repeat: 'repeat';
 Event: 'on' Whitespace+;
 From: 'from' Whitespace+;
-Namespace: 'namespace ' Whitespace+;
+Namespace: 'namespace' Whitespace+;
 Type: 'number' | 'string' | 'boolean' | 'color' | 'any';
 List: 'list';
 

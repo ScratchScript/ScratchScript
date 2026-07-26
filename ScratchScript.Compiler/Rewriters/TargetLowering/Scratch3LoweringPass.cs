@@ -125,7 +125,7 @@ public class Scratch3LoweringPass : IrRewriter
                 AllocateFrameFunction, CollapseFrameFunction
             ]);
 
-        return (program with { Functions = _pendingFunctions.Concat(program.Functions) }).WithFlag(
+        return (program with { Functions = _pendingFunctions.Concat(program.Functions).ToList() }).WithFlag(
             EventAllocationPerformedFlag);
     }
 
@@ -238,7 +238,7 @@ public class Scratch3LoweringPass : IrRewriter
     public override IrNode VisitCallFunctionCommand(IrCallFunctionCommandNode node)
     {
         var visitedArguments =
-            node.Arguments.Select(Visit).OfType<IrExpressionNode>();
+            node.Arguments.Select(Visit).OfType<IrExpressionNode>().ToList();
         if (node.Flags.Contains(NativeFunctionCallFlag)) return node with { Arguments = visitedArguments };
 
         var function = ProgramNode.Functions.FirstOrDefault(f => f.FunctionScope.FunctionName == node.Function);

@@ -19,7 +19,7 @@ public class LoopSynthesisRewriter : IrRewriter, IScratch3ExtensionRewriter
     {
         var program = (IrProgramNode)base.VisitProgram(node);
         return _pendingFunctions.Count != 0
-            ? program with { Functions = program.Functions.Concat(_pendingFunctions) }
+            ? program with { Functions = program.Functions.Concat(_pendingFunctions).ToList() }
             : program;
     }
 

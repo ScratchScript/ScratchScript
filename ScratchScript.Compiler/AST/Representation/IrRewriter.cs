@@ -44,7 +44,7 @@ public class IrRewriter : IrBaseVisitor<IrNode>
         {
             FunctionScope = (FunctionScope)CloneScope(node.FunctionScope),
             Scope = CloneScope(node.FunctionScope),
-            Attributes = node.Attributes?.Select(Visit).OfType<IrAttributeNode>()
+            Attributes = node.Attributes.Select(Visit).OfType<IrAttributeNode>().ToList()
         };
 
     public override IrNode VisitEvent(IrEventNode node) =>
@@ -55,7 +55,7 @@ public class IrRewriter : IrBaseVisitor<IrNode>
 
     public override IrNode VisitAttribute(IrAttributeNode node) => node with
     {
-        Arguments = node.Arguments.Select(Visit).OfType<IrExpressionNode>()
+        Arguments = node.Arguments.Select(Visit).OfType<IrExpressionNode>().ToList()
     };
 
     public override IrNode VisitNoOpCommand(IrNoOpCommandNode node) => node;
@@ -91,7 +91,7 @@ public class IrRewriter : IrBaseVisitor<IrNode>
     public override IrNode VisitCallFunctionCommand(IrCallFunctionCommandNode node) =>
         node with
         {
-            Arguments = node.Arguments.Select(Visit).OfType<IrExpressionNode>()
+            Arguments = node.Arguments.Select(Visit).OfType<IrExpressionNode>().ToList()
         };
 
     public override IrNode VisitRawCommand(IrRawCommandNode node)
@@ -196,7 +196,7 @@ public class IrRewriter : IrBaseVisitor<IrNode>
     public override IrNode VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node) =>
         node with
         {
-            Arguments = node.Arguments.Select(Visit).OfType<IrExpressionNode>()
+            Arguments = node.Arguments.Select(Visit).OfType<IrExpressionNode>().ToList()
         };
 
     public override IrNode VisitFunctionReturnCommandNode(IrReturnCommandNode node) => node with

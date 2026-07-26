@@ -15,7 +15,7 @@ public partial class ScratchScriptVisitor
     {
         /*if (Exports.Enums.ContainsKey(identifier))
             return (LocationInformation.Enums[identifier].Context, LocationInformation.Enums[identifier].Identifier);*/
-        if (Exports.Events.ContainsKey(identifier))
+        if (_usedEvents.Contains(identifier))
             return (LocationInformation.Events[identifier].Context, LocationInformation.Events[identifier].Identifier);
         if (_scope?.GetVariableDepth(identifier) is { } variableDepth)
             return (LocationInformation.Variables[variableDepth][identifier].Context,

@@ -228,9 +228,9 @@ public class ScratchScriptTypeChecker : IrRewriter
         return true;
     }
 
-    private (IrFunctionNode? Function, IEnumerable<IrExpressionNode> VisitedArguments) HandleFunctionCall(
+    private (IrFunctionNode? Function, IReadOnlyList<IrExpressionNode> VisitedArguments) HandleFunctionCall(
         ScratchScriptParser.FunctionCallStatementContext context,
-        IEnumerable<IrExpressionNode> arguments)
+        IReadOnlyList<IrExpressionNode> arguments)
     {
         var name = context.Identifier().GetText();
         if (ProgramNode.Functions.All(f => f.FunctionScope.FunctionName != name) &&

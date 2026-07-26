@@ -1,4 +1,8 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
+using MessagePack;
+using MessagePack.Formatters;
 using ScratchScript.Compiler.AST.Representation;
 
 namespace ScratchScript.Compiler.TypeChecker;
@@ -18,6 +22,25 @@ public enum ScratchTypeKind
     Enum,
     Void,
     Object
+}
+
+public class ScratchTypeFormatter : IMessagePackFormatter<ScratchType?>
+{
+    public static readonly ScratchTypeFormatter Instance = new();
+
+    public void Serialize(ref MessagePackWriter writer, ScratchType? value, MessagePackSerializerOptions options)
+    {
+        if (value is null)
+        {
+            writer.WriteNil();
+            return;
+        }
+
+        writer.Write(value.ToString());
+    }
+
+    public ScratchType? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options) =>
+        reader.TryReadNil() ? null : ScratchType.FromString(reader.ReadString() ?? "");
 }
 
 public partial class ScratchType(ScratchTypeKind kind, ScratchType? childType = null, ScratchType? parentType = null)

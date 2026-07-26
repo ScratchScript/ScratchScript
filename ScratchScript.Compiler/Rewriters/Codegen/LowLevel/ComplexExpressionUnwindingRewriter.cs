@@ -40,7 +40,7 @@ public class ComplexExpressionUnwindingRewriter : IrRewriter
                 new IrConstantExpressionNode(TypedValue.Number(1)))
         },
         IrCommandSequenceNode seq => new IrCommandSequenceNode(
-            seq.Commands.Select(ShiftPopTarget).Where(c => c != null)!),
+            seq.Commands.Select(ShiftPopTarget).Where(c => c != null).ToList()!),
         _ => cleanup
     };
 

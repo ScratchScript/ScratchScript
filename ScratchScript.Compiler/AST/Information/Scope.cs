@@ -1,4 +1,6 @@
-﻿using ScratchScript.Compiler.AST.Representation;
+﻿using System.Text.Json.Serialization;
+using MessagePack;
+using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.TypeChecker;
 
@@ -21,7 +23,7 @@ public class Scope
     public Guid Id { get; private set; } = Guid.NewGuid();
     public List<IrCommandNode> Body { get; set; } = [];
     public int Depth { get; set; }
-    public Scope? ParentScope { get; set; }
+    [IgnoreMember] public Scope? ParentScope { get; set; }
     public List<ScratchScriptVariable> Variables { get; set; } = [];
 
     public ScratchScriptVariable? GetVariable(string name)

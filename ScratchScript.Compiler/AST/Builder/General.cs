@@ -13,8 +13,9 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
 {
     private Scope? _scope;
 
-    public ScratchScriptVisitor()
+    public ScratchScriptVisitor(SymbolsStorage symbols)
     {
+        Symbols = symbols;
         DiagnosticReporter.Instance.Reported += message =>
         {
             if (message.Kind == DiagnosticMessageKind.Error) Success = false;
@@ -23,13 +24,36 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
 
     public bool Success { get; private set; } = true;
     public DiagnosticLocationStorage LocationInformation { get; } = new();
-    public ExportsStorage Exports { get; } = new();
+    public SymbolsStorage Symbols { get; init; }
+    public string Namespace { get; private set; } = "global";
 
     public override IrNode? VisitProgram(ScratchScriptParser.ProgramContext context)
     {
+        DetermineNamespace(context);
         var blocks = context.topLevelStatement().Select(Visit).Cast<IrBlockNode>().ToList();
-        return new IrProgramNode(blocks.OfType<IrFunctionNode>(), blocks.OfType<IrEventNode>(), [])
+        return new IrProgramNode(Namespace, blocks.OfType<IrFunctionNode>().ToList(),
+                blocks.OfType<IrEventNode>().ToList(), [],
+                [])
             .WithContext(context);
+    }
+
+    private void DetermineNamespace(ScratchScriptParser.ProgramContext context)
+    {
+        var namespaceStatementsCount = context.topLevelStatement().Count(tls => tls.namespaceStatement() != null);
+        switch (namespaceStatementsCount)
+        {
+            case 0: return;
+            case 1:
+            {
+                var index = context.topLevelStatement().Where(tls => tls.attributeStatement() == null)
+                    .ToList().FindIndex(tls => tls.namespaceStatement() != null);
+                if (index != 0) throw new Exception();
+                Namespace = context.topLevelStatement().First(tls => tls.namespaceStatement() != null)
+                    .namespaceStatement().String().GetText()[1..^1];
+                break;
+            }
+            default: throw new Exception();
+        }
     }
 
     public override IrNode? VisitConstant(ScratchScriptParser.ConstantContext context)

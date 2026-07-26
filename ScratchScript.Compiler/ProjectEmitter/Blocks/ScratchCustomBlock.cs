@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 using ScratchScript.Compiler.ProjectEmitter.Models;
 
 namespace ScratchScript.Compiler.ProjectEmitter.Blocks;
@@ -84,9 +84,9 @@ public class ScratchCustomBlock
     private void RebuildMutation()
     {
         var procedureCode = string.Join(' ', [Name, ..Enumerable.Repeat("%s", Reporters.Count)]);
-        var ids = new JArray();
-        var names = new JArray();
-        var defaults = new JArray();
+        var ids = new JsonArray();
+        var names = new JsonArray();
+        var defaults = new JsonArray();
 
         foreach (var (name, block) in Reporters)
         {
@@ -98,9 +98,9 @@ public class ScratchCustomBlock
         Mutation = new Mutation
         {
             ProcedureCode = procedureCode,
-            ArgumentIds = ids.ToString(Formatting.None),
-            ArgumentNames = names.ToString(Formatting.None),
-            ArgumentDefaults = defaults.ToString(Formatting.None),
+            ArgumentIds = ids.ToJsonString(new JsonSerializerOptions { WriteIndented = false }),
+            ArgumentNames = names.ToJsonString(new JsonSerializerOptions { WriteIndented = false }),
+            ArgumentDefaults = defaults.ToJsonString(new JsonSerializerOptions { WriteIndented = false }),
             Warp = Warp
         };
 
