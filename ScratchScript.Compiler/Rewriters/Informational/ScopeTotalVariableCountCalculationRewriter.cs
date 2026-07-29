@@ -7,11 +7,11 @@ namespace ScratchScript.Compiler.Rewriters.Informational;
 // TODO: most likely not the best implementation
 public class ScopeTotalVariableCountCalculationRewriter : IrRewriter
 {
-    public int TotalVariableCount { get; private set; }
+    private readonly Dictionary<Guid, List<Scope>> _children = [];
+    private readonly Dictionary<Guid, int> _contenders = [];
 
     private Scope? _target;
-    private readonly Dictionary<Guid, int> _contenders = [];
-    private readonly Dictionary<Guid, List<Scope>> _children = [];
+    public int TotalVariableCount { get; private set; }
 
     public override IrNode VisitBlock(IrBlockNode node)
     {

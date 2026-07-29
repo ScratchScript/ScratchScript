@@ -18,7 +18,7 @@ public class FunctionInlineRewriter : IrRewriter
 
         var function = ProgramNode.Functions.FirstOrDefault(f => f.FunctionScope.FunctionName == node.Function);
         if (function == null) throw new Exception();
-        if (!(function.Attributes?.Any(a => a.Name == "inline") ?? false))
+        if (!(function.Attributes?.Any(a => a.Name == FunctionAttributes.AlwaysInlineFunction) ?? false))
             return node with { Arguments = visitedArguments };
 
         var closestFunctionScope = CurrentScope?.GetClosestFunctionScope();
@@ -39,7 +39,7 @@ public class FunctionInlineRewriter : IrRewriter
 
         var function = ProgramNode.Functions.FirstOrDefault(f => f.FunctionScope.FunctionName == node.Function);
         if (function == null) throw new Exception();
-        if (!(function.Attributes?.Any(a => a.Name == "inline") ?? false))
+        if (!(function.Attributes?.Any(a => a.Name == FunctionAttributes.AlwaysInlineFunction) ?? false))
             return node with { Arguments = visitedArguments };
 
         var closestFunctionScope = CurrentScope?.GetClosestFunctionScope();

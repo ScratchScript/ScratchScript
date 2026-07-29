@@ -64,8 +64,10 @@ public partial class ScratchScriptVisitor
             condition = rawCondition;
         }
         else
+        {
             condition = new IrBinaryExpressionNode(IrBinaryOperator.Equal,
                 new IrConstantExpressionNode(TypedValue.Number(1)), new IrConstantExpressionNode(TypedValue.Number(1)));
+        }
 
         if (VisitLineOrBlock(context.lineOrBlock(), new LoopScope { Kind = LoopScopeKind.For }) is not { } body)
         {

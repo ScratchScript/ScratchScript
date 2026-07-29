@@ -132,7 +132,7 @@ public partial class ScratchScriptVisitor
         var attributes = context.attributeStatement().Select(Visit).OfType<IrAttributeNode>().ToList();
         // set the LocationInformation before visiting the scope as any identifier checks
         // will fail to point the location of the acquirer otherwise.
-        Symbols[Namespace].Functions[name] = [];
+        Symbols[Namespace][Artifact].Functions[name] = [];
         LocationInformation.Functions[name] = locationInformation;
 
         // process function attributes
@@ -170,6 +170,8 @@ public partial class ScratchScriptVisitor
             DiagnosticReporter.Instance.Error((int)ScratchScriptError.ReturnUsedInNonFunctionContext, context, context);
             return null;
         }
+
+        closestFunctionScope.HasReturn = true;
 
         // an expression can be null if the function returns void ("return;" vs "return 1;")
         var expression = context.expression() != null ? (IrExpressionNode?)Visit(context.expression()) : null;

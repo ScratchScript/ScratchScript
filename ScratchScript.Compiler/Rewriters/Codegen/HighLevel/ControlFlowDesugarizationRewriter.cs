@@ -6,6 +6,8 @@ namespace ScratchScript.Compiler.Rewriters.Codegen.HighLevel;
 
 public class ControlFlowDesugarizationRewriter : IrRewriter
 {
+    public const string ControlFlowCounter = "__CFC";
+
     public override IrNode VisitForCommand(IrForCommandNode node)
     {
         if (node.Body.Scope is not LoopScope loopScope) throw new Exception();
@@ -16,17 +18,15 @@ public class ControlFlowDesugarizationRewriter : IrRewriter
         ]);
     }
 
-    public const string ControlFlowCounter = "__CFC";
-
     public override IrNode VisitRepeatCommand(IrRepeatCommandNode node)
     {
         if (CurrentScope is null) throw new Exception();
-        if(CurrentScope.GetVariable(ControlFlowCounter) == null)
+        if (CurrentScope.GetVariable(ControlFlowCounter) == null)
             CurrentScope.Variables.Add(new ScratchScriptVariable(ControlFlowCounter));
 
         var times = (IrExpressionNode)Visit(node.Times);
         var body = (IrBlockNode)VisitBlock(node.Body);
-        
+
         return new IrForCommandNode(
             new IrSetCommandNode(ControlFlowCounter, new IrConstantExpressionNode(TypedValue.Number(0))),
             new IrBinaryExpressionNode(IrBinaryOperator.LessThan,

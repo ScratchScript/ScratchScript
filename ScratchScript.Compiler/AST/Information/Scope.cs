@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using MessagePack;
+﻿using MessagePack;
 using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.TypeChecker;

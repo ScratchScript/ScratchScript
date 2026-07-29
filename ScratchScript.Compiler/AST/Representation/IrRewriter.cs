@@ -17,6 +17,7 @@ public class IrRewriter : IrBaseVisitor<IrNode>
     }
 
     public override IrNode VisitTargetSpecificNode(ITargetSpecificNode node) => node.Rewrite(Visit);
+    public override IrNode VisitImport(IrImportNode node) => node;
 
     public override IrNode VisitProgram(IrProgramNode node)
     {
@@ -24,7 +25,10 @@ public class IrRewriter : IrBaseVisitor<IrNode>
         return node with
         {
             Functions = node.Functions.Select(b => (IrFunctionNode)VisitBlock(b)).ToList(),
-            Events = node.Events.Select(b => (IrEventNode)VisitBlock(b)).ToList()
+            Events = node.Events.Select(b => (IrEventNode)VisitBlock(b)).ToList(),
+            Imports = node.Imports.Select(i => (IrImportNode)Visit(i)).ToList(),
+            Attributes = node.Attributes.Select(a => (IrAttributeNode)Visit(a)).ToList(),
+            Defines = node.Defines.ToDictionary(kvp => kvp.Key, kvp => (IrExpressionNode)Visit(kvp.Value))
         };
     }
 

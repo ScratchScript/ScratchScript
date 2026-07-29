@@ -1,12 +1,11 @@
 ﻿using ScratchScript.Compiler.AST.Information;
 using ScratchScript.Compiler.AST.Representation;
-using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.ProjectEmitter.Blocks;
 using ScratchScript.Compiler.ProjectEmitter.Models;
 
 namespace ScratchScript.Compiler.ProjectEmitter;
 
-public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisitor<object?>
+public partial class ScratchScriptProjectEmitter(string Id) : IrBaseVisitor<object?>
 {
     public readonly Target Target = new();
     private Block? _parent;
@@ -50,6 +49,7 @@ public partial class ScratchScriptProjectEmitter(string SourceHash) : IrBaseVisi
     }
 
     public override object? VisitTargetSpecificNode(ITargetSpecificNode node) => throw new NotImplementedException();
+    public override object? VisitImport(IrImportNode node) => throw new NotImplementedException();
 
     public override object? VisitProgram(IrProgramNode node)
     {

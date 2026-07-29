@@ -19,7 +19,7 @@ public static class CostumeHelper
     public static Costume GetEmptyCostume()
     {
         var image = GetEmptyImage();
-        var checksum = image.ToMd5Checksum();
+        var checksum = EnumerableExtensions.ToMd5Checksum(image);
 
         return new Costume
         {

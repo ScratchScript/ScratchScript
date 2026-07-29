@@ -20,7 +20,7 @@ public partial class ScratchScriptProjectEmitter
         // TODO: temporary implementation. may be changed later for space optimizations and similar stuff
         _blockNameUsage.TryAdd(opcode, 0);
         _blockNameUsage[opcode]++;
-        return $"_{SourceHash[..5]}_{opcode}_{_blockNameUsage[opcode]}";
+        return $"{Id[..5]};{opcode};{_blockNameUsage[opcode]}";
     }
 
     private static void AttachStackToBlock(Block? parent, IEnumerable<Block> stack)

@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using Antlr4.Runtime;
 using ScratchScript.Compiler.AST.GeneratedVisitor;
 using ScratchScript.Compiler.AST.Information;
 using ScratchScript.Compiler.AST.Representation;
@@ -13,9 +14,10 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
 {
     private Scope? _scope;
 
-    public ScratchScriptVisitor(SymbolsStorage symbols)
+    public ScratchScriptVisitor(SymbolsStorage symbols, string sourcePath)
     {
         Symbols = symbols;
+        SourcePath = sourcePath;
         DiagnosticReporter.Instance.Reported += message =>
         {
             if (message.Kind == DiagnosticMessageKind.Error) Success = false;
@@ -23,17 +25,22 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
     }
 
     public bool Success { get; private set; } = true;
+
     public DiagnosticLocationStorage LocationInformation { get; } = new();
     public SymbolsStorage Symbols { get; init; }
+    public string SourcePath { get; init; }
+    public string Artifact { get; private set; }
     public string Namespace { get; private set; } = "global";
 
     public override IrNode? VisitProgram(ScratchScriptParser.ProgramContext context)
     {
         DetermineNamespace(context);
-        var blocks = context.topLevelStatement().Select(Visit).Cast<IrBlockNode>().ToList();
+        CreateArtifact();
+
+        var blocks = context.topLevelStatement().Select(Visit).ToList();
         return new IrProgramNode(Namespace, blocks.OfType<IrFunctionNode>().ToList(),
-                blocks.OfType<IrEventNode>().ToList(), [],
-                [])
+                blocks.OfType<IrEventNode>().ToList(), blocks.OfType<IrImportNode>().ToList(),
+                blocks.OfType<IrAttributeNode>().ToList(), [])
             .WithContext(context);
     }
 
@@ -55,6 +62,9 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
             default: throw new Exception();
         }
     }
+
+    private void CreateArtifact()
+        => Artifact = Symbols[Namespace].CreateArtifact(SourcePath);
 
     public override IrNode? VisitConstant(ScratchScriptParser.ConstantContext context)
     {
@@ -248,5 +258,53 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
         }
 
         return new IrAttributeNode(name, arguments);
+    }
+
+    public override IrNode? VisitImportStatement(ScratchScriptParser.ImportStatementContext context)
+    {
+        var from = context.String().GetText()[1..^1];
+        var members = new Dictionary<string, string?>();
+
+        if (context.importAll() != null)
+        {
+            if (LocationInformation.Imports.ContainsKey(from))
+                throw new Exception("cannot import all after partial imports");
+
+            members[IrImportNode.ImportAllIdentifier] = null;
+            LocationInformation.Imports[from] =
+            [
+                new ImportLocationInformation
+                {
+                    ImportStatement = context,
+                    Members = new Dictionary<string, ParserRuleContext>
+                        { { IrImportNode.ImportAllIdentifier, context.importAll() } }
+                }
+            ];
+        }
+        else
+        {
+            if (LocationInformation.Imports.TryGetValue(from, out var imports) &&
+                imports.Any(i => i.Members.ContainsKey(IrImportNode.ImportAllIdentifier)))
+                throw new Exception("cannot import partial after import all");
+
+            var info = new ImportLocationInformation { ImportStatement = context, Members = [] };
+            foreach (var member in context.importMember())
+            {
+                var name = member.Identifier(0).GetText();
+                var importAs = member.Identifier(1)?.GetText();
+
+                if (info.Members.ContainsKey(name) ||
+                    (imports != null && imports.Any(i => i.Members.ContainsKey(name))))
+                    throw new Exception("member already imported");
+
+                members[name] = importAs;
+                info.Members[name] = member;
+            }
+
+            if (!LocationInformation.Imports.ContainsKey(from)) LocationInformation.Imports[from] = [];
+            LocationInformation.Imports[from].Add(info);
+        }
+
+        return new IrImportNode(from, members);
     }
 }

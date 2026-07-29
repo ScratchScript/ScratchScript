@@ -9,6 +9,13 @@ public record DiagnosticLocationStorage
     public Dictionary<string, EventLocationInformation> Events { get; } = new();
     public Dictionary<int, Dictionary<string, VariableLocationInformation>> Variables { get; } = new();
     public Dictionary<string, FunctionLocationInformation> Functions { get; } = new();
+    public Dictionary<string, List<ImportLocationInformation>> Imports { get; } = new();
+}
+
+public record struct ImportLocationInformation
+{
+    public ParserRuleContext ImportStatement;
+    public Dictionary<string, ParserRuleContext> Members;
 }
 
 public record struct FunctionLocationInformation

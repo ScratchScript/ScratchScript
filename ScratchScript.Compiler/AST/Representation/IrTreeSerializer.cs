@@ -7,8 +7,8 @@ namespace ScratchScript.Compiler.AST.Representation;
 
 public class PolymorphicNodeFormatter<T> : IMessagePackFormatter<T?> where T : class
 {
-    private readonly Dictionary<Type, ushort> _typeToId = [];
     private readonly Dictionary<ushort, Type> _idToType = [];
+    private readonly Dictionary<Type, ushort> _typeToId = [];
 
     public PolymorphicNodeFormatter()
     {

@@ -255,7 +255,6 @@ public class ScratchScriptTypeChecker : IrRewriter
     private IrFunctionNode? FindFunction(string name, IEnumerable<IrExpressionNode> arguments)
     {
         if (ReservedNames.GlobalCallableFunctions.Contains(name))
-        {
             // TODO: this is quite a hack but idk
             return name switch
             {
@@ -265,7 +264,6 @@ public class ScratchScriptTypeChecker : IrRewriter
                     new FunctionScope { ReturnType = arguments.ElementAt(2).InferredType }, []),
                 _ => throw new ArgumentOutOfRangeException(nameof(name))
             };
-        }
 
         return ProgramNode.Functions.FirstOrDefault(func =>
             func.FunctionScope.FunctionName == name &&

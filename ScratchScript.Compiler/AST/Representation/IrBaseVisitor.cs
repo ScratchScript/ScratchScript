@@ -7,6 +7,7 @@ public abstract class IrBaseVisitor<T>
         return node switch
         {
             ITargetSpecificNode targetSpecific => VisitTargetSpecificNode(targetSpecific),
+            IrImportNode import => VisitImport(import),
             IrBlockNode block => VisitBlock(block),
             IrCommandNode command => VisitCommand(command),
             IrExpressionNode expr => VisitExpression(expr),
@@ -74,6 +75,7 @@ public abstract class IrBaseVisitor<T>
     }
 
     public abstract T VisitTargetSpecificNode(ITargetSpecificNode node);
+    public abstract T VisitImport(IrImportNode node);
     public abstract T VisitProgram(IrProgramNode node);
     public abstract T VisitFunction(IrFunctionNode node);
     public abstract T VisitEvent(IrEventNode node);

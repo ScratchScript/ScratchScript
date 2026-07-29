@@ -8,10 +8,10 @@ namespace ScratchScript.Compiler.ProjectEmitter;
 public partial class ScratchScriptProjectEmitter
 {
     private readonly Dictionary<Guid, ScratchCustomBlock> _functions = [];
-    private Guid _currentFunction = Guid.Empty;
 
     // TODO: refactor this
     private readonly List<IrFunctionNode> _revisitFunctions = [];
+    private Guid _currentFunction = Guid.Empty;
 
     public override object? VisitFunction(IrFunctionNode node)
     {
@@ -62,7 +62,7 @@ public partial class ScratchScriptProjectEmitter
         var function = _functions.Values.First(f => f.Name == node.Function);
         var call = function.Call.Clone();
         call.Id = GenerateBlockId(Function.Call);
-        
+
         for (var idx = 0; idx < arguments.Count; idx++)
         {
             var value = Visit(arguments[idx]);

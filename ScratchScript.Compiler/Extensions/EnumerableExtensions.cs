@@ -1,11 +1,16 @@
 using System.Security.Cryptography;
+using System.Text;
 
 namespace ScratchScript.Compiler.Extensions;
 
 public static class EnumerableExtensions
 {
-    public static string ToMd5Checksum(this IEnumerable<byte> array) =>
+    public static string ToMd5Checksum(IEnumerable<byte> array) =>
         Convert.ToHexStringLower(MD5.HashData(array.ToArray()));
+
+    public static string ToMd5Checksum(string str) =>
+        ToMd5Checksum(Encoding.UTF8.GetBytes(str));
+
 
     extension<T>(IReadOnlyList<T>? to)
     {

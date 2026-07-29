@@ -1,6 +1,5 @@
 ﻿using ScratchScript.Compiler.AST.Information;
 using ScratchScript.Compiler.AST.Representation;
-using ScratchScript.Compiler.AST.Representation.TargetSpecific;
 using ScratchScript.Compiler.Extensions;
 using ScratchScript.Compiler.Rewriters.Informational;
 using ScratchScript.Compiler.TypeChecker;
@@ -113,13 +112,16 @@ public class Scratch3LoweringPass : IrRewriter
     private const string EventAllocationPerformedFlag = "SCRATCH3_EVENT_ALLOCATION_PERFORMED";
     private const string FunctionAllocationPerformedFlag = "SCRATCH3_FUNCTION_ALLOCATION_PERFORMED";
     private const string NativeFunctionCallFlag = "SCRATCH3_NATIVE_FUNCTION_CALL";
+    private const string SkipAllocationKey = "packFrameAllocationFunctions";
     private readonly List<IrFunctionNode> _pendingFunctions = [];
 
     public override IrNode VisitProgram(IrProgramNode node)
     {
+        _pendingFunctions.Clear();
         var program = (IrProgramNode)base.VisitProgram(node);
 
-        if (!program.Functions.Any(b =>
+        if (!program.HasAttributeWithArgument(ProgramAttributes.SkipCompilerFeature, SkipAllocationKey) &&
+            !program.Functions.Any(b =>
                 b is { FunctionScope.FunctionName: ReservedNames.AllocateFrameFunction }))
             _pendingFunctions.InsertRange(0, [
                 AllocateFrameFunction, CollapseFrameFunction
@@ -160,7 +162,8 @@ public class Scratch3LoweringPass : IrRewriter
         var result = (IrFunctionNode)base.VisitFunction(node);
         if (result.Flags.Contains(FunctionAllocationPerformedFlag)) return result;
         // native stuff we don't touch
-        if (result.FunctionScope.UseArgumentReporters) return result.WithFlag(FunctionAllocationPerformedFlag);
+        if (IsFunctionSpecial(result.FunctionScope))
+            return result.WithFlag(FunctionAllocationPerformedFlag);
 
         var variableCountCalculator = new ScopeTotalVariableCountCalculationRewriter();
         variableCountCalculator.VisitBlock(result);
@@ -201,7 +204,7 @@ public class Scratch3LoweringPass : IrRewriter
         var closestFunctionScope = CurrentScope?.GetClosestFunctionScope();
         if (closestFunctionScope == null)
             throw new Exception("This node cannot be processed without a scope");
-        if (closestFunctionScope.UseArgumentReporters) return node;
+        if (IsFunctionSpecial(closestFunctionScope)) return node;
 
         return ItemAt(ReservedNames.Stack,
             GetFunctionArgumentExpression(node.Name)
@@ -243,7 +246,7 @@ public class Scratch3LoweringPass : IrRewriter
 
         var function = ProgramNode.Functions.FirstOrDefault(f => f.FunctionScope.FunctionName == node.Function);
         if (function == null) throw new Exception();
-        if (function.FunctionScope.UseArgumentReporters)
+        if (IsFunctionSpecial(function.FunctionScope))
             return node with { Arguments = visitedArguments };
 
         var commands = new List<IrCommandNode>();
@@ -297,5 +300,13 @@ public class Scratch3LoweringPass : IrRewriter
         return new IrBinaryExpressionNode(IrBinaryOperator.Add,
             new IrGlobalVariableIdentifierExpressionNode(ReservedNames.FramePointer),
             new IrConstantExpressionNode(TypedValue.Number(index)));
+    }
+
+    private bool IsFunctionSpecial(FunctionScope scope)
+    {
+        var function = ProgramNode.Functions.FirstOrDefault(f => f.FunctionScope.Id == scope.Id);
+        if (function == null) return true;
+        return function.Attributes.Any(a => a.Name == FunctionAttributes.AlwaysInlineFunction) ||
+               scope.UseArgumentReporters;
     }
 }

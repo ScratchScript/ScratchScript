@@ -8,18 +8,18 @@
 
     <ItemGroup>
         <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1"/>
-        <PackageReference Include="MessagePack" Version="3.1.8" />
-        <PackageReference Include="Serilog" Version="4.4.0" />
+        <PackageReference Include="MessagePack" Version="3.1.8"/>
+        <PackageReference Include="Serilog" Version="4.4.0"/>
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
         <PackageReference Include="Serilog.Sinks.File" Version="8.0.0-nblumhardt-02322"/>
         <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12"/>
 
-        <None Update="Resources\std\**\*.*">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-
         <None Remove="Resources\Syntax\gen\**"/>
         <None Remove="Resources\Grammar\gen\**"/>
+        <Content Include="Resources\std\**\*.*">
+            <Link>std\%(RecursiveDir)%(Filename)%(Extension)</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>

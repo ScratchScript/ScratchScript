@@ -1,0 +1,10 @@
+﻿@skipFeature("unusedFunctions", "packFrameAllocationFunctions")
+namespace "std/scratch3/looks";
+
+@inline function say(message: string) {
+    __raw("looks_say", {inputs: {MESSAGE: message}});
+}
+
+@inline function sayTimed(message: string, seconds: number) {
+    __raw("looks_sayforsecs", {inputs: {MESSAGE: message, SECS: seconds}});
+}

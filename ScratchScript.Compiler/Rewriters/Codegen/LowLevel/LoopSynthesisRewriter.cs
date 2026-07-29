@@ -95,7 +95,7 @@ public class LoopSynthesisRewriter : IrRewriter, IScratch3ExtensionRewriter
                 ParentScope = mainFunction.FunctionScope
             })).WithFlag(SyntheticWhileFlag),
             newCondition.Cleanup ?? new IrNoOpCommandNode(),
-            new IrSetCommandNode(ReservedNames.ControlFlowBreak, new IrConstantExpressionNode(TypedValue.Number(0))),
+            new IrSetCommandNode(ReservedNames.ControlFlowBreak, new IrConstantExpressionNode(TypedValue.Number(0)))
         ];
 
         _pendingFunctions.Add(bodyFunction);

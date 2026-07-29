@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Antlr4.Runtime;
-using ScratchScript.Compiler.AST.Information;
 using ScratchScript.Compiler.AST.Representation;
 using ScratchType = ScratchScript.Compiler.TypeChecker.ScratchType;
 
@@ -8,6 +7,14 @@ namespace ScratchScript.Compiler.Extensions;
 
 public static class IrNodeExtensions
 {
+    public static IrCommandSequenceNode ToSequence(this IrCommandNode node) =>
+        node as IrCommandSequenceNode ?? new IrCommandSequenceNode([node]);
+
+    public static bool HasAttributeWithArgument(this IrProgramNode node, string attribute, string key) =>
+        node.Attributes.Any(a =>
+            a.Name == attribute &&
+            a.Arguments.Any(aa => aa is IrConstantExpressionNode aac && ((string?)aac.Value.Value ?? "") == key));
+
     extension<T>(T? node) where T : IrNode
     {
         [return: NotNullIfNotNull(nameof(node))]
@@ -34,10 +41,5 @@ public static class IrNodeExtensions
         public IrExpressionNode Simplify() => node is IrComplexExpressionNode complex
             ? complex.Dependencies == null && complex.Cleanup == null ? complex.Expression.Simplify() : complex
             : node;
-    }
-
-    extension(IrCommandNode node)
-    {
-        public IrCommandSequenceNode ToSequence() => node as IrCommandSequenceNode ?? new IrCommandSequenceNode([node]);
     }
 }

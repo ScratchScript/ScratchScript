@@ -1,7 +1,4 @@
-﻿using ScratchScript.Compiler.AST.Information;
-using ScratchScript.Compiler.Extensions;
-
-namespace ScratchScript.Compiler.AST.Representation.TargetSpecific;
+﻿namespace ScratchScript.Compiler.AST.Representation.TargetSpecific;
 
 public interface IScratch3ExtensionRewriter
 {

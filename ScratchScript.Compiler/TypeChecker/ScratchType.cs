@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using MessagePack;
 using MessagePack.Formatters;
 using ScratchScript.Compiler.AST.Representation;
