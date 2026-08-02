@@ -112,23 +112,59 @@ public class Scratch3LoweringPass : IrRewriter
     private const string EventAllocationPerformedFlag = "SCRATCH3_EVENT_ALLOCATION_PERFORMED";
     private const string FunctionAllocationPerformedFlag = "SCRATCH3_FUNCTION_ALLOCATION_PERFORMED";
     private const string NativeFunctionCallFlag = "SCRATCH3_NATIVE_FUNCTION_CALL";
+    private const string EnumsSerializedFlag = "SCRATCH3_ENUMS_SERIALIZED";
+
     private const string SkipAllocationKey = "packFrameAllocationFunctions";
-    private readonly List<IrFunctionNode> _pendingFunctions = [];
+    private const string SkipEnumSerializationKey = "enumSerialization";
+
+    private readonly List<IrNode> _pendingBlocks = [];
 
     public override IrNode VisitProgram(IrProgramNode node)
     {
-        _pendingFunctions.Clear();
+        _pendingBlocks.Clear();
         var program = (IrProgramNode)base.VisitProgram(node);
 
         if (!program.HasAttributeWithArgument(ProgramAttributes.SkipCompilerFeature, SkipAllocationKey) &&
             !program.Functions.Any(b =>
                 b is { FunctionScope.FunctionName: ReservedNames.AllocateFrameFunction }))
-            _pendingFunctions.InsertRange(0, [
+            _pendingBlocks.InsertRange(0, [
                 AllocateFrameFunction, CollapseFrameFunction
             ]);
 
-        return (program with { Functions = _pendingFunctions.Concat(program.Functions).ToList() }).WithFlag(
+        if (!program.HasAttributeWithArgument(ProgramAttributes.SkipCompilerFeature, SkipEnumSerializationKey) &&
+            !program.Flags.Contains(EnumsSerializedFlag))
+            program = SerializeEnums(program);
+
+        return (program with { TopLevelNodes = _pendingBlocks.Concat(program.TopLevelNodes).ToList() }).WithFlag(
             EventAllocationPerformedFlag);
+    }
+
+    // TODO: this can be removed if static data can be passed to the project emitter from compiler passes
+    private static IrProgramNode SerializeEnums(IrProgramNode program)
+    {
+        var blocks = new List<IrNode>(program.TopLevelNodes);
+        if (blocks.FirstOrDefault(e => e is IrEventNode { Type: "start" }) is not IrEventNode startEvent)
+            return program;
+
+        var enums = blocks.OfType<IrEnumNode>().ToList();
+        if (enums.Count == 0) return program;
+
+        var body = new List<IrCommandNode> { new IrPopAllCommand(ReservedNames.Enums) };
+        foreach (var en in enums)
+        {
+            body.AddRange(en.Entries.Keys.Select(key =>
+                new IrPushCommand(ReservedNames.Enums, new IrConstantExpressionNode(TypedValue.String(key)))));
+            body.AddRange(en.Entries.Values.Select(value =>
+                new IrPushCommand(ReservedNames.Enums, value ?? throw new ArgumentNullException(nameof(value)))));
+        }
+
+        var initFunction = new IrFunctionNode(true,
+            new FunctionScope
+                { UseArgumentReporters = true, FunctionName = ReservedNames.InitEnumsFunction, Body = body }, []);
+
+        blocks.Add(initFunction);
+        startEvent.Scope.Body.Insert(0, new IrCallFunctionCommandNode(ReservedNames.InitEnumsFunction, []));
+        return (program with { TopLevelNodes = blocks }).WithFlag(EnumsSerializedFlag);
     }
 
     public override IrNode VisitEvent(IrEventNode node)
@@ -187,7 +223,7 @@ public class Scratch3LoweringPass : IrRewriter
         if (CurrentScope == null) throw new Exception("This node cannot be processed without a scope");
         return ItemAt(ReservedNames.Stack,
             GetLocalVariableExpression(node.Name)
-        );
+        ).WithInferredType(node.InferredType);
     }
 
     public override IrNode VisitSetCommand(IrSetCommandNode node)
@@ -199,7 +235,7 @@ public class Scratch3LoweringPass : IrRewriter
             GetLocalVariableExpression(node.Variable), (IrExpressionNode)Visit(node.Expression));
     }
 
-    public override IrNode VisitFunctionArgumentExpressionNode(IrFunctionArgumentExpressionNode node)
+    public override IrNode VisitFunctionArgumentExpression(IrFunctionArgumentExpressionNode node)
     {
         var closestFunctionScope = CurrentScope?.GetClosestFunctionScope();
         if (closestFunctionScope == null)
@@ -208,7 +244,7 @@ public class Scratch3LoweringPass : IrRewriter
 
         return ItemAt(ReservedNames.Stack,
             GetFunctionArgumentExpression(node.Name)
-        );
+        ).WithInferredType(node.InferredType);
     }
 
     public override IrNode VisitTernaryExpression(IrTernaryExpressionNode node) =>
@@ -218,14 +254,18 @@ public class Scratch3LoweringPass : IrRewriter
                     CurrentScope),
                 new IrBlockNode([new IrPushCommand(ReservedNames.Stack, (IrExpressionNode)Visit(node.FalseValue))],
                     CurrentScope)),
-            new IrPopAtCommand(ReservedNames.Stack, LengthOf(ReservedNames.Stack)));
+            new IrPopAtCommand(ReservedNames.Stack, LengthOf(ReservedNames.Stack))).WithInferredType(node.InferredType);
 
-    public override IrNode VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node)
+    public override IrNode VisitFunctionCallExpression(IrFunctionCallExpressionNode node)
     {
+        var visitedArguments =
+            node.Arguments.Select(Visit).OfType<IrExpressionNode>().ToList();
+
+        if (ReservedNames.GlobalCallableFunctions.Contains(node.Function))
+            return node with { Arguments = visitedArguments };
+
         var function = ProgramNode.Functions.FirstOrDefault(f => f.FunctionScope.FunctionName == node.Function);
         if (function == null) throw new Exception();
-        var visitedArguments =
-            node.Arguments.Select(Visit).OfType<IrExpressionNode>();
 
         var commands = new List<IrCommandNode>();
         commands.Add(new IrPushCommand(ReservedNames.Stack,
@@ -257,7 +297,7 @@ public class Scratch3LoweringPass : IrRewriter
         return new IrCommandSequenceNode(commands);
     }
 
-    public override IrNode VisitFunctionReturnCommandNode(IrReturnCommandNode node)
+    public override IrNode VisitFunctionReturnCommand(IrReturnCommandNode node)
     {
         var commands = new List<IrCommandNode>();
         if (node.ReturnValue != null)
@@ -271,6 +311,61 @@ public class Scratch3LoweringPass : IrRewriter
             StopThisScript()
         ]);
         return new IrCommandSequenceNode(commands);
+    }
+
+    public override IrNode VisitMemberPropertyExpression(IrMemberPropertyExpressionNode node)
+    {
+        var member = (IrExpressionNode)Visit(node.Member);
+        switch (member)
+        {
+            case IrTypeReferenceExpressionNode typeref:
+            {
+                switch (typeref.InnerNode)
+                {
+                    case IrEnumNode enumNode:
+                        if (ProgramNode.HasAttributeWithArgument(ProgramAttributes.SkipCompilerFeature,
+                                SkipEnumSerializationKey))
+                            return node with { Member = member };
+
+                        var enumIndex = ProgramNode.Enums.ToList().FindIndex(e => e.Name == enumNode.Name);
+                        var memberIndex = enumNode.Entries.Keys.ToList().IndexOf(node.Property);
+                        if (enumIndex == -1 || memberIndex == -1) throw new Exception();
+
+                        return new IrConstantExpressionNode(
+                                TypedValue.Number(memberIndex))
+                            .WithInferredType(node.InferredType);
+                }
+
+                break;
+            }
+            default:
+            {
+                if (member.InferredType is EnumScratchType enumType)
+                {
+                    if (ProgramNode.HasAttributeWithArgument(ProgramAttributes.SkipCompilerFeature,
+                            SkipEnumSerializationKey))
+                        return node with { Member = member };
+
+                    var enums = ProgramNode.Enums.ToList();
+                    var enumIndex = enums.FindIndex(e => e.Name == enumType.Name);
+                    if (enumIndex == -1) throw new Exception();
+
+                    var offset = 1; // lists are 1-indexed
+                    for (var i = 0; i < enumIndex; i++)
+                        offset += enums[i].Entries.Count * 2;
+                    if (node.Property == "value") offset += enums[enumIndex].Entries.Count;
+
+                    return ItemAt(ReservedNames.Enums,
+                            new IrBinaryExpressionNode(IrBinaryOperator.Add,
+                                new IrConstantExpressionNode(TypedValue.Number(offset)), member))
+                        .WithInferredType(ScratchType.String);
+                }
+
+                break;
+            }
+        }
+
+        return node with { Member = member };
     }
 
     private IrBinaryExpressionNode GetLocalVariableExpression(string name)

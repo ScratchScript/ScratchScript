@@ -7,6 +7,9 @@ public static class ReservedNames
     public const string OldFramePointer = "__OFP";
     public const string TemporaryReturnValue = "__TRV";
 
+    public const string Enums = "__Enums";
+    public const string InitEnumsFunction = "__initEnums";
+
     public const string AllocateFrameFunction = "__allocateFrame";
     public const string CollapseFrameFunction = "__collapseFrame";
     public const string ArgumentsCount = "__argCount";
@@ -17,6 +20,7 @@ public static class ReservedNames
     public const string DispatchFunction = "__dispatch";
     public const string RawStatementFunction = "__raw";
     public const string RawExpressionFunction = "__raw_expr";
+    public const string IsConstFunction = "__isconst";
 
     public const string ControlFlowBreak = "__CFB";
     public const string WhileMainFunction = "__while_main";
@@ -27,10 +31,11 @@ public static class ReservedNames
     [
         Stack, FramePointer, OldFramePointer, TemporaryReturnValue, AllocateFrameFunction,
         CollapseFrameFunction, DispatchFunction, ArgumentsCount, LocalsCount, RawStatementFunction,
-        RawExpressionFunction, WhileMainFunction, WhileBodyFunction
+        RawExpressionFunction, WhileMainFunction, WhileBodyFunction, Enums, InitEnumsFunction
     ];
 
-    public static readonly List<string> GlobalCallableFunctions = [RawStatementFunction, RawExpressionFunction];
+    public static readonly List<string> GlobalCallableFunctions =
+        [RawStatementFunction, RawExpressionFunction, IsConstFunction];
 
     public static readonly List<string> GlobalVariables =
         [FramePointer, OldFramePointer, TemporaryReturnValue, ControlFlowBreak];

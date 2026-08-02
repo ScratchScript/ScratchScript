@@ -17,9 +17,10 @@ public class LoopSynthesisRewriter : IrRewriter, IScratch3ExtensionRewriter
 
     public override IrNode VisitProgram(IrProgramNode node)
     {
+        _pendingFunctions.Clear();
         var program = (IrProgramNode)base.VisitProgram(node);
         return _pendingFunctions.Count != 0
-            ? program with { Functions = program.Functions.Concat(_pendingFunctions).ToList() }
+            ? program with { TopLevelNodes = program.TopLevelNodes.Concat(_pendingFunctions).ToList() }
             : program;
     }
 

@@ -11,7 +11,7 @@ public class ScratchScriptImportsHandler(SymbolsStorage Symbols) : IrRewriter
 
     private bool TryImport(IrImportNode node)
     {
-        if (CheckCandidate(Directory.GetCurrentDirectory(), node, Symbols)) return true;
+        if (TryCandidate(Directory.GetCurrentDirectory(), node, Symbols)) return true;
 
         var directoryName = node.From.Split("/").FirstOrDefault();
         if (string.IsNullOrEmpty(directoryName)) return false;
@@ -29,7 +29,7 @@ public class ScratchScriptImportsHandler(SymbolsStorage Symbols) : IrRewriter
             if (symbolsFile.Count > 1) return false;
 
             var symbols = SymbolsStorageSerializer.Deserialize(File.ReadAllBytes(symbolsFile.First()));
-            if (CheckCandidate(targetDirectory, node, symbols))
+            if (TryCandidate(targetDirectory, node, symbols))
             {
                 found = true;
                 break;
@@ -46,7 +46,7 @@ public class ScratchScriptImportsHandler(SymbolsStorage Symbols) : IrRewriter
         return node;
     }
 
-    private bool CheckCandidate(string basePath, IrImportNode node, SymbolsStorage storage)
+    private bool TryCandidate(string basePath, IrImportNode node, SymbolsStorage storage)
     {
         if (!storage.Namespaces.TryGetValue(node.From, out var ns)) return false;
 
@@ -80,7 +80,8 @@ public class ScratchScriptImportsHandler(SymbolsStorage Symbols) : IrRewriter
         var program = (IrProgramNode)base.VisitProgram(node);
         return program with
         {
-            Functions = program.Functions.Concat(ImportedNodes.Functions.Values.Select(ifu => ifu.Node)).ToList(),
+            TopLevelNodes = program.TopLevelNodes.Concat(ImportedNodes.Functions.Values.Select(ifu => ifu.Node))
+                .ToList(),
             Defines = program.Defines.Concat(ImportedNodes.Globals.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Node))
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
         };

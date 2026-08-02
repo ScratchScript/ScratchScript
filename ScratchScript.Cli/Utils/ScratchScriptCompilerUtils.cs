@@ -24,7 +24,8 @@ public static class ScratchScriptCompilerUtils
                 CodegenLevel.High, [
                     new RawFunctionsExpansionRewriter(),
                     new ControlFlowDesugarizationRewriter(),
-                    new FunctionInlineRewriter()
+                    new FunctionInlineRewriter(),
+                    new CompilerFunctionsExpansionRewriter()
                 ]
             },
             { CodegenLevel.LoweringPass, [new Scratch3LoweringPass()] },

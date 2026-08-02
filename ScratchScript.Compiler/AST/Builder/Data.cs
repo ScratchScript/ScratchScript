@@ -3,6 +3,7 @@ using ScratchScript.Compiler.AST.Information;
 using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
+using ScratchScript.Compiler.TypeChecker;
 
 namespace ScratchScript.Compiler.AST.Builder;
 
@@ -111,6 +112,30 @@ public partial class ScratchScriptVisitor
 
         return new IrSetCommandNode(variable.Name,
                 ConvertAssignmentToBinaryExpression(assignmentOperator, variableIdentifier, expression))
+            .WithContext(context);
+    }
+
+    public override IrNode? VisitPostIncrementStatement(ScratchScriptParser.PostIncrementStatementContext context)
+    {
+        var name = context.Identifier().GetText();
+
+        if (VisitIdentifier(name) is not IrExpressionNode variableIdentifier)
+        {
+            // TODO: expected identifier?
+            DiagnosticReporter.Instance.Error((int)ScratchScriptError.ExpectedNonNull, context, context.Identifier());
+            return null;
+        }
+
+        if (_scope?.GetVariable(name) is not { } variable)
+        {
+            DiagnosticReporter.Instance.Error((int)ScratchScriptError.VariableNotDefined, context, context.Identifier(),
+                name);
+            return null;
+        }
+
+        return new IrSetCommandNode(variable.Name,
+                ConvertAssignmentToBinaryExpression(context.postIncrementOperators().GetText() == "++" ? "+=" : "-=",
+                    variableIdentifier, new IrConstantExpressionNode(TypedValue.Number(1))))
             .WithContext(context);
     }
 

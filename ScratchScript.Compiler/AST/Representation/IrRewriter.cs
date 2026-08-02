@@ -1,4 +1,5 @@
 ﻿using ScratchScript.Compiler.AST.Information;
+using ScratchScript.Compiler.TypeChecker;
 
 namespace ScratchScript.Compiler.AST.Representation;
 
@@ -7,11 +8,11 @@ public class IrRewriter : IrBaseVisitor<IrNode>
     protected IrProgramNode ProgramNode { get; set; }
     protected Scope? CurrentScope { get; set; }
 
-    protected Scope CloneScope(Scope which)
+    protected T CloneScope<T>(T which) where T : Scope
     {
         var previousScope = CurrentScope;
         CurrentScope = which;
-        var result = which.CloneWithTransformedBody(Visit);
+        var result = (T)which.CloneWithTransformedBody(Visit);
         CurrentScope = previousScope;
         return result;
     }
@@ -24,10 +25,7 @@ public class IrRewriter : IrBaseVisitor<IrNode>
         ProgramNode = node;
         return node with
         {
-            Functions = node.Functions.Select(b => (IrFunctionNode)VisitBlock(b)).ToList(),
-            Events = node.Events.Select(b => (IrEventNode)VisitBlock(b)).ToList(),
-            Imports = node.Imports.Select(i => (IrImportNode)Visit(i)).ToList(),
-            Attributes = node.Attributes.Select(a => (IrAttributeNode)Visit(a)).ToList(),
+            TopLevelNodes = node.TopLevelNodes.Select(Visit).ToList(),
             Defines = node.Defines.ToDictionary(kvp => kvp.Key, kvp => (IrExpressionNode)Visit(kvp.Value))
         };
     }
@@ -43,16 +41,26 @@ public class IrRewriter : IrBaseVisitor<IrNode>
         return result;
     }
 
-    public override IrNode VisitFunction(IrFunctionNode node) =>
-        node with
+    public override IrNode VisitFunction(IrFunctionNode node)
+    {
+        var scope = CloneScope(node.FunctionScope);
+        return node with
         {
-            FunctionScope = (FunctionScope)CloneScope(node.FunctionScope),
-            Scope = CloneScope(node.FunctionScope),
+            FunctionScope = scope,
+            Scope = scope,
             Attributes = node.Attributes.Select(Visit).OfType<IrAttributeNode>().ToList()
         };
+    }
 
     public override IrNode VisitEvent(IrEventNode node) =>
         node with { Scope = CloneScope(node.Scope) };
+
+    public override IrNode VisitEnum(IrEnumNode node) =>
+        node with
+        {
+            Entries = node.Entries.ToDictionary(kvp => kvp.Key,
+                kvp => kvp.Value is null ? null : (IrExpressionNode)Visit(kvp.Value))
+        };
 
     public override IrNode VisitRawBlock(IrBlockNode node) =>
         node with { Scope = CloneScope(node.Scope) };
@@ -135,16 +143,25 @@ public class IrRewriter : IrBaseVisitor<IrNode>
         };
 
     public override IrNode VisitBreakCommand(IrBreakCommandNode node) => node;
-
     public override IrNode VisitContinueCommand(IrContinueCommandNode node) => node;
 
-    public override IrNode VisitConstantExpression(IrConstantExpressionNode node) => node;
+    public override IrNode VisitMemberCallFunctionCommand(IrMemberCallFunctionCommandNode node) =>
+        node with { Call = (IrCallFunctionCommandNode)Visit(node.Call), Member = (IrExpressionNode)Visit(node.Member) };
+
+    public override IrNode VisitConstantExpression(IrConstantExpressionNode node)
+    {
+        if (node.Value.Type != ScratchType.Object || node.Value.Value is null) return node;
+        var visited =
+            (node.Value.Value as Dictionary<string, IrExpressionNode> ?? throw new InvalidOperationException())
+            .ToDictionary(kvp => kvp.Key,
+                kvp => (IrExpressionNode)Visit(kvp.Value));
+        return node with { Value = TypedValue.Object(visited) };
+    }
 
     public override IrNode VisitGlobalVariableIdentifierExpression(IrGlobalVariableIdentifierExpressionNode node) =>
         node;
 
     public override IrNode VisitLocalVariableIdentifierExpression(IrLocalVariableIdentifierExpressionNode node) => node;
-
     public override IrNode VisitGlobalListIdentifierExpression(IrGlobalListIdentifierExpressionNode node) => node;
 
     public override IrNode VisitParenthesizedExpression(IrParenthesizedExpressionNode node) =>
@@ -193,17 +210,28 @@ public class IrRewriter : IrBaseVisitor<IrNode>
             FalseValue = (IrExpressionNode)Visit(node.FalseValue)
         };
 
-    public override IrNode VisitFunctionArgumentExpressionNode(IrFunctionArgumentExpressionNode node) => node;
+    public override IrNode VisitFunctionArgumentExpression(IrFunctionArgumentExpressionNode node) => node;
+    public override IrNode VisitStackPointerExpression(IrStackPointerExpressionNode node) => node;
 
-    public override IrNode VisitStackPointerExpressionNode(IrStackPointerExpressionNode node) => node;
-
-    public override IrNode VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node) =>
+    public override IrNode VisitFunctionCallExpression(IrFunctionCallExpressionNode node) =>
         node with
         {
             Arguments = node.Arguments.Select(Visit).OfType<IrExpressionNode>().ToList()
         };
 
-    public override IrNode VisitFunctionReturnCommandNode(IrReturnCommandNode node) => node with
+    public override IrNode VisitTypeReferenceExpression(IrTypeReferenceExpressionNode node) =>
+        node with { InnerNode = Visit(node.InnerNode) };
+
+    public override IrNode VisitMemberPropertyExpression(IrMemberPropertyExpressionNode node) =>
+        node with { Member = (IrExpressionNode)Visit(node.Member) };
+
+    public override IrNode VisitMemberFunctionCallExpression(IrMemberFunctionCallExpressionNode node) =>
+        node with
+        {
+            Member = (IrExpressionNode)Visit(node.Member), Call = (IrFunctionCallExpressionNode)Visit(node.Call)
+        };
+
+    public override IrNode VisitFunctionReturnCommand(IrReturnCommandNode node) => node with
     {
         ReturnValue = node.ReturnValue != null ? (IrExpressionNode)Visit(node.ReturnValue) : null
     };

@@ -18,7 +18,7 @@ functionCallStatement: Identifier LeftParen (expression (Comma expression)*?)? R
 functionDeclarationStatement: attributeStatement*? FunctionDeclare Identifier LeftParen (functionDeclarationArgument (Comma functionDeclarationArgument)*?)? RightParen (Colon type)? block;
 
 enumDeclarationStatement: EnumDeclare Identifier LeftBrace (enumEntry (Comma enumEntry)*?)? RightBrace;
-enumEntry: Identifier (Assignment constant)?;
+enumEntry: Identifier (Assignment expression)?;
 
 ifStatement: If LeftParen expression RightParen lineOrBlock (Else lineOrBlock)?;
 whileStatement: While LeftParen expression RightParen lineOrBlock;
@@ -47,14 +47,14 @@ expression
     | LeftParen expression RightParen                                       #parenthesizedExpression
     | LeftBracket (expression (Comma expression)*?)? RightBracket           #arrayInitializeExpression
     | functionCallStatement                                                 #functionCallExpression
-    | LeftBrace (objectProperty (Comma objectProperty)*?)? RightBrace                                            #objectLiteralExpression
+    | LeftBrace (objectProperty (Comma objectProperty)*?)? RightBrace       #objectLiteralExpression
     // 2
     | expression Dot functionCallStatement                                  #memberFunctionCallExpression
     | expression Dot Identifier                                             #memberPropertyAccessExpression
     | expression LeftBracket expression RightBracket                        #arrayAccessExpression
     // 3
     | Not expression                                                        #notExpression
-    | addOperators expression                                               #unaryAddExpression // e.g., +x, -x
+    | addOperators expression                                               #unaryAddExpression
     // 4
     | expression multiplyOperators expression                               #binaryMultiplyExpression
     // 5
@@ -98,4 +98,4 @@ type
     | List Lesser type Greater #listType;
 
 interpolatedString: OpenInterpolatedString interpolatedStringPart* CloseInterpolatedString;
-interpolatedStringPart: EnterInterpolatedExpression expression RightBrace | Text | EscapeSequence ;
+interpolatedStringPart: EnterInterpolatedExpression expression RightBrace | Text | EscapeSequence;

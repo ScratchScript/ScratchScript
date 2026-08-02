@@ -1,11 +1,11 @@
-@skipFeature("unusedFunctions", "packFrameAllocationFunctions")
+@skipFeature("unusedFunctions", "packFrameAllocationFunctions", "enumSerialization")
 namespace "std/scratch3/control";
 
-/* enum StopTarget {
+enum StopTarget {
     All = "all",
     ThisScript = "this script",
     OtherScripts = "other scripts"
-} */
+}
 
 @inline function wait(seconds: number) {
     __raw("control_wait", {inputs: {DURATION: seconds}});
@@ -15,6 +15,6 @@ namespace "std/scratch3/control";
     __raw("control_wait_until", {inputs: {CONDITION: condition}});
 }
 
-@inline function stop(target: string) {
-    __raw("control_stop", {fields: {STOP_OPTION: target}});
+@inline function stop(target: StopTarget) {
+    __raw("control_stop", {fields: {STOP_OPTION: target.value}});
 }

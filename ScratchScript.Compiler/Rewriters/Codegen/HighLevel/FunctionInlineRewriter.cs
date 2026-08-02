@@ -32,14 +32,14 @@ public class FunctionInlineRewriter : IrRewriter
         return new IrCommandSequenceNode(visitedFunction.FunctionScope.Body);
     }
 
-    public override IrNode VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node)
+    public override IrNode VisitFunctionCallExpression(IrFunctionCallExpressionNode node)
     {
         var visitedArguments =
             node.Arguments.Select(Visit).OfType<IrExpressionNode>().ToList();
 
         var function = ProgramNode.Functions.FirstOrDefault(f => f.FunctionScope.FunctionName == node.Function);
-        if (function == null) throw new Exception();
-        if (!(function.Attributes?.Any(a => a.Name == FunctionAttributes.AlwaysInlineFunction) ?? false))
+        if (function == null || ReservedNames.GlobalCallableFunctions.Contains(node.Function) ||
+            !(function.Attributes?.Any(a => a.Name == FunctionAttributes.AlwaysInlineFunction) ?? false))
             return node with { Arguments = visitedArguments };
 
         var closestFunctionScope = CurrentScope?.GetClosestFunctionScope();
@@ -63,10 +63,10 @@ public class FunctionInlineRewriter : IrRewriter
         return result;
     }
 
-    public override IrNode VisitFunctionReturnCommandNode(IrReturnCommandNode node)
+    public override IrNode VisitFunctionReturnCommand(IrReturnCommandNode node)
     {
-        if (_info is null) return base.VisitFunctionReturnCommandNode(node);
-        if (base.VisitFunctionReturnCommandNode(node) is not IrReturnCommandNode visitedReturn) throw new Exception();
+        if (_info is null) return base.VisitFunctionReturnCommand(node);
+        if (base.VisitFunctionReturnCommand(node) is not IrReturnCommandNode visitedReturn) throw new Exception();
         if (visitedReturn.ReturnValue == null) return visitedReturn;
         if (!_info.UseTemporaryVariable) _info = _info with { ReturnValue = visitedReturn.ReturnValue };
 
@@ -76,9 +76,9 @@ public class FunctionInlineRewriter : IrRewriter
             : new IrNoOpCommandNode();
     }
 
-    public override IrNode VisitFunctionArgumentExpressionNode(IrFunctionArgumentExpressionNode node)
+    public override IrNode VisitFunctionArgumentExpression(IrFunctionArgumentExpressionNode node)
     {
-        if (_info is null) return base.VisitFunctionArgumentExpressionNode(node);
+        if (_info is null) return base.VisitFunctionArgumentExpression(node);
         var closestFunctionScope = CurrentScope?.GetClosestFunctionScope();
         if (closestFunctionScope is null)
             throw new Exception();

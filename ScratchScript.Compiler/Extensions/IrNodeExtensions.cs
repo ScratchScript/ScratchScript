@@ -15,6 +15,11 @@ public static class IrNodeExtensions
             a.Name == attribute &&
             a.Arguments.Any(aa => aa is IrConstantExpressionNode aac && ((string?)aac.Value.Value ?? "") == key));
 
+    public static bool HasAttributeWithArgument(this IrFunctionNode node, string attribute, string key) =>
+        node.Attributes.Any(a =>
+            a.Name == attribute &&
+            a.Arguments.Any(aa => aa is IrConstantExpressionNode aac && ((string?)aac.Value.Value ?? "") == key));
+
     extension<T>(T? node) where T : IrNode
     {
         [return: NotNullIfNotNull(nameof(node))]
@@ -42,4 +47,6 @@ public static class IrNodeExtensions
             ? complex.Dependencies == null && complex.Cleanup == null ? complex.Expression.Simplify() : complex
             : node;
     }
+
+    public static T Extract<T>(this IrConstantExpressionNode node) => node.Value.Value.CastOrThrow<T>();
 }

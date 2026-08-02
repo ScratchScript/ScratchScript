@@ -38,7 +38,7 @@ public partial class ScratchScriptProjectEmitter
         _currentFunction = Guid.Empty;
     }
 
-    public override object? VisitFunctionArgumentExpressionNode(IrFunctionArgumentExpressionNode node)
+    public override object? VisitFunctionArgumentExpression(IrFunctionArgumentExpressionNode node)
     {
         // TODO: improve exceptions
         if (_currentFunction == Guid.Empty || !_functions[_currentFunction].Reporters.ContainsKey(node.Name))
@@ -50,10 +50,10 @@ public partial class ScratchScriptProjectEmitter
         return reporter;
     }
 
-    public override object? VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node) =>
+    public override object? VisitFunctionCallExpression(IrFunctionCallExpressionNode node) =>
         throw new NotImplementedException();
 
-    public override object? VisitFunctionReturnCommandNode(IrReturnCommandNode node) =>
+    public override object? VisitFunctionReturnCommand(IrReturnCommandNode node) =>
         throw new NotImplementedException();
 
     public override object? VisitCallFunctionCommand(IrCallFunctionCommandNode node)

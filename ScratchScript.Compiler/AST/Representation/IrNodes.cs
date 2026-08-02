@@ -84,19 +84,27 @@ public record IrBlockNode(Scope Scope) : IrNode
 
 public record IrProgramNode(
     string Namespace,
-    IReadOnlyList<IrFunctionNode> Functions,
-    IReadOnlyList<IrEventNode> Events,
-    IReadOnlyList<IrImportNode> Imports,
-    IReadOnlyList<IrAttributeNode> Attributes,
-    Dictionary<string, IrExpressionNode> Defines) : IrNode;
+    IReadOnlyList<IrNode> TopLevelNodes,
+    Dictionary<string, IrExpressionNode> Defines) : IrNode
+{
+    public IEnumerable<IrFunctionNode> Functions => TopLevelNodes.OfType<IrFunctionNode>();
+    public IEnumerable<IrEventNode> Events => TopLevelNodes.OfType<IrEventNode>();
+    public IEnumerable<IrImportNode> Imports => TopLevelNodes.OfType<IrImportNode>();
+    public IEnumerable<IrAttributeNode> Attributes => TopLevelNodes.OfType<IrAttributeNode>();
+    public IEnumerable<IrEnumNode> Enums => TopLevelNodes.OfType<IrEnumNode>();
+}
 
 public record IrFunctionNode(bool Warp, FunctionScope FunctionScope, IReadOnlyList<IrAttributeNode> Attributes)
     : IrBlockNode(FunctionScope);
 
 public record IrEventNode(string Type, Scope Scope) : IrBlockNode(Scope);
 
+public record IrEnumNode(string Name, IReadOnlyDictionary<string, IrExpressionNode?> Entries) : IrNode;
+
 // expressions
 public record IrConstantExpressionNode(TypedValue Value) : IrExpressionNode;
+
+public record IrTypeReferenceExpressionNode(IrNode InnerNode) : IrExpressionNode;
 
 public record IrGlobalVariableIdentifierExpressionNode(string Name) : IrExpressionNode;
 
@@ -120,6 +128,11 @@ public record IrShadowExpressionNode(
 public record IrFunctionArgumentExpressionNode(string Name) : IrExpressionNode;
 
 public record IrFunctionCallExpressionNode(string Function, IReadOnlyList<IrExpressionNode> Arguments)
+    : IrExpressionNode;
+
+public record IrMemberPropertyExpressionNode(IrExpressionNode Member, string Property) : IrExpressionNode;
+
+public record IrMemberFunctionCallExpressionNode(IrExpressionNode Member, IrFunctionCallExpressionNode Call)
     : IrExpressionNode;
 
 // mostly for targets which require inserting additional commands before/after the statement (e.g. scratch itself)
@@ -148,6 +161,8 @@ public record IrSetCommandNode(string Variable, IrExpressionNode Expression) : I
 
 public record IrCallFunctionCommandNode(string Function, IReadOnlyList<IrExpressionNode> Arguments)
     : IrCommandNode;
+
+public record IrMemberCallFunctionCommandNode(IrExpressionNode Member, IrCallFunctionCommandNode Call) : IrCommandNode;
 
 public record IrRawCommandNode(
     string Opcode,
@@ -200,77 +215,86 @@ public static class IrHasher
                     HashCode.Combine(kvp.Key.GetHashCode(), kvp.Value?.GetHashCode() ?? 0)))),
             IrAttributeNode attr => HashCode.Combine(2, attr.Name.GetHashCode(),
                 HashEnumerable(attr.Arguments.Select(GetNodeHash))),
+            IrEnumNode en => HashCode.Combine(3, en.Name.GetHashCode(),
+                HashEnumerable(en.Entries.Select(kvp => HashCode.Combine(kvp.Key, GetNodeHash(kvp.Value))))),
 
             // blocks
-            IrProgramNode program => HashCode.Combine(3,
+            IrProgramNode program => HashCode.Combine(4,
                 program.Namespace.GetHashCode(),
                 HashEnumerable(program.Functions.Select(GetNodeHash)),
                 HashEnumerable(program.Attributes.Select(GetNodeHash)),
                 HashEnumerable(program.Events.Select(GetNodeHash))),
-            IrFunctionNode func => HashCode.Combine(4, func.Warp, func.FunctionScope.FunctionName.GetHashCode(),
+            IrFunctionNode func => HashCode.Combine(5, func.Warp, func.FunctionScope.FunctionName.GetHashCode(),
                 HashEnumerable(func.FunctionScope.Body.Select(GetNodeHash))),
-            IrEventNode ev => HashCode.Combine(5, ev.Type.GetHashCode(),
+            IrEventNode ev => HashCode.Combine(6, ev.Type.GetHashCode(),
                 HashEnumerable(ev.Scope.Body.Select(GetNodeHash))),
-            IrBlockNode block => HashCode.Combine(6, HashEnumerable(block.Scope.Body.Select(GetNodeHash))),
+            IrBlockNode block => HashCode.Combine(7, HashEnumerable(block.Scope.Body.Select(GetNodeHash))),
 
             // expressions
-            IrConstantExpressionNode constant => HashCode.Combine(7, constant.Value.GetHashCode()),
-            IrLocalVariableIdentifierExpressionNode local => HashCode.Combine(8, local.Name.GetHashCode()),
-            IrGlobalVariableIdentifierExpressionNode globalVar => HashCode.Combine(9,
+            IrConstantExpressionNode constant => HashCode.Combine(8, constant.Value.GetHashCode()),
+            IrLocalVariableIdentifierExpressionNode local => HashCode.Combine(9, local.Name.GetHashCode()),
+            IrGlobalVariableIdentifierExpressionNode globalVar => HashCode.Combine(10,
                 globalVar.Name.GetHashCode()),
-            IrGlobalListIdentifierExpressionNode globalList => HashCode.Combine(10, globalList.Name.GetHashCode()),
-            IrFunctionArgumentExpressionNode arg => HashCode.Combine(11, arg.Name.GetHashCode()),
-            IrParenthesizedExpressionNode paren => HashCode.Combine(12, GetNodeHash(paren.Expression)),
-            IrBinaryExpressionNode bin => HashCode.Combine(13, bin.Operator, GetNodeHash(bin.Left),
+            IrGlobalListIdentifierExpressionNode globalList => HashCode.Combine(11, globalList.Name.GetHashCode()),
+            IrFunctionArgumentExpressionNode arg => HashCode.Combine(12, arg.Name.GetHashCode()),
+            IrParenthesizedExpressionNode paren => HashCode.Combine(13, GetNodeHash(paren.Expression)),
+            IrBinaryExpressionNode bin => HashCode.Combine(14, bin.Operator, GetNodeHash(bin.Left),
                 GetNodeHash(bin.Right)),
-            IrUnaryExpressionNode unary => HashCode.Combine(14, unary.Operator, GetNodeHash(unary.Operand)),
+            IrUnaryExpressionNode unary => HashCode.Combine(15, unary.Operator, GetNodeHash(unary.Operand)),
             IrFunctionCallExpressionNode callExpr =>
-                HashCode.Combine(15, callExpr.Function.GetHashCode(),
+                HashCode.Combine(16, callExpr.Function.GetHashCode(),
                     HashEnumerable(callExpr.Arguments.Select(GetNodeHash))),
             IrShadowExpressionNode shadow =>
-                HashCode.Combine(16, shadow.Opcode.GetHashCode(), shadow.ExpectedType,
+                HashCode.Combine(17, shadow.Opcode.GetHashCode(), shadow.ExpectedType,
                     HashExpressionDictionary(shadow.Inputs),
                     HashExpressionDictionary(shadow.Fields)),
             IrComplexExpressionNode complex =>
-                HashCode.Combine(17, GetNodeHash(complex.Expression), GetNodeHash(complex.Dependencies),
+                HashCode.Combine(18, GetNodeHash(complex.Expression), GetNodeHash(complex.Dependencies),
                     GetNodeHash(complex.Cleanup)),
             IrObjectLiteralExpressionNode obj =>
-                HashCode.Combine(18, HashExpressionDictionary(obj.Values)),
-            IrStackPointerExpressionNode stp => HashCode.Combine(19, stp.Offset.GetHashCode()),
-            IrTernaryExpressionNode ternary => HashCode.Combine(20, GetNodeHash(ternary.Condition),
+                HashCode.Combine(19, HashExpressionDictionary(obj.Values)),
+            IrStackPointerExpressionNode stp => HashCode.Combine(20, stp.Offset.GetHashCode()),
+            IrTernaryExpressionNode ternary => HashCode.Combine(21, GetNodeHash(ternary.Condition),
                 GetNodeHash(ternary.TrueValue), GetNodeHash(ternary.FalseValue)),
+            IrTypeReferenceExpressionNode typeref => HashCode.Combine(22, GetNodeHash(typeref.InnerNode)),
+            IrMemberPropertyExpressionNode mprop => HashCode.Combine(23, GetNodeHash(mprop.Member),
+                mprop.Property.GetHashCode()),
+            IrMemberFunctionCallExpressionNode mcall => HashCode.Combine(24, GetNodeHash(mcall.Member),
+                GetNodeHash(mcall.Call)),
 
             // commands
-            IrNoOpCommandNode => HashCode.Combine(21),
-            IrCommandSequenceNode seq => HashCode.Combine(22, HashEnumerable(seq.Commands.Select(GetNodeHash))),
-            IrSetCommandNode set => HashCode.Combine(23, set.Variable.GetHashCode(),
+            IrNoOpCommandNode => HashCode.Combine(24),
+            IrCommandSequenceNode seq => HashCode.Combine(25, HashEnumerable(seq.Commands.Select(GetNodeHash))),
+            IrSetCommandNode set => HashCode.Combine(26, set.Variable.GetHashCode(),
                 GetNodeHash(set.Expression)),
-            IrCallFunctionCommandNode callCmd => HashCode.Combine(24, callCmd.Function.GetHashCode(),
+            IrCallFunctionCommandNode callCmd => HashCode.Combine(27, callCmd.Function.GetHashCode(),
                 HashEnumerable(callCmd.Arguments.Select(GetNodeHash))),
-            IrReturnCommandNode ret => HashCode.Combine(25, GetNodeHash(ret.ReturnValue)),
+            IrMemberCallFunctionCommandNode mcallCmd => HashCode.Combine(28, GetNodeHash(mcallCmd.Member),
+                GetNodeHash(mcallCmd.Call)),
+            IrReturnCommandNode ret => HashCode.Combine(29, GetNodeHash(ret.ReturnValue)),
             IrRawCommandNode raw =>
-                HashCode.Combine(26, raw.Opcode.GetHashCode(), HashExpressionDictionary(raw.Inputs),
+                HashCode.Combine(30, raw.Opcode.GetHashCode(), HashExpressionDictionary(raw.Inputs),
                     HashExpressionDictionary(raw.Fields)),
 
             // lists
-            IrPushCommand push => HashCode.Combine(27, push.List.GetHashCode(), GetNodeHash(push.Expression)),
-            IrPushAtCommand pushAt => HashCode.Combine(28, pushAt.List.GetHashCode(), GetNodeHash(pushAt.Where),
+            IrPushCommand push => HashCode.Combine(31, push.List.GetHashCode(), GetNodeHash(push.Expression)),
+            IrPushAtCommand pushAt => HashCode.Combine(32, pushAt.List.GetHashCode(), GetNodeHash(pushAt.Where),
                 GetNodeHash(pushAt.Expression)),
-            IrPopCommand pop => HashCode.Combine(29, pop.List.GetHashCode()),
-            IrPopAtCommand popAt => HashCode.Combine(30, popAt.List.GetHashCode(), GetNodeHash(popAt.Where)),
-            IrPopAllCommand popAll => HashCode.Combine(31, popAll.List.GetHashCode()),
+            IrPopCommand pop => HashCode.Combine(33, pop.List.GetHashCode()),
+            IrPopAtCommand popAt => HashCode.Combine(34, popAt.List.GetHashCode(), GetNodeHash(popAt.Where)),
+            IrPopAllCommand popAll => HashCode.Combine(35, popAll.List.GetHashCode()),
 
             // control Flow
-            IrIfCommandNode cond => HashCode.Combine(32, GetNodeHash(cond.Condition), GetNodeHash(cond.Body),
+            IrIfCommandNode cond => HashCode.Combine(36, GetNodeHash(cond.Condition), GetNodeHash(cond.Body),
                 GetNodeHash(cond.Alternate)),
             IrWhileCommandNode loop =>
-                HashCode.Combine(33, GetNodeHash(loop.Condition), GetNodeHash(loop.Body)),
-            IrForCommandNode fr => HashCode.Combine(34, GetNodeHash(fr.Init), GetNodeHash(fr.Condition),
+                HashCode.Combine(37, GetNodeHash(loop.Condition), GetNodeHash(loop.Body)),
+            IrForCommandNode fr => HashCode.Combine(38, GetNodeHash(fr.Init), GetNodeHash(fr.Condition),
                 GetNodeHash(fr.Update), GetNodeHash(fr.Body)),
-            IrRepeatCommandNode repeat => HashCode.Combine(35, GetNodeHash(repeat.Times),
+            IrRepeatCommandNode repeat => HashCode.Combine(39, GetNodeHash(repeat.Times),
                 GetNodeHash(repeat.Body)),
-            IrBreakCommandNode => HashCode.Combine(36),
-            IrContinueCommandNode => HashCode.Combine(37),
+            IrBreakCommandNode => HashCode.Combine(40),
+            IrContinueCommandNode => HashCode.Combine(41),
 
             _ => throw new ArgumentOutOfRangeException(nameof(node), $"Unhandled node type: {node.GetType().Name}")
         };

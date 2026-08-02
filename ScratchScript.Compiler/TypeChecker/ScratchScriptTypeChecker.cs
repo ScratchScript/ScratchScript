@@ -4,6 +4,7 @@ using ScratchScript.Compiler.AST.Information;
 using ScratchScript.Compiler.AST.Representation;
 using ScratchScript.Compiler.Diagnostics;
 using ScratchScript.Compiler.Extensions;
+using ScratchScript.Compiler.Rewriters.Optimization;
 
 namespace ScratchScript.Compiler.TypeChecker;
 
@@ -59,7 +60,7 @@ public class ScratchScriptTypeChecker : IrRewriter
     }
 
     public override IrNode VisitRawCommand(IrRawCommandNode node)
-        => node;
+        => base.VisitRawCommand(node);
 
     // TODO: check expression type when lists are implemented properly?
     public override IrNode VisitPushCommand(IrPushCommand node)
@@ -93,7 +94,7 @@ public class ScratchScriptTypeChecker : IrRewriter
     }
 
     public override IrNode VisitConstantExpression(IrConstantExpressionNode node)
-        => node.WithInferredType(node.Value.Type);
+        => ((IrConstantExpressionNode)base.VisitConstantExpression(node)).WithInferredType(node.Value.Type);
 
     public override IrNode VisitLocalVariableIdentifierExpression(IrLocalVariableIdentifierExpressionNode node)
         => node.WithInferredType(CurrentScope?.GetVariable(node.Name)?.Type ?? ScratchType.Unknown);
@@ -112,7 +113,8 @@ public class ScratchScriptTypeChecker : IrRewriter
         var left = (IrExpressionNode)Visit(node.Left);
         var right = (IrExpressionNode)Visit(node.Right);
 
-        if (left.InferredType == ScratchType.String && right.InferredType == ScratchType.String)
+        if (left.InferredType == ScratchType.String && right.InferredType == ScratchType.String &&
+            node.Operator == IrBinaryOperator.Add)
             return new IrBinaryExpressionNode(IrBinaryOperator.Join, left, right).WithInferredType(ScratchType.String);
 
         var expectedType = node.Operator switch
@@ -150,13 +152,17 @@ public class ScratchScriptTypeChecker : IrRewriter
     }
 
     public override IrNode VisitShadowExpression(IrShadowExpressionNode node)
-        => node.WithInferredType(node.ExpectedType ?? ScratchType.Unknown);
+        => ((IrExpressionNode)base.VisitShadowExpression(node)).WithInferredType(node.ExpectedType ??
+            ScratchType.Unknown);
 
     public override IrNode VisitComplexExpression(IrComplexExpressionNode node)
-        => node.WithInferredType(((IrExpressionNode)Visit(node.Expression)).InferredType);
+    {
+        var visited = (IrComplexExpressionNode)Visit(node);
+        return visited.WithInferredType(visited.Expression.InferredType);
+    }
 
     public override IrNode VisitObjectLiteralExpression(IrObjectLiteralExpressionNode node)
-        => node.WithInferredType(ScratchType.Object);
+        => ((IrExpressionNode)base.VisitObjectLiteralExpression(node)).WithInferredType(ScratchType.Object);
 
     public override IrNode VisitTernaryExpression(IrTernaryExpressionNode node)
     {
@@ -171,13 +177,13 @@ public class ScratchScriptTypeChecker : IrRewriter
             trueValue.InferredType);
     }
 
-    public override IrNode VisitFunctionArgumentExpressionNode(IrFunctionArgumentExpressionNode node)
+    public override IrNode VisitFunctionArgumentExpression(IrFunctionArgumentExpressionNode node)
         => node.WithInferredType(CurrentScope?.GetArgument(node.Name)?.Type ?? ScratchType.Unknown);
 
-    public override IrNode VisitStackPointerExpressionNode(IrStackPointerExpressionNode node)
+    public override IrNode VisitStackPointerExpression(IrStackPointerExpressionNode node)
         => node.WithInferredType(ScratchType.Unknown);
 
-    public override IrNode VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node)
+    public override IrNode VisitFunctionCallExpression(IrFunctionCallExpressionNode node)
     {
         if (node.Context is not ScratchScriptParser.FunctionCallExpressionContext context)
             throw new Exception(
@@ -192,7 +198,7 @@ public class ScratchScriptTypeChecker : IrRewriter
         return node with { InferredType = function.FunctionScope.ReturnType, Arguments = visitedArguments };
     }
 
-    public override IrNode VisitFunctionReturnCommandNode(IrReturnCommandNode node)
+    public override IrNode VisitFunctionReturnCommand(IrReturnCommandNode node)
     {
         var closestFunctionScope = CurrentScope?.GetClosestFunctionScope();
         if (closestFunctionScope == null) throw new Exception();
@@ -203,6 +209,108 @@ public class ScratchScriptTypeChecker : IrRewriter
 
         closestFunctionScope.ReturnType = returnType;
         return node with { ReturnValue = value };
+    }
+
+    public override IrNode VisitTypeReferenceExpression(IrTypeReferenceExpressionNode node)
+    {
+        var type = ScratchType.Unknown;
+        var visited = Visit(node.InnerNode);
+        if (visited is IrEnumNode enumNode) type = new EnumScratchType(enumNode.Name);
+        return new IrTypeReferenceExpressionNode(visited).WithInferredType(type);
+    }
+
+    public override IrNode VisitMemberPropertyExpression(IrMemberPropertyExpressionNode node)
+    {
+        var type = ScratchType.Unknown;
+        var member = (IrExpressionNode)Visit(node.Member);
+
+        switch (member)
+        {
+            case IrTypeReferenceExpressionNode typeref:
+                switch (typeref.InnerNode)
+                {
+                    case IrEnumNode enumReference:
+                        if (!enumReference.Entries.ContainsKey(node.Property)) throw new Exception();
+                        type = new EnumScratchType(enumReference.Name);
+                        break;
+                }
+
+                break;
+            default:
+                if (member.InferredType is EnumScratchType)
+                {
+                    if (!((ReadOnlySpan<string>)["value", "name"]).Contains(node.Property)) throw new Exception();
+                    type = ScratchType.String;
+                }
+
+                break;
+        }
+
+        return (node with { Member = member }).WithInferredType(type);
+    }
+
+    public override IrNode VisitEnum(IrEnumNode node)
+    {
+        var entries = new Dictionary<string, IrExpressionNode?>(node.Entries);
+        var enumType = ScratchType.Unknown;
+
+        foreach (var (entryName, entryValue) in entries)
+        {
+            if (entryValue != null)
+            {
+                var visitedEntry = (IrExpressionNode)Visit(entryValue);
+                if (visitedEntry.InferredType != ScratchType.Unknown &&
+                    enumType == ScratchType.Unknown)
+                    enumType = visitedEntry.InferredType;
+
+                MustMatchTypeOrFail(visitedEntry, enumType, node.Context, visitedEntry.Context);
+                entries[entryName] = visitedEntry;
+            }
+            else
+            {
+                if (enumType.Kind is not ScratchTypeKind.Unknown and ScratchTypeKind.Number)
+                {
+                    DiagnosticReporter.Instance.Error((int)ScratchScriptError.NonNumericEntryMustSpecifyAllValues,
+                        node.Context,
+                        node.Context);
+                }
+            }
+        }
+
+        if (enumType.Kind is ScratchTypeKind.Number or ScratchTypeKind.Unknown)
+        {
+            enumType = ScratchType.Number;
+
+            var value = (double)0;
+            foreach (var (key, entry) in entries)
+            {
+                if (entry is null)
+                {
+                    entries[key] = new IrConstantExpressionNode(TypedValue.Number(value));
+                    value++;
+                }
+                else
+                {
+                    if (Visit(IrRewriterUtils.RewriteUntilNoChanges(new ConstantEvaluationRewriter(), entry)) is not
+                        IrConstantExpressionNode evaluatedEntry) continue;
+                    value = evaluatedEntry.Extract<double>();
+                }
+            }
+        }
+        else
+        {
+            foreach (var (key, entry) in entries)
+            {
+                if (entry is not null) continue;
+                DiagnosticReporter.Instance.Error((int)ScratchScriptError.NonNumericEntryMustSpecifyAllValues,
+                    node.Context,
+                    node.Context);
+            }
+        }
+
+        foreach (var (key, entry) in entries)
+            entries[key] = entry?.WithInferredType(enumType);
+        return node with { Entries = entries };
     }
 
     private static bool MustMatchTypeOrFail(IrExpressionNode node, ScratchType expected, ParserRuleContext ownContext,
@@ -262,6 +370,8 @@ public class ScratchScriptTypeChecker : IrRewriter
                     new FunctionScope { ReturnType = ScratchType.Void }, []),
                 ReservedNames.RawExpressionFunction => new IrFunctionNode(true,
                     new FunctionScope { ReturnType = arguments.ElementAt(2).InferredType }, []),
+                ReservedNames.IsConstFunction => new IrFunctionNode(true,
+                    new FunctionScope { ReturnType = ScratchType.Boolean }, []),
                 _ => throw new ArgumentOutOfRangeException(nameof(name))
             };
 

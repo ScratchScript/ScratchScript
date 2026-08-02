@@ -48,9 +48,6 @@ public partial class ScratchScriptProjectEmitter(string Id) : IrBaseVisitor<obje
         return blocks;
     }
 
-    public override object? VisitTargetSpecificNode(ITargetSpecificNode node) => throw new NotImplementedException();
-    public override object? VisitImport(IrImportNode node) => throw new NotImplementedException();
-
     public override object? VisitProgram(IrProgramNode node)
     {
         foreach (var blockNode in node.Functions)
@@ -104,12 +101,6 @@ public partial class ScratchScriptProjectEmitter(string Id) : IrBaseVisitor<obje
         return block;
     }
 
-    public override object? VisitForCommand(IrForCommandNode node) => throw new NotImplementedException();
-
-    public override object? VisitBreakCommand(IrBreakCommandNode node) => throw new NotImplementedException();
-
-    public override object? VisitContinueCommand(IrContinueCommandNode node) => throw new NotImplementedException();
-
     public override object? VisitConstantExpression(IrConstantExpressionNode node) => node.Value.Value;
 
     public override object? VisitGlobalVariableIdentifierExpression(IrGlobalVariableIdentifierExpressionNode node)
@@ -120,21 +111,5 @@ public partial class ScratchScriptProjectEmitter(string Id) : IrBaseVisitor<obje
         return block;
     }
 
-    public override object? VisitLocalVariableIdentifierExpression(IrLocalVariableIdentifierExpressionNode node) =>
-        throw new NotImplementedException();
-
-    public override object? VisitGlobalListIdentifierExpression(IrGlobalListIdentifierExpressionNode node) =>
-        throw new NotImplementedException();
-
     public override object? VisitParenthesizedExpression(IrParenthesizedExpressionNode node) => Visit(node.Expression);
-
-    public override object? VisitComplexExpression(IrComplexExpressionNode node) => throw new NotImplementedException();
-
-    public override object? VisitObjectLiteralExpression(IrObjectLiteralExpressionNode node) =>
-        throw new NotImplementedException();
-
-    public override object? VisitTernaryExpression(IrTernaryExpressionNode node) => throw new NotImplementedException();
-
-    public override object? VisitStackPointerExpressionNode(IrStackPointerExpressionNode node) =>
-        throw new NotImplementedException();
 }

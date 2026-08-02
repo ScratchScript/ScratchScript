@@ -32,15 +32,20 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
     public string Artifact { get; private set; }
     public string Namespace { get; private set; } = "global";
 
+    private readonly List<IrNode> _blocks = [];
+
     public override IrNode? VisitProgram(ScratchScriptParser.ProgramContext context)
     {
         DetermineNamespace(context);
         CreateArtifact();
 
-        var blocks = context.topLevelStatement().Select(Visit).ToList();
-        return new IrProgramNode(Namespace, blocks.OfType<IrFunctionNode>().ToList(),
-                blocks.OfType<IrEventNode>().ToList(), blocks.OfType<IrImportNode>().ToList(),
-                blocks.OfType<IrAttributeNode>().ToList(), [])
+        foreach (var tls in context.topLevelStatement())
+        {
+            if (Visit(tls) is not { } node) continue;
+            _blocks.Add(node);
+        }
+
+        return new IrProgramNode(Namespace, _blocks, [])
             .WithContext(context);
     }
 
@@ -306,5 +311,12 @@ public partial class ScratchScriptVisitor : ScratchScriptParserBaseVisitor<IrNod
         }
 
         return new IrImportNode(from, members);
+    }
+
+    private ScratchType? TypeFromString(string str)
+    {
+        var enumMatch = _blocks.FirstOrDefault(b => b is IrEnumNode be && be.Name == str);
+        if (enumMatch != null) return new EnumScratchType(str);
+        return ScratchType.FromString(str);
     }
 }

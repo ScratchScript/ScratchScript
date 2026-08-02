@@ -13,6 +13,7 @@ public abstract class IrBaseVisitor<T>
             IrExpressionNode expr => VisitExpression(expr),
             IrProgramNode program => VisitProgram(program),
             IrAttributeNode attribute => VisitAttribute(attribute),
+            IrEnumNode en => VisitEnum(en),
             _ => throw new NotImplementedException($"No visitor mapping for base node {node.GetType().Name}")
         };
     }
@@ -38,6 +39,7 @@ public abstract class IrBaseVisitor<T>
             IrForCommandNode fr => VisitForCommand(fr),
             IrRepeatCommandNode rep => VisitRepeatCommand(rep),
             IrCallFunctionCommandNode c => VisitCallFunctionCommand(c),
+            IrMemberCallFunctionCommandNode mc => VisitMemberCallFunctionCommand(mc),
             IrRawCommandNode raw => VisitRawCommand(raw),
             IrPushCommand push => VisitPushCommand(push),
             IrPushAtCommand pushAt => VisitPushAtCommand(pushAt),
@@ -45,7 +47,7 @@ public abstract class IrBaseVisitor<T>
             IrPopAtCommand popAt => VisitPopAtCommand(popAt),
             IrPopAllCommand popAll => VisitPopAllCommand(popAll),
             IrIfCommandNode ifs => VisitIfCommand(ifs),
-            IrReturnCommandNode fret => VisitFunctionReturnCommandNode(fret),
+            IrReturnCommandNode fret => VisitFunctionReturnCommand(fret),
             IrBreakCommandNode br => VisitBreakCommand(br),
             IrContinueCommandNode cont => VisitContinueCommand(cont),
             _ => throw new NotImplementedException($"No visitor mapping for command {node.GetType().Name}")
@@ -64,12 +66,15 @@ public abstract class IrBaseVisitor<T>
             IrBinaryExpressionNode bin => VisitBinaryExpression(bin),
             IrUnaryExpressionNode un => VisitUnaryExpression(un),
             IrShadowExpressionNode shadow => VisitShadowExpression(shadow),
-            IrFunctionArgumentExpressionNode farg => VisitFunctionArgumentExpressionNode(farg),
-            IrFunctionCallExpressionNode fcall => VisitFunctionCallExpressionNode(fcall),
+            IrFunctionArgumentExpressionNode farg => VisitFunctionArgumentExpression(farg),
+            IrFunctionCallExpressionNode fcall => VisitFunctionCallExpression(fcall),
+            IrMemberFunctionCallExpressionNode mfcall => VisitMemberFunctionCallExpression(mfcall),
+            IrMemberPropertyExpressionNode mprop => VisitMemberPropertyExpression(mprop),
             IrComplexExpressionNode complex => VisitComplexExpression(complex),
             IrObjectLiteralExpressionNode obj => VisitObjectLiteralExpression(obj),
-            IrStackPointerExpressionNode stp => VisitStackPointerExpressionNode(stp),
+            IrStackPointerExpressionNode stp => VisitStackPointerExpression(stp),
             IrTernaryExpressionNode ternary => VisitTernaryExpression(ternary),
+            IrTypeReferenceExpressionNode typeref => VisitTypeReferenceExpression(typeref),
             _ => throw new NotImplementedException($"No visitor mapping for expression {node.GetType().Name}")
         };
     }
@@ -79,6 +84,7 @@ public abstract class IrBaseVisitor<T>
     public abstract T VisitProgram(IrProgramNode node);
     public abstract T VisitFunction(IrFunctionNode node);
     public abstract T VisitEvent(IrEventNode node);
+    public abstract T VisitEnum(IrEnumNode node);
     public abstract T VisitRawBlock(IrBlockNode node);
     public abstract T VisitAttribute(IrAttributeNode node);
     public abstract T VisitNoOpCommand(IrNoOpCommandNode node);
@@ -97,6 +103,8 @@ public abstract class IrBaseVisitor<T>
     public abstract T VisitIfCommand(IrIfCommandNode node);
     public abstract T VisitBreakCommand(IrBreakCommandNode node);
     public abstract T VisitContinueCommand(IrContinueCommandNode node);
+    public abstract T VisitFunctionReturnCommand(IrReturnCommandNode node);
+    public abstract T VisitMemberCallFunctionCommand(IrMemberCallFunctionCommandNode node);
     public abstract T VisitConstantExpression(IrConstantExpressionNode node);
     public abstract T VisitGlobalVariableIdentifierExpression(IrGlobalVariableIdentifierExpressionNode node);
     public abstract T VisitLocalVariableIdentifierExpression(IrLocalVariableIdentifierExpressionNode node);
@@ -108,8 +116,10 @@ public abstract class IrBaseVisitor<T>
     public abstract T VisitComplexExpression(IrComplexExpressionNode node);
     public abstract T VisitObjectLiteralExpression(IrObjectLiteralExpressionNode node);
     public abstract T VisitTernaryExpression(IrTernaryExpressionNode node);
-    public abstract T VisitFunctionArgumentExpressionNode(IrFunctionArgumentExpressionNode node);
-    public abstract T VisitStackPointerExpressionNode(IrStackPointerExpressionNode node);
-    public abstract T VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node);
-    public abstract T VisitFunctionReturnCommandNode(IrReturnCommandNode node);
+    public abstract T VisitFunctionArgumentExpression(IrFunctionArgumentExpressionNode node);
+    public abstract T VisitStackPointerExpression(IrStackPointerExpressionNode node);
+    public abstract T VisitFunctionCallExpression(IrFunctionCallExpressionNode node);
+    public abstract T VisitTypeReferenceExpression(IrTypeReferenceExpressionNode node);
+    public abstract T VisitMemberPropertyExpression(IrMemberPropertyExpressionNode node);
+    public abstract T VisitMemberFunctionCallExpression(IrMemberFunctionCallExpressionNode node);
 }

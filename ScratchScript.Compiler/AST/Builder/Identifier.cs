@@ -61,6 +61,8 @@ public partial class ScratchScriptVisitor
             return new IrLocalVariableIdentifierExpressionNode(variable.Name);
         if (_scope.GetArgument(identifier) is { } argument)
             return new IrFunctionArgumentExpressionNode(argument.Name);
+        if (_blocks.OfType<IrEnumNode>().Any(e => e.Name == identifier))
+            return new IrTypeReferenceExpressionNode(_blocks.OfType<IrEnumNode>().First(e => e.Name == identifier));
         /*if (Exports.Enums.TryGetValue(identifier, out var type))
             return new TypeDeclarationValue(type);*/
 

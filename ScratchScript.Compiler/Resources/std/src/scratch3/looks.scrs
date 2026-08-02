@@ -1,10 +1,136 @@
-﻿@skipFeature("unusedFunctions", "packFrameAllocationFunctions")
+﻿@skipFeature("unusedFunctions", "packFrameAllocationFunctions", "enumSerialization", "compilerFunctionsExpansion")
 namespace "std/scratch3/looks";
 
-@inline function say(message: string) {
+@spriteOnly @inline function say(message: string) {
     __raw("looks_say", {inputs: {MESSAGE: message}});
 }
 
-@inline function sayTimed(message: string, seconds: number) {
+@spriteOnly @inline function sayTimed(message: string, seconds: number) {
     __raw("looks_sayforsecs", {inputs: {MESSAGE: message, SECS: seconds}});
+}
+
+@spriteOnly @inline function think(message: string) {
+    __raw("looks_think", {inputs: {MESSAGE: message}});
+}
+
+@spriteOnly @inline function thinkTimed(message: string, seconds: number) {
+    __raw("looks_thinkforsecs", {inputs: {MESSAGE: message, SECS: seconds}});
+}
+
+@spriteOnly @inline function showSprite() {
+    __raw("looks_show", {});
+}
+
+@spriteOnly @inline function hideSprite() {
+    __raw("looks_hide", {});
+}
+
+enum LookEffect {
+    Color = "color",
+    FishEye = "fisheye",
+    Whirl = "whirl",
+    Pixelate = "pixelate",
+    Mosaic = "mosaic",
+    Brightness = "brightness",
+    Ghost = "ghost"
+}
+
+@inline function changeLookEffect(effect: LookEffect, by: number) {
+    __raw("looks_changeeffectby", {fields: {EFFECT: effect.value}, inputs: {CHANGE: by}});
+}
+
+@inline function setLookEffect(effect: LookEffect, to: number) {
+    __raw("looks_seteffectto", {fields: {EFFECT: effect.value}, inputs: {VALUE: to}});
+}
+
+@inline function clearLookEffects() {
+    __raw("looks_cleargraphiceffects", {});
+}
+
+@spriteOnly @inline function changeSize(by: number) {
+    __raw("looks_changesizeby", {inputs: {CHANGE: by}});
+}
+
+@spriteOnly @inline function setSize(to: number) {
+    __raw("looks_setsizeto", {inputs: {SIZE: to}});
+}
+
+@spriteOnly @inline function getSize() {
+    return __raw_expr("looks_size", {}, "number");
+}
+
+@spriteOnly @inline function switchCostumeByName(name: string) {
+    __raw("looks_switchcostumeto", {
+        inputs: {
+            BACKDROP: __isconst(name)
+                ? __raw_expr("looks_costume", { fields: { COSTUME: name } }, "unknown")
+                : name
+        }
+    });
+}
+
+@spriteOnly @inline function switchCostumeByIndex(index: number) {
+    __raw("looks_switchcostumeto", {inputs: {COSTUME: index}});
+}
+
+@spriteOnly @inline function nextCostume() {
+    __raw("looks_nextcostume", {});
+}
+
+@inline function switchBackdropByName(name: string) {
+    __raw("looks_switchbackdropto", {
+        inputs: {
+            BACKDROP: __isconst(name)
+                ? __raw_expr("looks_backdrops", { fields: { BACKDROP: name } }, "unknown")
+                : name
+        }
+    });
+}
+
+@inline function switchBackdropByIndex(index: number) {
+    __raw("looks_switchbackdropto", {inputs: {BACKDROP: index}});
+}
+
+@inline function switchBackdropByNameAndWait(name: string) {
+    __raw("looks_switchbackdroptoandwait", {
+        inputs: {
+            BACKDROP: __isconst(name)
+                ? __raw_expr("looks_backdrops", { fields: { BACKDROP: name } }, "unknown")
+                : name
+        }
+    });
+}
+
+@inline function switchBackdropByIndexAndWait(index: number) {
+    __raw("looks_switchbackdroptoandwait", {inputs: {BACKDROP: index}});
+}
+
+@inline function nextBackdrop() {
+    __raw("looks_nextbackdrop", {});
+}
+
+@spriteOnly @inline function goToFront(layers: number) {
+    if(layers == 1) __raw("looks_gotofrontback", {fields: {FRONT_BACK: "front"}});
+    else __raw("looks_goforwardbackwardlayers", {fields: {FORWARD_BACKWARD: "front"}, inputs: {NUM: layers}});
+}
+
+@spriteOnly @inline function goToBack(layers: number) {
+    if(layers == 1) __raw("looks_gotofrontback", {fields: {FRONT_BACK: "back"}});
+    else __raw("looks_goforwardbackwardlayers", {fields: {FORWARD_BACKWARD: "back"}, inputs: {NUM: layers}});
+}
+
+@inline function getBackdropNumber() {
+    return __raw_expr("looks_backdropnumbername", {fields: {NUMBER_NAME: "number"}}, "number");
+}
+
+@inline function getBackdropName() {
+    return __raw_expr("looks_backdropnumbername", {fields: {NUMBER_NAME: "name"}}, "string");
+}
+
+@spriteOnly @inline function getCostumeNumber() {
+    return __raw_expr("looks_costumenumbername", {fields: {NUMBER_NAME: "number"}}, "number");
+}
+
+@spriteOnly @inline function getCostumeName() {
+    return __raw_expr("looks_costumedropnumbername", {fields: {NUMBER_NAME: "name"}}, "string");
 }

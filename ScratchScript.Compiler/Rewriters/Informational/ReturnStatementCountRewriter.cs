@@ -16,10 +16,10 @@ public class ReturnStatementCountRewriter : IrRewriter
         return base.VisitFunction(node);
     }
 
-    public override IrNode VisitFunctionReturnCommandNode(IrReturnCommandNode node)
+    public override IrNode VisitFunctionReturnCommand(IrReturnCommandNode node)
     {
         if (CurrentScope != null && CurrentScope.GetClosestFunctionScope()?.Id == _targetScope.Id)
             ScopesWithReturnStatements.Add(CurrentScope.Id);
-        return base.VisitFunctionReturnCommandNode(node);
+        return base.VisitFunctionReturnCommand(node);
     }
 }

@@ -30,7 +30,7 @@ public class OperatorUnwindingRewriter : IrRewriter
         };
     }
 
-    public override IrNode VisitStackPointerExpressionNode(IrStackPointerExpressionNode node) =>
+    public override IrNode VisitStackPointerExpression(IrStackPointerExpressionNode node) =>
         Scratch3CommandHelper.ItemAt(ReservedNames.Stack, node.Offset == 0
             ? Scratch3CommandHelper.LengthOf(ReservedNames.Stack)
             : new IrBinaryExpressionNode(IrBinaryOperator.Subtract, Scratch3CommandHelper.LengthOf(ReservedNames.Stack),

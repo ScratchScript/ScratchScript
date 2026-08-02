@@ -16,7 +16,8 @@ public class UnusedFunctionsRemovalRewriter : IrRewriter
             ? result
             : result with
             {
-                Functions = result.Functions.Where(f => _calls.Contains(f.FunctionScope.FunctionName)).ToList()
+                TopLevelNodes = result.TopLevelNodes
+                    .Where(f => f is not IrFunctionNode ff || _calls.Contains(ff.FunctionScope.FunctionName)).ToList()
             };
     }
 
@@ -26,9 +27,9 @@ public class UnusedFunctionsRemovalRewriter : IrRewriter
         return base.VisitCallFunctionCommand(node);
     }
 
-    public override IrNode VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node)
+    public override IrNode VisitFunctionCallExpression(IrFunctionCallExpressionNode node)
     {
         _calls.Add(node.Function);
-        return base.VisitFunctionCallExpressionNode(node);
+        return base.VisitFunctionCallExpression(node);
     }
 }

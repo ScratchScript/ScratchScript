@@ -34,11 +34,50 @@ public class ScratchTypeFormatter : IMessagePackFormatter<ScratchType?>
             return;
         }
 
-        writer.Write(value.ToString());
+        writer.WriteArrayHeader(2);
+        writer.WriteInt32((int)value.Kind);
+        switch (value)
+        {
+            case EnumScratchType enumValue:
+                writer.Write(enumValue.Name);
+                break;
+            default:
+                writer.Write(value.ToString());
+                break;
+        }
     }
 
-    public ScratchType? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options) =>
-        reader.TryReadNil() ? null : ScratchType.FromString(reader.ReadString() ?? "");
+    public ScratchType? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+    {
+        if (reader.TryReadNil()) return null;
+        reader.ReadArrayHeader();
+
+        return (ScratchTypeKind)reader.ReadInt32() switch
+        {
+            ScratchTypeKind.Enum => new EnumScratchType(reader.ReadString()!),
+            _ => ScratchType.FromString(reader.ReadString()!)
+        };
+    }
+}
+
+public class EnumScratchType(string name) : ScratchType(ScratchTypeKind.Enum), IEquatable<EnumScratchType>
+{
+    public string Name { get; } = name;
+
+    public bool Equals(EnumScratchType? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return string.Equals(Name, other.Name, StringComparison.Ordinal);
+    }
+
+    public override bool Equals(ScratchType? other) =>
+        other is EnumScratchType enumOther ? Equals(enumOther) : base.Equals(other);
+
+    public override bool Equals(object? obj) => Equals(obj as ScratchType);
+
+    public override string ToString() => Name;
+    public override int GetHashCode() => HashCode.Combine(Kind, Name);
 }
 
 public partial class ScratchType(ScratchTypeKind kind, ScratchType? childType = null, ScratchType? parentType = null)
@@ -55,11 +94,11 @@ public partial class ScratchType(ScratchTypeKind kind, ScratchType? childType = 
     public static readonly ScratchType Void = new(ScratchTypeKind.Void);
     public static readonly ScratchType Object = new(ScratchTypeKind.Object);
 
-    public ScratchTypeKind Kind { get; set; } = kind;
+    public ScratchTypeKind Kind { get; } = kind;
     public ScratchType? ParentType { get; set; } = parentType;
     public ScratchType? ChildType { get; set; } = childType;
 
-    public bool Equals(ScratchType? other)
+    public virtual bool Equals(ScratchType? other)
     {
         if (other is null) return false;
         if (ReferenceEquals(this, other)) return true;

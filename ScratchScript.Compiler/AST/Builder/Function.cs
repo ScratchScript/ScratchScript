@@ -9,8 +9,6 @@ namespace ScratchScript.Compiler.AST.Builder;
 
 public partial class ScratchScriptVisitor
 {
-    private int _functionDeclarationCount;
-
     /* TODO: perhaps change this into a reflection-based automated thing?
      like [NativeFunction] public IrNode RawStatement(string opcode, JsonObject data) => {...}
      i guess it's ok if there are only two functions like this...
@@ -38,6 +36,11 @@ public partial class ScratchScriptVisitor
                     DetermineExpressionType(type) != ScratchType.String) throw new Exception();
                 if (ScratchType.FromString((string)type.Value.Value!) == null) throw new Exception();*/
                 return new IrCallFunctionCommandNode(ReservedNames.RawExpressionFunction, arguments);
+            }
+            case ReservedNames.IsConstFunction:
+            {
+                if (arguments.Count != 1) throw new Exception();
+                return new IrCallFunctionCommandNode(ReservedNames.IsConstFunction, arguments);
             }
             default: return null;
         }
@@ -93,7 +96,6 @@ public partial class ScratchScriptVisitor
             FunctionName = name,
             ReturnType = ScratchType.Unknown
         };
-        _functionDeclarationCount++;
 
         var locationInformation = new FunctionLocationInformation
         {
@@ -105,7 +107,7 @@ public partial class ScratchScriptVisitor
         if (context.type() != null)
         {
             locationInformation.ReturnTypeSetter = context.type();
-            var type = ScratchType.FromString(context.type().GetText());
+            var type = TypeFromString(context.type().GetText());
             // TODO: "expected type" diagnostic
             if (type == null) throw new Exception();
             scope.ReturnType = type;
@@ -119,7 +121,7 @@ public partial class ScratchScriptVisitor
 
             // if the type is specified
             if (identifier.type() != null)
-                argumentType = ScratchType.FromString(identifier.type().GetText()) ?? ScratchType.Unknown;
+                argumentType = TypeFromString(identifier.type().GetText()) ?? ScratchType.Unknown;
 
             if (RequireIdentifierUnclaimedOrFail(argumentName, context, identifier.Identifier())) return null;
 

@@ -8,4 +8,6 @@ public static class ProgramAttributes
 public static class FunctionAttributes
 {
     public const string AlwaysInlineFunction = "inline";
+    public const string SpriteOnlyFunction = "inline";
+    public const string SkipCompilerFeature = "skipFeature";
 }

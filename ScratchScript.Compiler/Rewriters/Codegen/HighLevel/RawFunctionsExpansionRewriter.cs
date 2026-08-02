@@ -51,7 +51,7 @@ public class RawFunctionsExpansionRewriter : IrRewriter
         return new IrRawCommandNode(opcode, inputs, fields);
     }
 
-    public override IrNode VisitFunctionCallExpressionNode(IrFunctionCallExpressionNode node)
+    public override IrNode VisitFunctionCallExpression(IrFunctionCallExpressionNode node)
     {
         if (node.Function != ReservedNames.RawExpressionFunction) return node;
         var (opcode, inputs, fields, expectedType) = ParseArguments(node.Arguments.ToList());
